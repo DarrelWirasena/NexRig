@@ -16,7 +16,7 @@ class HomeController extends Controller
                     ->get();
 
         
-        $featured = $products->take(3);
+        $featured = $products->take(4);
 
         return view('home', [
             'products' => $products,
