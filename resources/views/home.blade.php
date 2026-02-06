@@ -25,28 +25,17 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {{-- Contoh pemanggilan komponen --}}
-                <x-product-card 
-                    name="Entry-Level" 
-                    price="9000000" 
-                    description="Great for 1080p gaming & Esports titles."
-                    image="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=800"
-                />
-                
-                <x-product-card 
-                    name="Professional" 
-                    price="18000000" 
-                    badge="Best Seller"
-                    description="1440p High Refresh Rate gaming & streaming."
-                    image="https://images.unsplash.com/photo-1614014077943-840960ce6694?w=800"
-                />
-
-                <x-product-card 
-                    name="Extreme" 
-                    price="35000000" 
-                    description="4K Ultimate Performance & VR Ready."
-                    image="https://images.unsplash.com/photo-1547082299-de196ea013d6?w=800"
-                />
+                @foreach($products as $product)
+                    <x-product-card 
+                        :name="$product->name" 
+                        :price="$product->price" 
+                        :description="$product->short_description"
+                        {{-- Mengambil gambar pertama yang ditandai sebagai 'is_primary' --}}
+                        :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/800x600?text=No+Image'"
+                        {{-- Menghubungkan ke route detail menggunakan slug --}}
+                        :url="route('products.show', $product->slug)"
+                    />
+                @endforeach
             </div>
         </section>
 
