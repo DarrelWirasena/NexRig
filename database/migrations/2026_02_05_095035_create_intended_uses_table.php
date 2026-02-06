@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('intended_uses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->string('title'); // Contoh: "Streaming Ready"
+            $table->text('description')->nullable();
+            $table->string('icon_url')->nullable();
             $table->timestamps();
         });
     }

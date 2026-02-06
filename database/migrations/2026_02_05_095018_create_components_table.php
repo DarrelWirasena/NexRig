@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('components', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('type'); // CPU, GPU, RAM, dll
+            $table->string('brand')->nullable();
+            $table->decimal('cost_price', 15, 2); // Harga modal
+            $table->integer('stock_quantity')->default(0);
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }

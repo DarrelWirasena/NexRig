@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('games', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('image_url')->nullable(); // Cover game
             $table->timestamps();
         });
-    }
+    }   
 
     /**
      * Reverse the migrations.

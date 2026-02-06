@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('benchmarks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
+            
+            $table->enum('resolution', ['1080p', '1440p', '4k']);
+            $table->integer('avg_fps');
             $table->timestamps();
         });
     }

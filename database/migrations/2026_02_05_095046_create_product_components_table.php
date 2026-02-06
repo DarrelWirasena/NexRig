@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('product_components', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('component_id')->constrained('components')->onDelete('cascade');
+            
+            $table->integer('quantity')->default(1); // Jumlah komponen dalam 1 PC
             $table->timestamps();
         });
     }
