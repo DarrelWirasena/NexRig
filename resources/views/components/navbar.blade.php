@@ -1,7 +1,8 @@
 <div class="border-b border-solid border-gray-200 dark:border-border-dark px-4 lg:px-10 py-3 sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
     <header class="flex items-center justify-between whitespace-nowrap max-w-[1440px] mx-auto w-full">
         <div class="flex items-center gap-4 lg:gap-8">
-            <a class="flex items-center gap-3 text-slate-900 dark:text-white hover:opacity-80 transition-opacity" href="/">
+            {{-- LINK KE HOME --}}
+            <a class="flex items-center gap-3 text-slate-900 dark:text-white hover:opacity-80 transition-opacity" href="{{ route('home') }}">
                 <div class="size-8 text-primary">
                     <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
@@ -11,17 +12,21 @@
                 <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">NexRig</h2>
             </a>
             <div class="hidden lg:flex items-center gap-6 xl:gap-9">
-                <a class="text-slate-600 dark:text-gray-300 hover:text-primary text-sm font-medium transition-colors" href="#">Gaming PCs</a>
+                {{-- LINK KE KATALOG PRODUK --}}
+                <a class="text-slate-600 dark:text-gray-300 hover:text-primary text-sm font-medium transition-colors" href="{{ route('products.index') }}">Gaming PCs</a>
+                
+                {{-- Link Support bisa dikosongkan dulu atau buat route baru --}}
                 <a class="text-slate-600 dark:text-gray-300 hover:text-primary text-sm font-medium transition-colors" href="#">Support</a>
             </div>
         </div>
         <div class="flex flex-1 justify-end gap-4 items-center">
             <div class="flex gap-2">
-                <button class="hidden sm:flex min-w-[84px] items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">Log In</button>
-                <button class="flex items-center justify-center rounded-lg h-10 px-3 bg-gray-200 dark:bg-border-dark text-slate-900 dark:text-white gap-2">
+               
+                {{-- LINK KE KERANJANG --}}
+                <a href="#" class="flex items-center justify-center rounded-lg h-10 px-3 bg-gray-200 dark:bg-border-dark text-slate-900 dark:text-white gap-2">
                     <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
                     <span class="hidden sm:inline">Cart</span>
-                </button>
+                </a>
             </div>
         </div>
     </header>

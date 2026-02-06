@@ -3,42 +3,54 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    // Halaman Katalog (Semua Produk)
-    public function index()
+    /**
+     * Menampilkan halaman katalog (Semua Produk)
+     */
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'images'])
-                    ->where('is_active', true)
-                    ->latest()
-                    ->paginate(9); // Pakai pagination biar rapi (9 produk per halaman)
+        // Ambil data kategori untuk Sidebar Filter
+        $categories = Category::all();
 
-        return view('products.index', [
-            'products' => $products
-        ]);
+        // Query dasar: ambil produk yang aktif beserta gambar utamanya
+        $query = Product::with(['category', 'images' => function($q) {
+            $q->where('is_primary', true);
+        }])->where('is_active', true);
+
+        // FITUR FILTER: Jika ada request kategori di URL (?category=entry-level)
+        if ($request->has('category')) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        // Ambil hasil dengan pagination (misal 9 produk per halaman)
+        $products = $query->latest()->paginate(9);
+
+        return view('products.index', compact('products', 'categories'));
     }
 
-    // Halaman Detail Satu Produk
-    // Kita cari berdasarkan 'slug' (URL cantik), bukan ID
+    /**
+     * Menampilkan halaman detail produk berdasarkan Slug
+     */
     public function show($slug)
     {
-        // Ambil produk beserta SEMUA relasinya (Eager Loading Komplit)
+        // Eager loading semua relasi agar Frontend bisa menampilkan data lengkap
         $product = Product::with([
-                        'category', 
-                        'images', 
-                        'components',           // Untuk list hardware
-                        'benchmarks.game',      // Untuk grafik FPS
-                        'intendedUses',         // Untuk fitur ikon
-                        'attributes'            // Untuk spek lain
-                    ])
-                    ->where('slug', $slug)
-                    ->where('is_active', true)
-                    ->firstOrFail(); // Kalau gak ketemu, otomatis 404 Not Found
+            'category', 
+            'images', 
+            'attributes', 
+            'benchmarks.game', // Relasi nested: benchmark punya game
+            'components'       // Relasi ke master hardware
+        ])
+        ->where('slug', $slug)
+        ->where('is_active', true)
+        ->firstOrFail();
 
-        return view('products.show', [
-            'product' => $product
-        ]);
+        return view('products.show', compact('product'));
     }
 }
