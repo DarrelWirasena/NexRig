@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -18,4 +19,11 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 // Route Keranjang
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::get('/add-to-cart/{id}', [CartController::class, 'store'])->name('cart.add');
+Route::patch('/update-cart', [CartController::class, 'update'])->name('cart.update');
 Route::get('/remove-from-cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
+
+// Route Checkout (Harus Login)
+Route::middleware('auth')->group(function () {
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    // Nanti bisa tambah: Route::get('/my-orders', ...);
+});
