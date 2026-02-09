@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     {{-- Custom Styles untuk Efek Khusus --}}
     <style>
         .text-glow { text-shadow: 0 0 20px rgba(19, 55, 236, 0.5); }
@@ -199,4 +201,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

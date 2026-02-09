@@ -22,7 +22,7 @@
         <div class="flex flex-1 justify-end gap-4 items-center">
             <div class="flex gap-2">
                 {{-- LINK KE LOGIN --}}
-                <a href="#" class="hidden sm:flex min-w-[84px] items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">Log In</a>
+                <a href="{{ route('login') }}" class="hidden sm:flex min-w-[84px] items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">Log In</a>
                 
                 {{-- LINK KE KERANJANG --}}
                 <a href="#" class="flex items-center justify-center rounded-lg h-10 px-3 bg-gray-200 dark:bg-border-dark text-slate-900 dark:text-white gap-2">

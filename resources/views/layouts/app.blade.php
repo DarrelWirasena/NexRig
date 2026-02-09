@@ -36,7 +36,7 @@
     <x-navbar />
 
     <main class="flex-grow flex flex-col items-center w-full">
-        {{ $slot }}
+       @yield('content')
     </main>
 <x-footer /> 
 </body>
