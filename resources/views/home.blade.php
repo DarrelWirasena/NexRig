@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     {{-- Custom Styles untuk Efek Khusus --}}
     <style>
         .text-glow { text-shadow: 0 0 20px rgba(19, 55, 236, 0.5); }
@@ -60,7 +61,6 @@
     {{-- SECTION 2: INFINITE RUNNING TEXT (Hype Bar) --}}
     <div class="bg-primary text-white py-3 overflow-hidden border-y border-white/10 relative z-20">
         <div class="whitespace-nowrap flex animate-scroll">
-            {{-- Duplikat konten untuk efek infinite loop --}}
             @for($i = 0; $i < 10; $i++)
                 <span class="mx-8 font-black italic uppercase tracking-widest text-lg flex items-center gap-4 opacity-80">
                     High FPS Guarantee <span class="text-black">•</span> 
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    {{-- SECTION 3: BENTO GRID CATEGORIES (Dynamized from Database) --}}
+    {{-- SECTION 3: BENTO GRID CATEGORIES --}}
     <div id="featured" class="bg-[#050505] py-24 px-4 sm:px-10">
         <div class="max-w-[1440px] mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
@@ -85,11 +85,10 @@
                 </p>
             </div>
 
-            {{-- LOGIC: Cek apakah ada cukup data featured --}}
             @if($featured->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[600px]">
                     
-                    {{-- ITEM 1: FLAGSHIP (Produk Pertama di Array) --}}
+                    {{-- ITEM 1: FLAGSHIP --}}
                     @php $p1 = $featured->get(0); @endphp
                     @if($p1)
                     <div class="group md:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
@@ -106,7 +105,7 @@
                     </div>
                     @endif
 
-                    {{-- ITEM 2: BEST SELLER (Produk Kedua) --}}
+                    {{-- ITEM 2: BEST SELLER --}}
                     @php $p2 = $featured->get(1); @endphp
                     @if($p2)
                     <div class="group md:col-span-2 relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
@@ -123,7 +122,7 @@
                     </div>
                     @endif
 
-                    {{-- ITEM 3: CREATOR (Produk Ketiga) --}}
+                    {{-- ITEM 3: CREATOR --}}
                     @php $p3 = $featured->get(2); @endphp
                     @if($p3)
                     <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
@@ -131,12 +130,12 @@
                         <div class="absolute inset-0 bg-black/40 hover:bg-transparent transition-colors"></div>
                         <div class="absolute bottom-0 p-6">
                             <h3 class="text-xl font-bold text-white uppercase truncate">{{ $p3->name }}</h3>
-                            <p class="text-gray-400 text-xs">{{ $p3->category->name ?? 'Gaming PC' }}</p>
+                            <p class="text-gray-400 text-xs">{{ $p3->series->category->name ?? 'Gaming PC' }}</p>
                         </div>
                     </div>
                     @endif
 
-                    {{-- ITEM 4: CUSTOM BUILDER (Tetap Statis agar variatif, atau bisa pakai data ke-4) --}}
+                    {{-- ITEM 4: CUSTOM BUILDER --}}
                     <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
                         <div class="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-colors"></div>
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
@@ -147,13 +146,75 @@
                     </div>
                 </div>
             @else
-                {{-- Fallback jika database kosong --}}
                 <p class="text-gray-400 text-center">No featured products available yet.</p>
             @endif
         </div>
     </div>
 
-    {{-- SECTION 4: LATEST DEPLOYMENTS (Using Components) --}}
+    {{-- NEW SECTION: PERFORMANCE METRICS --}}
+    <div class="bg-[#050505] py-20 px-4 border-t border-white/5">
+        <div class="max-w-[1440px] mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block animate-pulse">Real World Performance</span>
+                <h2 class="text-3xl md:text-5xl font-black text-white uppercase italic">Dominate Every Lobby</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {{-- CARD 1: FPS GAME --}}
+                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-white font-bold text-xl mb-1">Competitive Shooters</h3>
+                        <p class="text-gray-400 text-xs mb-4">Valorant / CS2 / Apex</p>
+                        <div class="flex items-end gap-2">
+                            <span class="text-5xl font-black text-primary text-glow">300+</span>
+                            <span class="text-white font-bold mb-2">FPS</span>
+                        </div>
+                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary w-[95%]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- CARD 2: AAA TITLE --}}
+                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                    <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-white font-bold text-xl mb-1">AAA Titles</h3>
+                        <p class="text-gray-400 text-xs mb-4">Cyberpunk / Starfield / COD</p>
+                        <div class="flex items-end gap-2">
+                            <span class="text-5xl font-black text-cyan-400 text-glow">144+</span>
+                            <span class="text-white font-bold mb-2">FPS @ 1440p</span>
+                        </div>
+                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-cyan-400 w-[75%]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- CARD 3: CREATIVE --}}
+                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                    <img src="https://images.unsplash.com/photo-1633419461186-7d40a2e50594?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-white font-bold text-xl mb-1">Content Creation</h3>
+                        <p class="text-gray-400 text-xs mb-4">Rendering / Streaming</p>
+                        <div class="flex items-end gap-2">
+                            <span class="text-5xl font-black text-purple-500 text-glow">40%</span>
+                            <span class="text-white font-bold mb-2">Faster Render</span>
+                        </div>
+                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-purple-500 w-[85%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- SECTION 4: LATEST DEPLOYMENTS --}}
     <div class="bg-[#080808] py-24 px-4 sm:px-10 border-t border-white/5 relative">
         <div class="absolute top-0 left-10 w-px h-24 bg-gradient-to-b from-primary to-transparent"></div>
         <div class="absolute bottom-0 right-10 w-px h-24 bg-gradient-to-t from-primary to-transparent"></div>
@@ -164,24 +225,85 @@
                     <span class="text-primary font-bold text-xl">///</span>
                     <h2 class="text-3xl font-bold text-white uppercase tracking-wider">Latest Deployments</h2>
                 </div>
-                {{-- Link Lihat Semua --}}
                 <a href="{{ route('products.index') }}" class="hidden md:flex items-center gap-2 text-white hover:text-primary transition-colors font-bold uppercase text-sm tracking-wider">
                     View All Systems <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {{-- MENGGUNAKAN COMPONENT + DATA FEATURED (Max 4 Items) --}}
+                {{-- MENGGUNAKAN COMPONENT + DATA FEATURED --}}
+                {{-- Pastikan file resources/views/components/product-home-card.blade.php ADA --}}
                 @foreach($featured as $product)
                     <x-product-home-card :product="$product" />
                 @endforeach
             </div>
             
-            {{-- Tombol Mobile --}}
             <div class="mt-16 text-center md:hidden">
                 <a href="{{ route('products.index') }}" class="inline-block px-12 py-4 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all clip-button">
                     View All Systems
                 </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- NEW SECTION: THE NEXRIG DNA --}}
+    <div class="bg-background-dark py-24 px-4 relative overflow-hidden">
+        {{-- Background Accents --}}
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-[1440px] mx-auto relative z-10">
+            <div class="flex flex-col md:flex-row gap-16 items-center">
+                {{-- Text Side --}}
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-6 leading-tight">
+                        Built different. <br>
+                        <span class="text-primary">Wired for perfection.</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                        Every NexRig isn't just assembled; it's crafted. We spend hours on cable management, thermal optimization, and 24-hour stress testing so you can just plug and play.
+                    </p>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex items-start gap-4">
+                            <div class="bg-primary/20 p-2 rounded text-primary">
+                                <span class="material-symbols-outlined">cable</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase">Obsessive Cable Management</h4>
+                                <p class="text-gray-500 text-sm">Hidden cables, velcro straps, and clean aesthetics.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="bg-primary/20 p-2 rounded text-primary">
+                                <span class="material-symbols-outlined">verified_user</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase">2-Year Comprehensive Warranty</h4>
+                                <p class="text-gray-500 text-sm">If something breaks, we fix it. No questions asked.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="bg-primary/20 p-2 rounded text-primary">
+                                <span class="material-symbols-outlined">thermometer</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase">Thermal Optimization</h4>
+                                <p class="text-gray-500 text-sm">Airflow tuned for maximum cooling and silence.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                {{-- Image Side (Abstract Representation of Order) --}}
+                <div class="w-full md:w-1/2 relative">
+                    <div class="relative z-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-[#0a0a0a]">
+                         {{-- Ganti URL ini dengan foto PC bagian dalam yang rapi --}}
+                        <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200" class="w-full h-auto object-cover opacity-80 hover:opacity-100 transition-opacity duration-500">
+                    </div>
+                    {{-- Decorative Elements --}}
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-2xl"></div>
+                    <div class="absolute -top-5 -left-5 w-20 h-20 border border-primary/30"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -201,4 +323,5 @@
             </div>
         </div>
     </div>
+
 @endsection
