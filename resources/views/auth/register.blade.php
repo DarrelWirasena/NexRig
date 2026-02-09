@@ -1,4 +1,6 @@
-<x-layouts.app>
+@extends('layouts.app')
+
+@section('content')
     {{-- Menggunakan style yang sama dengan Login agar konsisten --}}
     <style>
         .clip-corner-sm { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
@@ -110,4 +112,4 @@
             </div>
         </div>
     </div>
-</x-layouts.app>
+@endsection

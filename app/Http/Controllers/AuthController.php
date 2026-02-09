@@ -35,13 +35,13 @@ class AuthController extends Controller
         // 3. Langsung Login setelah daftar
         Auth::login($user);
 
-        return redirect()->route('/')->with('success', 'Registration successful! Welcome to NexRig.');
+        return redirect()->route('home')->with('success', 'Registration successful! Welcome to NexRig.');
     }
 
     // --- LOGIN ---
     public function showLoginForm()
     {
-        return view('login');
+        return view('auth.login');
     }
 
     public function login(Request $request)
@@ -57,7 +57,7 @@ class AuthController extends Controller
             $request->session()->regenerate(); // Security fix (Session Fixation)
             
             // Redirect ke halaman yang tadi mau diakses, atau ke home
-            return redirect()->intended('/')->with('success', 'You are logged in!');
+            return redirect()->route('home')->with('success', 'You are logged in!');
         }
 
         // 3. Gagal Login
@@ -73,6 +73,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect()->route('/')->with('success', 'Logged out successfully');
+        return redirect()->route('home')->with('success', 'Logged out successfully');
     }
 }

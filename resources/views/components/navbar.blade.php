@@ -1,35 +1,179 @@
-<div class="border-b border-solid border-gray-200 dark:border-border-dark px-4 lg:px-10 py-3 sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
-    <header class="flex items-center justify-between whitespace-nowrap max-w-[1440px] mx-auto w-full">
-        <div class="flex items-center gap-4 lg:gap-8">
-            {{-- LINK KE HOME --}}
-            <a class="flex items-center gap-3 text-slate-900 dark:text-white hover:opacity-80 transition-opacity" href="{{ route('home') }}">
-                <div class="size-8 text-primary">
-                    <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                        <path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
-                        <path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">NexRig</h2>
+<div class="border-b border-white/10 px-4 lg:px-10 py-3 sticky top-0 z-50 bg-[#050505]/95 backdrop-blur-md transition-all duration-300">
+    <header class="flex items-center justify-between whitespace-nowrap max-w-[1440px] mx-auto w-full relative">
+        
+        {{-- 1. LOGO --}}
+        <div class="flex items-center gap-8">
+            <a class="flex items-center hover:opacity-80 transition-opacity" href="{{ route('home') }}">
+                <img src="{{ asset('images/nexrig.png') }}" 
+                     alt="NexRig Logo" 
+                     class="h-10 w-auto object-contain"> 
             </a>
-            <div class="hidden lg:flex items-center gap-6 xl:gap-9">
-                {{-- LINK KE KATALOG PRODUK --}}
-                <a class="text-slate-600 dark:text-gray-300 hover:text-primary text-sm font-medium transition-colors" href="{{ route('products.index') }}">Gaming PCs</a>
-                
-                {{-- Link Support bisa dikosongkan dulu atau buat route baru --}}
-                <a class="text-slate-600 dark:text-gray-300 hover:text-primary text-sm font-medium transition-colors" href="#">Support</a>
-            </div>
+
+            {{-- 2. NAVIGATION --}}
+            <nav class="hidden lg:flex items-center gap-8">
+                <div class="group static">
+                    <button class="flex items-center gap-1 py-4 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors outline-none border-b-2 border-transparent group-hover:border-blue-600">
+                        Gaming PCs
+                    </button>
+                    {{-- Mega Menu --}}
+                    <div class="absolute left-0 top-full w-full bg-[#080808] border-t border-b border-white/10 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden z-50">
+                        <div class="max-w-[1440px] mx-auto p-8">
+                            <div class="grid grid-cols-4 gap-8">
+                                <div class="flex flex-col items-center text-center group/item">
+                                    <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
+                                        <div class="absolute inset-0 bg-blue-600/20 blur-xl rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"></div>
+                                        <img src="https://placehold.co/200x200/101010/FFF?text=Core+PC" class="relative z-10 w-full h-full object-contain drop-shadow-2xl">
+                                    </div>
+                                    <h3 class="text-white font-black uppercase tracking-widest mb-4 border-b border-blue-600/50 pb-1">Core Series</h3>
+                                    <div class="flex flex-col gap-2 w-full">
+                                        <a href="{{ route('products.index', ['search' => 'Horizon']) }}" class="text-gray-400 hover:text-white text-sm hover:translate-x-1 transition-all">Horizon II Core</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="{{ route('about') }}">About Us</a>
+            </nav>
         </div>
+
+        {{-- 3. RIGHT ACTIONS --}}
         <div class="flex flex-1 justify-end gap-4 items-center">
-            <div class="flex gap-2">
-                {{-- LINK KE LOGIN --}}
-                <a href="{{ route('login') }}" class="hidden sm:flex min-w-[84px] items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">Log In</a>
-                
-                {{-- LINK KE KERANJANG --}}
-                <a href="#" class="flex items-center justify-center rounded-lg h-10 px-3 bg-gray-200 dark:bg-border-dark text-slate-900 dark:text-white gap-2">
-                    <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
-                    <span class="hidden sm:inline">Cart</span>
-                </a>
-            </div>
+            
+            {{-- SEARCH BUTTON --}}
+            <button onclick="openSearch()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors group">
+                <span class="material-symbols-outlined text-[24px] group-hover:text-blue-500 transition-colors">search</span>
+            </button>
+
+            {{-- CART BUTTON --}}
+            <a href="{{ route('cart.index') }}" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-colors group">
+                <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                @if(session('cart') && count(session('cart')) > 0)
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center border border-black">
+                        {{ count(session('cart')) }}
+                    </span>
+                @endif
+            </a>
+
+            {{-- AUTHENTICATION --}}
+            @auth
+                <div class="relative group h-10 flex items-center z-50">
+                    <button class="flex items-center gap-3 pl-4 border-l border-white/10 outline-none">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-xs text-gray-400">Welcome,</p>
+                            <p class="text-sm font-bold text-white leading-none">{{ Auth::user()->name }}</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold border border-white/20">
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        </div>
+                    </button>
+                    <div class="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0a] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="p-2">
+                            <div class="px-4 py-3 border-b border-white/10 mb-2">
+                                <p class="text-sm text-white font-bold">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                            <a href="{{ route('profile.app') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">
+                                <span class="material-symbols-outlined text-lg">person</span> My Profile
+                            </a>
+                            <a href="{{ route('orders.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">
+                                <span class="material-symbols-outlined text-lg">history</span> Order History
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors mt-1">
+                                    <span class="material-symbols-outlined text-lg">logout</span> Log Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="flex gap-3 pl-4 border-l border-white/10">
+                    <a href="{{ route('login') }}" class="hidden sm:flex items-center text-white hover:text-blue-500 font-bold text-sm uppercase tracking-wide transition-colors">
+                        Log In
+                    </a>
+                    <a href="{{ route('register') }}" class="flex items-center justify-center rounded px-5 py-2 bg-white text-black hover:bg-blue-600 hover:text-white text-sm font-bold uppercase tracking-wide transition-all clip-button">
+                        Sign Up
+                    </a>
+                </div>
+            @endauth
         </div>
     </header>
 </div>
+
+{{-- 
+    ====================================================================
+    FULL SCREEN SEARCH OVERLAY
+    ====================================================================
+--}}
+<div id="searchOverlay" class="fixed inset-0 z-[100] bg-[#050505]/90 backdrop-blur-md flex items-start justify-center pt-32 opacity-0 invisible transition-all duration-300">
+    
+    {{-- Tombol Close --}}
+    <button onclick="closeSearch()" class="absolute top-8 right-8 text-gray-400 hover:text-white transition-colors z-[102]">
+        <span class="material-symbols-outlined text-4xl">close</span>
+    </button>
+
+    {{-- SEARCH CONTAINER --}}
+    <div class="w-full max-w-3xl px-4 z-[101] transform transition-all duration-300 scale-95 translate-y-0" id="searchContainer">
+        
+        <form action="{{ route('products.index') }}" method="GET" class="relative group w-full">
+            
+            {{-- 
+                FIX ICON POSITION:
+                1. 'absolute left-6': Jarak dari kiri tetap.
+                2. 'top-0 h-full': Tinggi container icon sama persis dengan tinggi input.
+                3. 'flex items-center': Memaksa icon berada persis di tengah secara vertikal (Y-Axis).
+            --}}
+            <div class="absolute left-6 top-0 h-full flex items-center justify-center pointer-events-none text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                <span class="material-symbols-outlined text-2xl">search</span>
+            </div>
+
+            {{-- Input Field --}}
+            <input type="text" 
+                   name="search" 
+                   id="searchInput"
+                   placeholder="Search products..." 
+                   class="w-full bg-[#1a1a1a] border border-white/10 text-white text-lg py-5 pl-16 pr-8 rounded-full focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all placeholder-gray-500"
+                   autocomplete="off">
+
+        </form>
+
+        {{-- Helper Text --}}
+        <div class="mt-4 text-center text-sm text-gray-500 font-mono">
+            Press <span class="text-gray-300 font-bold">ENTER</span> to search
+        </div>
+    </div>
+</div>
+
+<script>
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function openSearch() {
+        searchOverlay.classList.remove('invisible', 'opacity-0');
+        searchOverlay.classList.add('visible', 'opacity-100');
+        searchContainer.classList.remove('scale-95');
+        searchContainer.classList.add('scale-100');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => { searchInput.focus(); }, 100);
+    }
+
+    function closeSearch() {
+        searchOverlay.classList.remove('visible', 'opacity-100');
+        searchOverlay.classList.add('invisible', 'opacity-0');
+        searchContainer.classList.remove('scale-100');
+        searchContainer.classList.add('scale-95');
+        document.body.style.overflow = '';
+        searchInput.value = '';
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") closeSearch();
+    });
+
+    searchOverlay.addEventListener('click', function(e) {
+        if (e.target === searchOverlay) closeSearch();
+    });
+</script>

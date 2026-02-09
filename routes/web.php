@@ -9,6 +9,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,9 @@ use App\Http\Controllers\OrderController;
 
 // Halaman Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Halaman About Us (Tanpa Controller)
+Route::view('/about', 'about')->name('about');
 
 // Halaman Katalog & Detail Produk
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -44,6 +48,8 @@ Route::middleware('guest')->group(function () {
     // Login Route
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); // Menampilkan form
     Route::post('/login', [AuthController::class, 'login']); // Memproses login
+
+ 
 });
 
 
@@ -62,4 +68,8 @@ Route::middleware('auth')->group(function () {
     // Riwayat Pesanan (History)
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+
+       // PROFILE ROUTES
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.app');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
