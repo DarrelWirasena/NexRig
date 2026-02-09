@@ -1,0 +1,968 @@
+sebagai context sebelumm bikin forntend, ada controller dan model apa saja, dan routesnya seperti apa
+
+authcontroller
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Hash;
+
+use App\Models\User;
+
+
+
+class AuthController extends Controller
+
+{
+
+    // --- REGISTER ---
+
+    public function showRegisterForm()
+
+    {
+
+        return view('auth.register');
+
+    }
+
+
+
+    public function register(Request $request)
+
+    {
+
+        // 1. Validasi Input
+
+        $request->validate([
+
+            'name' => 'required|string|max:255',
+
+            'email' => 'required|string|email|max:255|unique:users', // Email gak boleh kembar
+
+            'password' => 'required|string|min:8|confirmed', // Harus ada input name="password_confirmation" di form
+
+        ]);
+
+
+
+        // 2. Buat User Baru
+
+        $user = User::create([
+
+            'name' => $request->name,
+
+            'email' => $request->email,
+
+            'password' => Hash::make($request->password),
+
+            'role' => 'user' // Default user biasa
+
+        ]);
+
+
+
+        // 3. Langsung Login setelah daftar
+
+        Auth::login($user);
+
+
+
+        return redirect()->route('home')->with('success', 'Registration successful! Welcome to NexRig.');
+
+    }
+
+
+
+    // --- LOGIN ---
+
+    public function showLoginForm()
+
+    {
+
+        return view('auth.login');
+
+    }
+
+
+
+    public function login(Request $request)
+
+    {
+
+        // 1. Validasi
+
+        $credentials = $request->validate([
+
+            'email' => ['required', 'email'],
+
+            'password' => ['required'],
+
+        ]);
+
+
+
+        // 2. Coba Login
+
+        if (Auth::attempt($credentials)) {
+
+            $request->session()->regenerate(); // Security fix (Session Fixation)
+
+            
+
+            // Redirect ke halaman yang tadi mau diakses, atau ke home
+
+            return redirect()->intended('home')->with('success', 'You are logged in!');
+
+        }
+
+
+
+        // 3. Gagal Login
+
+        return back()->withErrors([
+
+            'email' => 'The provided credentials do not match our records.',
+
+        ])->onlyInput('email');
+
+    }
+
+
+
+    // --- LOGOUT ---
+
+    public function logout(Request $request)
+
+    {
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        
+
+        return redirect()->route('home')->with('success', 'Logged out successfully');
+
+    }
+
+}
+
+cartcontroller
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use App\Models\Product;
+
+use Illuminate\Http\Request;
+
+
+
+class CartController extends Controller
+
+{
+
+    // 1. Tampilkan Halaman Cart
+
+    public function index()
+
+    {
+
+        $cart = session()->get('cart', []);
+
+        
+
+        $total = 0;
+
+        foreach($cart as $id => $details) {
+
+            $total += $details['price'] * $details['quantity'];
+
+        }
+
+
+
+        return view('cart.index', [
+
+            'cart' => $cart,
+
+            'total' => $total
+
+        ]);
+
+    }
+
+
+
+    // 2. Tambah Barang ke Keranjang
+
+    public function store(Request $request, $id)
+
+    {
+
+        $product = Product::with('images')->findOrFail($id);
+
+        $cart = session()->get('cart', []);
+
+
+
+        // Ambil gambar utama, atau placeholder jika tidak ada
+
+        $image = $product->images->where('is_primary', true)->first();
+
+        $imageUrl = $image ? $image->image_url : 'https://placehold.co/100';
+
+
+
+        // Cek apakah ada request jumlah spesifik? (Misal dari input form)
+
+        // Kalau tidak ada, default nambah 1
+
+        $quantityToAdd = $request->input('quantity', 1);
+
+
+
+        if(isset($cart[$id])) {
+
+            $cart[$id]['quantity'] += $quantityToAdd;
+
+        } else {
+
+            $cart[$id] = [
+
+                "name" => $product->name,
+
+                "quantity" => $quantityToAdd,
+
+                "price" => $product->price,
+
+                "image" => $imageUrl
+
+            ];
+
+        }
+
+
+
+        session()->put('cart', $cart);
+
+        
+
+        // Redirect back dengan pesan sukses
+
+        return redirect()->back()->with('success', 'Product added to cart successfully!');
+
+    }
+
+
+
+    // 3. (BARU) Update Jumlah Barang di Keranjang
+
+    // Fitur ini penting agar user bisa ubah qty dari 1 jadi 5 di halaman cart
+
+    public function update(Request $request)
+
+    {
+
+        if($request->id && $request->quantity) {
+
+            $cart = session()->get('cart');
+
+            
+
+            // Pastikan jumlah tidak kurang dari 1
+
+            $newQuantity = max(1, intval($request->quantity));
+
+            
+
+            $cart[$request->id]["quantity"] = $newQuantity;
+
+            
+
+            session()->put('cart', $cart);
+
+            
+
+            return redirect()->back()->with('success', 'Cart updated successfully');
+
+        }
+
+    }
+
+
+
+    // 4. Hapus Barang
+
+    public function destroy($id)
+
+    {
+
+        $cart = session()->get('cart');
+
+        
+
+        if(isset($cart[$id])) {
+
+            unset($cart[$id]);
+
+            session()->put('cart', $cart);
+
+        }
+
+        
+
+        return redirect()->back()->with('success', 'Product removed successfully');
+
+    }
+
+}
+
+CheckoutController
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use Illuminate\Http\Request;
+
+use App\Models\Order;
+
+use App\Models\OrderItem;
+
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\DB;
+
+
+
+class CheckoutController extends Controller
+
+{
+
+    // Proses Checkout (Simpan ke DB)
+
+    public function store()
+
+    {
+
+        // 1. Cek User Login
+
+        if (!Auth::check()) {
+
+            return redirect()->route('login')->with('error', 'Please login to checkout');
+
+        }
+
+
+
+        // 2. Cek Keranjang Kosong
+
+        $cart = session()->get('cart');
+
+        if (!$cart) {
+
+            return redirect()->back()->with('error', 'Cart is empty!');
+
+        }
+
+
+
+        // 3. Hitung Total
+
+        $total = 0;
+
+        foreach ($cart as $details) {
+
+            $total += $details['price'] * $details['quantity'];
+
+        }
+
+
+
+        // 4. Mulai Transaksi Database (Biar kalau error, gak kesimpen setengah2)
+
+        DB::beginTransaction();
+
+
+
+        try {
+
+            // A. Simpan Header Pesanan
+
+            $order = Order::create([
+
+                'user_id' => Auth::id(),
+
+                'order_date' => now(),
+
+                'total_price' => $total,
+
+                'status' => 'pending', // Status awal
+
+            ]);
+
+
+
+            // B. Simpan Detail Item
+
+            foreach ($cart as $id => $details) {
+
+                OrderItem::create([
+
+                    'order_id' => $order->id,
+
+                    'product_id' => $id,
+
+                    'quantity' => $details['quantity'],
+
+                    'price' => $details['price'], // Harga saat beli (snapshot)
+
+                ]);
+
+            }
+
+
+
+            // C. Kosongkan Keranjang
+
+            session()->forget('cart');
+
+
+
+            DB::commit(); // Simpan permanen
+
+            
+
+            return redirect()->route('home')->with('success', 'Order placed successfully! ID: ' . $order->id);
+
+
+
+        } catch (\Exception $e) {
+
+            DB::rollBack(); // Batalkan semua kalau error
+
+            return redirect()->back()->with('error', 'Checkout failed: ' . $e->getMessage());
+
+        }
+
+    }
+
+}
+
+
+
+Controller
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+abstract class Controller
+
+{
+
+    //
+
+}
+
+
+
+HomeController
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use App\Models\Product;
+
+use Illuminate\Http\Request;
+
+
+
+class HomeController extends Controller
+
+{
+
+    public function index()
+
+    {
+
+        
+
+        $products = Product::with(['series.category', 'images'])
+
+                    ->where('is_active', true)
+
+                    ->latest() 
+
+                    ->get();
+
+
+
+        
+
+        $featured = $products->take(4);
+
+
+
+        return view('home', [
+
+            'products' => $products,
+
+            'featured' => $featured
+
+        ]);
+
+    }
+
+}
+
+OrderController
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use Illuminate\Http\Request;
+
+use App\Models\Order;
+
+use Illuminate\Support\Facades\Auth;
+
+
+
+class OrderController extends Controller
+
+{
+
+    // Halaman Daftar Riwayat Belanja
+
+    public function index()
+
+    {
+
+        // Ambil order milik user yang sedang login saja
+
+        $orders = Order::where('user_id', Auth::id())
+
+                    ->latest() // Urutkan dari yang terbaru
+
+                    ->get();
+
+
+
+        return view('orders.index', compact('orders'));
+
+    }
+
+
+
+    // Halaman Detail Satu Pesanan
+
+    public function show($id)
+
+    {
+
+        // Ambil order beserta item dan produknya
+
+        $order = Order::with(['items.product.images'])
+
+                    ->where('id', $id)
+
+                    ->where('user_id', Auth::id()) // PENTING: User A gak boleh liat order User B
+
+                    ->firstOrFail();
+
+
+
+        return view('orders.show', compact('order'));
+
+    }
+
+}
+
+ProductController
+
+<?php
+
+
+
+namespace App\Http\Controllers;
+
+
+
+use App\Models\Product;
+
+use App\Models\Category;
+
+use Illuminate\Http\Request;
+
+
+
+class ProductController extends Controller
+
+{
+
+    /**
+
+     * Menampilkan halaman katalog (Semua Produk)
+
+     */
+
+    public function index(Request $request)
+
+    {
+
+        // 1. Ambil data kategori untuk Sidebar Filter
+
+        $categories = Category::with('series')->get();
+
+
+
+        // 2. Query dasar: Siapkan query, tapi jangan di-get() dulu
+
+        // Kita gunakan eager loading 'series.category' sesuai struktur baru
+
+        $query = Product::with(['series.category', 'images' => function($q) {
+
+            $q->where('is_primary', true);
+
+        }])->where('is_active', true);
+
+
+
+        // 3. FILTER CATEGORY: Jika ada request kategori di URL (?category=entry-level)
+
+        if ($request->has('category')) {
+
+            $query->whereHas('series.category', function($q) use ($request) {
+
+                $q->where('slug', $request->category);
+
+            });
+
+        }
+
+
+
+        // 4. FILTER SEARCH: Jika ada request search di URL (?search=intel)
+
+        // Bagian ini disisipkan di sini, sebelum pagination
+
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            
+
+            // Kita gunakan where function agar logika OR dikurung dalam tanda kurung ( )
+
+            // Contoh SQL: WHERE is_active = 1 AND (name LIKE %intel% OR description LIKE %intel%)
+
+            $query->where(function($q) use ($search) {
+
+                $q->where('name', 'like', "%{$search}%")
+
+                  ->orWhere('description', 'like', "%{$search}%")
+
+                  // Opsional: Cari juga berdasarkan nama series
+
+                  ->orWhereHas('series', function($qSeries) use ($search) {
+
+                      $qSeries->where('name', 'like', "%{$search}%");
+
+                  });
+
+            });
+
+        }
+
+
+
+        // 5. Eksekusi Query dengan Pagination
+
+        $products = $query->latest()->paginate(9);
+
+
+
+        // PENTING: Tambahkan ini agar saat pindah halaman 2, filter search/category tidak hilang
+
+        $products->appends($request->all());
+
+
+
+        return view('products.index', compact('products', 'categories'));
+
+    }
+
+
+
+    /**
+
+     * Menampilkan halaman detail produk berdasarkan Slug
+
+     */
+
+    public function show($slug)
+
+    {
+
+        // Tidak ada perubahan di sini, kode lama kamu sudah benar
+
+        $product = Product::with([
+
+            'series.category', 
+
+            'images', 
+
+            'attributes', 
+
+            'benchmarks.game', 
+
+            'components',
+
+            'intendedUses'
+
+        ])
+
+        ->where('slug', $slug)
+
+        ->where('is_active', true)
+
+        ->firstOrFail();
+
+
+
+        return view('products.show', compact('product'));
+
+    }
+
+}
+
+MODEL:
+
+Category
+
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use Illuminate\Database\Eloquent\Model;
+
+
+
+class Category extends Model
+
+{
+
+    protected $guarded = ['id'];
+
+
+
+    // Relasi Langsung (Anak)
+
+    public function series()
+
+    {
+
+        return $this->hasMany(ProductSeries::class);
+
+    }
+
+
+
+    // Relasi Jauh (Cucu): Mengambil semua produk di bawah kategori ini
+
+    // Berguna buat halaman "Lihat Semua PC Gaming"
+
+    public function products()
+
+    {
+
+        return $this->hasManyThrough(Product::class, ProductSeries::class);
+
+    }
+
+}
+
+
+
+Component
+
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use Illuminate\Database\Eloquent\Model;
+
+
+
+class Component extends Model {
+
+    protected $guarded = ['id'];
+
+    // Relasi Many-to-Many: Komponen bisa dipakai di banyak Produk
+
+    public function products() {
+
+        return $this->belongsToMany(Product::class, 'product_components')
+
+                    ->withPivot('quantity'); // Ambil kolom jumlah di tabel tengah
+
+    }
+
+}
+
+
+
+Game
+
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use Illuminate\Database\Eloquent\Model;
+
+
+
+class Game extends Model {
+
+    protected $guarded = ['id'];
+
+    // Relasi Many-to-Many ke Produk lewat tabel benchmarks
+
+    public function products() {
+
+        return $this->belongsToMany(Product::class, 'benchmarks')
+
+                    ->withPivot(['resolution', 'avg_fps']); // Ambil data FPS
+
+    }
+
+}
+
+IntendedUse
+
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use Illuminate\Database\Eloquent\Model;
+
+
+
+class IntendedUse extends Model
+
+{
+
+    protected $guarded = ['id'];
+
+
+
+    public function product()
+
+    {
+
+        return $this->belongsTo(Product::class);
+
+    }
+
+}
+
+
+
+Order
+
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use Illuminate\Database\Eloquent\Model;
+
+
+
+class Order extends Model
+
+{
+
+    protected $guarded = ['id'];
+
+
+
+    // Relasi: Pesanan milik satu User
+
+    public function user()
+
+    {
+
+        return $this->belongsTo(User::class);
+
+    }
+
+
+
+    // Relasi: Pesanan punya banyak item barang
+
+    public function items()
+
+    {
+
+        return $this->hasMany(OrderItem::class);
+
+    }
+
+}
+
