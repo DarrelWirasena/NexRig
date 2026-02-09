@@ -35,14 +35,15 @@ Route::get('/remove-from-cart/{id}', [CartController::class, 'destroy'])->name('
 | 2. GUEST ROUTES (Hanya untuk yang BELUM Login)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('guest')->group(function () {
-    // Register
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    // Register Route
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register'); // Menampilkan form
+    Route::post('/register', [AuthController::class, 'register']); // Memproses data form
     
-    // Login
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    // Login Route
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); // Menampilkan form
+    Route::post('/login', [AuthController::class, 'login']); // Memproses login
 });
 
 

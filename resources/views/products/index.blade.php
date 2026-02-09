@@ -32,19 +32,26 @@
             {{-- Product Grid --}}
             <div class="flex-1">
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    @forelse($products as $product)
-                        <x-product-card 
-                            :name="$product->name"
-                            :price="$product->price"
-                            :description="$product->short_description"
-                            :image="$product->image_url ?? 'default.jpg'"
-                            badge="Best Seller"
-                            rating="4.9"
-                            :specs="['i9-13900K', 'RTX 4090', '64GB DDR5']" {{-- Ini nanti diambil dari tabel components --}}
-                        />
-                    @empty
-                        <p class="text-white">No rigs found.</p>
-                    @endforelse
+                  @forelse($products as $product)
+    {{-- Bungkus Card dengan Link ke Route Show --}}
+    <a href="{{ route('products.show', $product->slug) }}" class="block group">
+        <x-product-card 
+            :name="$product->name"
+            :price="$product->price"
+            :description="$product->short_description"
+            {{-- Ambil gambar utama dari relasi --}}
+            :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/600'"
+            badge="Ready to Ship"
+            rating="5.0"
+            {{-- Ambil 3 komponen pertama untuk preview spek --}}
+            :specs="$product->components->take(3)->pluck('name')->toArray()"
+        />
+    </a>
+@empty
+    <div class="col-span-full text-center py-20">
+        <p class="text-gray-500 text-lg">No rigs found matching your criteria.</p>
+    </div>
+@endforelse
                 </div>
 
                 {{-- Pagination --}}
@@ -54,4 +61,4 @@
             </div>
         </div>
     </main>
-@endsection('content')
+@endsection

@@ -65,7 +65,7 @@ class ProductController extends Controller
             'series.category', 
             'images', 
             'attributes', 
-            'benchmarks.game', 
+            'benchmarks', 
             'components',
             'intendedUses'
         ])
