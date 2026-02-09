@@ -29,20 +29,47 @@ class ProductController extends Controller
             });
         }
 
-        // 4. FILTER SEARCH: Jika ada request search di URL (?search=intel)
-        // Bagian ini disisipkan di sini, sebelum pagination
+        // 4. FILTER SEARCH (SMART SEARCH)
         if ($request->filled('search')) {
-            $search = $request->search;
-            
-            // Kita gunakan where function agar logika OR dikurung dalam tanda kurung ( )
-            // Contoh SQL: WHERE is_active = 1 AND (name LIKE %intel% OR description LIKE %intel%)
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  // Opsional: Cari juga berdasarkan nama series
-                  ->orWhereHas('series', function($qSeries) use ($search) {
-                      $qSeries->where('name', 'like', "%{$search}%");
-                  });
+            // Pecah kalimat menjadi array kata-kata
+            // Contoh: "Intel i3" menjadi ['Intel', 'i3']
+            $keywords = explode(' ', $request->search);
+
+            $query->where(function($q) use ($keywords) {
+                
+                // A. Cari di Nama Produk (Harus mengandung semua kata kunci)
+                // Misal: Cari "NexRig White", akan ketemu "NexRig Ultra White"
+                $q->where(function($subQ) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $subQ->where('name', 'like', "%{$word}%");
+                    }
+                })
+
+                // B. ATAU Cari di Deskripsi
+                ->orWhere(function($subQ) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $subQ->where('description', 'like', "%{$word}%");
+                    }
+                })
+
+                // C. ATAU Cari di Komponen (Ini solusi masalahmu!)
+                // Logic: Cari produk yang punya komponen, dimana komponen itu mengandung "Intel" DAN "i3"
+                ->orWhereHas('components', function($qComp) use ($keywords) {
+                    $qComp->where(function($deepQ) use ($keywords) {
+                        foreach ($keywords as $word) {
+                            $deepQ->where('name', 'like', "%{$word}%");
+                        }
+                    });
+                })
+
+                // D. ATAU Cari di Series
+                ->orWhereHas('series', function($qSeries) use ($keywords) {
+                    $qSeries->where(function($deepQ) use ($keywords) {
+                        foreach ($keywords as $word) {
+                            $deepQ->where('name', 'like', "%{$word}%");
+                        }
+                    });
+                });
             });
         }
 
