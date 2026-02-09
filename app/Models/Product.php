@@ -4,55 +4,57 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ProductImage;
+
+// PENTING:
+// Kita tidak perlu tulis 'use App\Models\ProductImage' 
+// karena mereka satu folder (namespace). PHP otomatis tau.
 
 class Product extends Model
 {
     use HasFactory;
     
-    // Karena nama tabel kita 'products', Laravel sudah tau otomatis.
-    // Tapi kita perlu definisikan kolom yang boleh diisi (Mass Assignment)
-    protected $guarded = ['id']; // Semua boleh diisi kecuali ID
+    protected $guarded = ['id'];
 
-    // Relasi: Produk milik satu Kategori
-    public function category()
+    // 1. Relasi ke Series (Orang Tua Langsung)
+    public function series()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(ProductSeries::class, 'product_series_id');
     }
 
-    // Relasi: Produk punya banyak gambar
+    // 2. Accessor: Jalan Pintas ke Kategori (Kakek)
+    // Supaya di frontend tetap bisa panggil: $product->category->name
+    public function getCategoryAttribute()
+    {
+        return $this->series ? $this->series->category : null;
+    }
+
+    // 3. Relasi Gambar
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    // Relasi ke Components (Many-to-Many)
+    // 4. Relasi Komponen (Many-to-Many)
     public function components() {
         return $this->belongsToMany(Component::class, 'product_components')
                     ->withPivot('quantity');
     }
 
-    // Relasi ke Games (Many-to-Many lewat Benchmarks)
+    // 5. Relasi Benchmark Game (Many-to-Many)
     public function benchmarks() {
-        // Ini trik: Kita anggap benchmark sebagai relasi ke Game
         return $this->belongsToMany(Game::class, 'benchmarks')
                     ->withPivot(['resolution', 'avg_fps']);
     }
 
-    // ... kode sebelumnya ...
-
-    // Relasi ke Intended Uses (Kegunaan)
+    // 6. Relasi Kegunaan (Icon Fitur)
     public function intendedUses()
     {
         return $this->hasMany(IntendedUse::class);
     }
 
-    // Relasi ke Product Attributes (Spesifikasi Lain)
+    // 7. Relasi Spesifikasi Tambahan
     public function attributes()
     {
         return $this->hasMany(ProductAttribute::class);
     }
-    
-    // ... penutup class ...
-
 }

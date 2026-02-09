@@ -13,15 +13,20 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            // Foreign Key ke Categories
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+
+            // Produk sekarang nempel ke Series, bukan langsung Category
+            $table->foreignId('product_series_id')->constrained('product_series')->onDelete('cascade');
             
-            $table->string('name');
+            $table->string('name'); // Contoh: "Horizon II Elite"
             $table->string('slug')->unique();
-            $table->decimal('price', 15, 2); // Harga Jual
+            
+            // Opsional: Kolom 'tier' untuk membedakan varian (Core/Pro/Elite) secara eksplisit
+            $table->enum('tier', ['Core', 'Pro', 'Elite', 'Creator', 'Extreme'])->nullable(); 
+            
+            $table->decimal('price', 15, 2);
             $table->string('short_description')->nullable();
             $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true); // Status tayang
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

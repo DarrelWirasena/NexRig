@@ -10,7 +10,7 @@ class HomeController extends Controller
     public function index()
     {
         
-        $products = Product::with(['category', 'images'])
+        $products = Product::with(['series.category', 'images'])
                     ->where('is_active', true)
                     ->latest() 
                     ->get();

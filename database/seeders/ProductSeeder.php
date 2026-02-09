@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Category;
+use App\Models\ProductSeries; // Kita panggil Series, bukan Category
 use App\Models\Product;
 use App\Models\Component;
 use App\Models\Game;
@@ -16,74 +16,70 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ambil semua kategori yang sudah dibuat tadi
-        $categories = Category::all();
+        // Ambil semua Series yang sudah dibuat oleh CategorySeeder
+        $allSeries = ProductSeries::with('category')->get();
         
-        // Ambil semua komponen & game buat di-random
         $components = Component::all();
         $games = Game::all();
 
-        // LOOP 1: Untuk setiap Kategori (Ada 6)
-        foreach ($categories as $category) {
+        // LOOP 1: Loop per SERIES
+        foreach ($allSeries as $series) {
             
-            // LOOP 2: Buat 3 Produk per Kategori
-            for ($i = 1; $i <= 3; $i++) {
-                
-                // Bikin nama produk unik, misal: "NexRig Entry Level - Tier 1"
-                $productName = "NexRig {$category->name} - Tier {$i}";
-                $basePrice = 10000000 + ($category->id * 5000000) + ($i * 2000000); // Rumus harga ngasal biar variatif
+            // Kita tentukan varian Tier untuk setiap Series
+            $tiers = ['Core', 'Pro', 'Elite'];
 
-                // 1. Create Product
+            // LOOP 2: Buat 3 Varian (Core, Pro, Elite) per Series
+            foreach ($tiers as $index => $tier) {
+                
+                $productName = "{$series->name} {$tier}"; // Contoh: Horizon Series Core
+                
+                // Logic Harga: Base price + (Index Series * 2jt) + (Index Tier * 3jt)
+                $basePrice = 10000000 + ($series->id * 2000000) + ($index * 3000000);
+
+                // 1. Create Product (Perhatikan kolomnya ganti jadi product_series_id)
                 $product = Product::create([
-                    'category_id' => $category->id,
+                    'product_series_id' => $series->id, // <--- INI PENTING
                     'name' => $productName,
                     'slug' => Str::slug($productName),
+                    'tier' => $tier, // Kolom baru yang kita bahas tadi
                     'price' => $basePrice,
-                    'short_description' => "PC rakitan terbaik untuk kategori {$category->name}.",
-                    'description' => "Nikmati performa maksimal dengan {$productName}. Dirakit profesional dan ditest ketat.",
+                    'short_description' => "Varian {$tier} dari {$series->name}.",
+                    'description' => "PC Rakitan {$series->category->name} kelas {$tier} dengan performa optimal.",
                     'is_active' => true,
                 ]);
 
-                // 2. Attach Images (1 Utama + 2 Tambahan)
+                // 2. Attach Images
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image_url' => 'https://placehold.co/600x400/101322/FFF?text=' . urlencode($productName),
+                    'image_url' => 'https://placehold.co/600x400/101322/FFF?text=' . urlencode($tier),
                     'is_primary' => true,
                     'sort_order' => 1
                 ]);
-                
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_url' => 'https://placehold.co/600x400/232948/FFF?text=Side+View',
-                    'is_primary' => false,
-                    'sort_order' => 2
-                ]);
 
-                // 3. Attach Components (Ambil 4 komponen acak dari gudang)
-                // Kita pakai random components biar cepat
+                // 3. Attach Components (Acak 4 biji)
+                // Tips: Kalau mau realistis, Tier Elite harusnya dapet komponen mahal, tapi random dulu gpp
                 $randomComponents = $components->random(4);
                 foreach ($randomComponents as $comp) {
                     $product->components()->attach($comp->id, ['quantity' => 1]);
                 }
 
-                // 4. Attach Benchmarks (Ambil 2 game acak)
+                // 4. Attach Benchmarks
                 $randomGames = $games->random(2);
                 foreach ($randomGames as $game) {
                     $product->benchmarks()->attach($game->id, [
                         'resolution' => '1440p',
-                        'avg_fps' => rand(60, 240) // Random FPS antara 60-240
+                        'avg_fps' => rand(60, 240)
                     ]);
                 }
 
-                // 5. Create Attributes (Spesifikasi Lain)
-                ProductAttribute::create(['product_id' => $product->id, 'name' => 'Warranty', 'value' => '2 Years Official']);
-                ProductAttribute::create(['product_id' => $product->id, 'name' => 'OS', 'value' => 'Windows 11 Pro']);
-
-                // 6. Intended Uses (Kegunaan)
+                // 5. Attributes
+                ProductAttribute::create(['product_id' => $product->id, 'name' => 'Warranty', 'value' => '3 Years']);
+                
+                // 6. Intended Use
                 IntendedUse::create([
                     'product_id' => $product->id, 
-                    'title' => 'Gaming Ready', 
-                    'icon_url' => 'sports_esports' // Nama icon material symbols
+                    'title' => $series->category->name, // Ambil nama kategori induknya
+                    'icon_url' => 'verified'
                 ]);
             }
         }
