@@ -38,7 +38,6 @@
     <main class="flex-grow flex flex-col items-center w-full">
         {{ $slot }}
     </main>
-
-    {{-- Anda bisa menambahkan <x-footer /> di sini nanti --}}
+<x-footer /> 
 </body>
 </html>
