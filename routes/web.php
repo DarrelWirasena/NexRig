@@ -89,6 +89,8 @@ Route::middleware('auth')->group(function () {
     // Proses Checkout (Simpan Order)
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    // Route Halaman Success (Letakkan di bawah route checkout store)
+    Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
 
     // Riwayat Pesanan (History)
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
@@ -97,4 +99,14 @@ Route::middleware('auth')->group(function () {
        // PROFILE ROUTES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.app');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/address', [ProfileController::class, 'address'])->name('profile.address');
+
+    // Route untuk menampilkan form Tambah
+    Route::get('/profile/address/create', [ProfileController::class, 'createAddress'])->name('address.create');
+    // Route untuk Proses Simpan (Store)
+    Route::post('/profile/address', [ProfileController::class, 'storeAddress'])->name('address.store');
+    // Route untuk menampilkan form Edit (dengan ID)
+    Route::get('/profile/address/{id}/edit', [ProfileController::class, 'editAddress'])->name('address.edit');
+    // Route untuk Proses Update (Update)
+    Route::put('/profile/address/{id}', [ProfileController::class, 'updateAddress'])->name('address.update');
 });
