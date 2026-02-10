@@ -7,30 +7,19 @@
 
     <title>{{ config('app.name', 'NexRig') }}</title>
 
-    {{-- Fonts --}}
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
-    
-    {{-- Icons --}}
+    {{-- Fonts & Icons --}}
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     
-    {{-- Scripts & Styles --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    {{-- Custom Styles Stack --}}
-    @stack('styles')
+    <script src="https://cdn.tailwindcss.com"></script>
 
+    {{-- GLOBAL DASHBOARD STYLES --}}
     <style>
-        /* Custom Utilities */
-        main::-webkit-scrollbar { width: 8px; }
-        main::-webkit-scrollbar-track { background: #050014; }
-        main::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 4px; }
-        main::-webkit-scrollbar-thumb:hover { background: #333; }
+        body { font-family: 'Space Grotesk', sans-serif; }
         
-        .no-bounce { overscroll-behavior: none; overscroll-behavior-y: none; }
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
-
-        /* Input Styles */
+        .clip-card { clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
+        
         .input-tech {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -43,19 +32,34 @@
             box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
             outline: none;
         }
+
+        /* Sidebar Styles */
+        .nav-item.active {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+        }
+        .nav-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        
+        /* Scrollbar */
+        main::-webkit-scrollbar { width: 8px; }
+        main::-webkit-scrollbar-track { background: #050014; }
+        main::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 4px; }
+        main::-webkit-scrollbar-thumb:hover { background: #333; }
+        
+        .no-bounce { overscroll-behavior: none; }
     </style>
 </head>
-<body class="font-sans antialiased bg-[#050014] text-white selection:bg-blue-600 selection:text-white overflow-hidden">
+<body class="font-sans antialiased bg-[#050014] text-white">
 
-    {{-- 
-        LAYOUT UTAMA (SIDEBAR ONLY)
-        h-screen: Tinggi 100% layar browser.
-        flex: Membuat layout menyamping (Sidebar di Kiri, Konten di Kanan).
-        overflow-hidden: Mencegah scrollbar ganda di body.
-    --}}
-    <div class="h-screen flex w-full relative no-bounce">
-
-        {{-- Background Elements (Global) --}}
+    <div class="h-screen flex overflow-hidden relative no-bounce">
+        
+        {{-- Background Elements --}}
         <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
             <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
             <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-900/10 blur-[120px] rounded-full"></div>
@@ -64,84 +68,29 @@
         {{-- Overlay Mobile --}}
         <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-30 hidden lg:hidden backdrop-blur-sm transition-opacity no-bounce"></div>
 
-        {{-- 1. SIDEBAR (Component) --}}
-        {{-- Pastikan file components/sidebar.blade.php sudah Anda buat sesuai langkah sebelumnya --}}
-        <x-sidebar />
+        {{-- PANGGIL COMPONENT SIDEBAR --}}
+        <x-dashboard-sidebar />
 
-        {{-- 
-            2. MAIN CONTENT AREA
-            flex-1: Mengambil sisa lebar layar (setelah dikurangi lebar sidebar).
-            h-full: Mengikuti tinggi layar.
-            overflow-y-auto: Scrollbar HANYA aktif di area ini.
-        --}}
-        <main class="flex-1 h-full overflow-y-auto p-4 md:p-6 lg:p-12 relative z-10 no-bounce scroll-smooth w-full">
+        {{-- MAIN CONTENT --}}
+        <main class="flex-1 h-full overflow-y-auto p-4 md:p-6 lg:p-12 w-full relative z-10 no-bounce scroll-smooth">
             
-            {{-- Tombol Mobile Menu (Hanya muncul di Layar Kecil/HP) --}}
-            <div class="lg:hidden mb-6 flex items-center justify-between bg-[#0a0a0a] border border-white/10 p-4 rounded-xl sticky top-0 z-50 backdrop-blur-md">
+            {{-- Mobile Toggle Button --}}
+            <div class="lg:hidden mb-6 flex items-center justify-between bg-[#0a0a0a] border border-white/10 p-4 rounded-xl">
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-500">manage_accounts</span>
-                    <span class="font-bold text-sm uppercase">Dashboard</span>
+                    <span class="material-symbols-outlined text-blue-500">dashboard</span>
+                    <span class="font-bold text-sm uppercase">Menu</span>
                 </div>
                 <button onclick="toggleSidebar()" class="text-white hover:text-blue-500 transition-colors">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
             </div>
 
-            {{-- ISI KONTEN (Profile, Orders, dll) --}}
+            {{-- Slot Konten Halaman --}}
             @yield('content')
 
         </main>
-
     </div>
 
-
-    {{-- 
-        =========================================================
-        GLOBAL TOAST NOTIFICATION
-        =========================================================
-    --}}
-    @if(session('success'))
-        <div id="toast-notification" class="fixed bottom-5 right-5 z-[100] flex items-center gap-4 bg-[#0a0a0a] border border-blue-600/50 text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(37,99,235,0.2)] transform transition-all duration-500 translate-y-0 opacity-100 backdrop-blur-md">
-            
-            <div class="flex items-center justify-center w-8 h-8 bg-blue-600/20 rounded-full text-blue-500 shrink-0">
-                <span class="material-symbols-outlined text-xl">check</span>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-sm text-blue-500 uppercase tracking-wider">Success</h4>
-                <p class="text-gray-300 text-xs mt-0.5">{{ session('success') }}</p>
-            </div>
-
-            <button onclick="closeToast()" class="ml-4 text-gray-500 hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-lg">close</span>
-            </button>
-
-            <div class="absolute bottom-0 left-0 h-[2px] bg-blue-600 transition-all duration-[3000ms] ease-linear w-full rounded-b-xl" id="toast-progress"></div>
-        </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const toast = document.getElementById('toast-notification');
-                const progress = document.getElementById('toast-progress');
-
-                if (toast) {
-                    setTimeout(() => { progress.style.width = '0%'; }, 100);
-                    setTimeout(() => { closeToast(); }, 3000);
-                }
-            });
-
-            function closeToast() {
-                const toast = document.getElementById('toast-notification');
-                if (toast) {
-                    toast.classList.remove('translate-y-0', 'opacity-100');
-                    toast.classList.add('translate-y-10', 'opacity-0');
-                    setTimeout(() => { toast.remove(); }, 500);
-                }
-            }
-        </script>
-    @endif
-
-    {{-- SCRIPT TOGGLE SIDEBAR --}}
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -155,7 +104,5 @@
             }
         }
     </script>
-
-    @stack('scripts')
 </body>
 </html>
