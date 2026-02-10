@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
 
     // Proses Checkout (Simpan Order)
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
     // Riwayat Pesanan (History)
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
