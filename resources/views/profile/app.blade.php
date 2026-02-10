@@ -95,7 +95,7 @@
                             </div>
                         </div>
 
-                        <hr class="border-white/5 mb-10">
+                <hr class="border-white/5 mb-10">
 
                         <div class="mb-8">
                             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
@@ -123,28 +123,15 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4 border-t border-white/5">
-                            <button type="submit" class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest transition-all rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2">
-                                <span class="material-symbols-outlined">save</span> Save Changes
-                            </button>
-                        </div>
-                    </form>
+                {{-- ACTION BUTTONS --}}
+                <div class="flex justify-end pt-4 border-t border-white/5">
+                    <button type="submit" class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest transition-all rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined">save</span> Save Changes
+                    </button>
                 </div>
-            </div>
-        </main>
+
+            </form>
+        </div>
     </div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-    </script>
 @endsection
