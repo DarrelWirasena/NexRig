@@ -90,6 +90,7 @@ class ProductController extends Controller
         // Tidak ada perubahan di sini, kode lama kamu sudah benar
         $product = Product::with([
             'series.category', 
+            'series.products',
             'images', 
             'attributes', 
             'benchmarks', 
