@@ -33,9 +33,15 @@
                 <span class="text-xs text-gray-500 uppercase font-bold">Price</span>
                 <span class="text-primary font-bold text-lg">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
             </div>
-            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-primary text-white transition-colors">
-                <span class="material-symbols-outlined text-sm">add</span>
-            </button>
+           <form action="{{ route('cart.add', $product->id) }}" method="POST">
+    @csrf
+    {{-- Input hidden quantity (default 1) --}}
+    <input type="hidden" name="quantity" value="1">
+
+    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-blue-600 text-white transition-colors group" title="Add to Cart">
+        <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+    </button>
+</form>
         </div>
     </div>
 </div>
