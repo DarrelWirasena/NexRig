@@ -14,6 +14,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-[#050014]">
+
+
+
         {{-- Langsung cetak konten tanpa pembungkus container --}}
         @yield('content')
     </body>
