@@ -99,6 +99,10 @@
 
                         {{-- 5. ADD TO CART --}}
                         <form action="{{ route('cart.add', $product->id) }}" method="POST" class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-8">
+                            
+                            {{-- WAJIB ADA: Token Keamanan --}}
+                            @csrf 
+
                             <div class="flex items-center justify-between mb-4">
                                 <label class="text-sm font-bold text-white uppercase">Quantity</label>
                                 <div class="flex items-center bg-white/5 rounded border border-white/10">
@@ -107,10 +111,12 @@
                                     <button type="button" onclick="increment()" class="px-3 py-2 text-white hover:bg-white/10">+</button>
                                 </div>
                             </div>
+                            
                             <button type="submit" class="w-full py-4 bg-primary hover:bg-blue-600 text-white font-bold uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] flex justify-center items-center gap-2">
                                 <span class="material-symbols-outlined">shopping_cart</span>
                                 Add to Cart
                             </button>
+                            
                             @if(session('success'))
                                 <div class="mt-3 text-green-400 text-xs text-center font-bold">
                                     {{ session('success') }}
