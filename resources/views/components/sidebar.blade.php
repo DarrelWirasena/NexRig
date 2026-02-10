@@ -27,7 +27,7 @@
         <a href="{{ route('profile.app') }}" class="nav-item {{ request()->routeIs('profile.app') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">person</span> Profile Settings
         </a>
-        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
+        <a href="{{ route('profile.address') }}" class="nav-item {{ request()->routeIs('profile.address') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">location_on</span> Address Book
         </a>
         <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders.index') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">

@@ -4,7 +4,6 @@
 
     <div class="max-w-4xl mx-auto pb-20">
         
-        {{-- HEADER HALAMAN --}}
         <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-6 gap-4">
             <div>
                 <h1 class="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">
@@ -14,7 +13,6 @@
             </div>
         </div>
 
-        {{-- ALERT NOTIFIKASI --}}
         @if(session('success'))
             <div class="mb-8 p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-lg flex items-center gap-3">
                 <span class="material-symbols-outlined">check_circle</span>
@@ -22,10 +20,8 @@
             </div>
         @endif
 
-        {{-- FORM CONTENT --}}
         <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6 md:p-10 relative overflow-hidden transition-all hover:border-blue-600/30">
             
-            {{-- Form Wrapper --}}
             <form action="{{ route('profile.update') }}" method="POST" class="relative z-10">
                 @csrf
                 @method('PATCH')
@@ -41,7 +37,10 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Email Address (Locked)</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined text-lg">lock</span>
+                                {{-- PERBAIKAN ICON: Pakai Flex Wrapper Absolute --}}
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                    <span class="text-gray-500 material-symbols-outlined text-lg">lock</span>
+                                </div>
                                 <input type="email" value="{{ $user->email }}" readonly 
                                        class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm bg-white/5 cursor-not-allowed text-gray-400">
                             </div>
@@ -51,7 +50,10 @@
                         <div>
                             <label class="block text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">Display Name</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-lg">badge</span>
+                                {{-- PERBAIKAN ICON --}}
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                    <span class="text-gray-400 material-symbols-outlined text-lg">badge</span>
+                                </div>
                                 <input type="text" name="name" value="{{ old('name', $user->name) }}" 
                                        class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600">
                             </div>
@@ -73,7 +75,10 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Current Password</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined text-lg">key</span>
+                                {{-- PERBAIKAN ICON --}}
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                    <span class="text-gray-500 material-symbols-outlined text-lg">key</span>
+                                </div>
                                 <input type="password" name="current_password" 
                                        class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm placeholder-gray-600">
                             </div>
@@ -99,7 +104,6 @@
                     </div>
                 </div>
 
-                {{-- ACTION BUTTONS --}}
                 <div class="flex justify-end pt-4 border-t border-white/5">
                     <button type="submit" class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest transition-all rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2">
                         <span class="material-symbols-outlined">save</span> Save Changes
