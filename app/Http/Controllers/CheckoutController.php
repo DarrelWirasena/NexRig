@@ -63,5 +63,14 @@ class CheckoutController extends Controller
             DB::rollBack(); // Batalkan semua kalau error
             return redirect()->back()->with('error', 'Checkout failed: ' . $e->getMessage());
         }
+        
+    }
+    public function index()
+    {
+        // Cek cart kosong
+        if (!session('cart') || count(session('cart')) == 0) {
+            return redirect()->route('products.index');
+        }
+        return view('checkout.index');
     }
 }

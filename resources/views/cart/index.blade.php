@@ -136,13 +136,10 @@
                         </div>
 
                         {{-- TOMBOL CHECKOUT (Login Check via Middleware/Controller) --}}
-                        <form action="{{ route('checkout.store') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="w-full bg-primary text-white font-bold py-4 rounded-lg glow-button transition-all flex items-center justify-center gap-2 mb-4 group hover:bg-blue-700">
-                                <span>Secure Checkout</span>
-                                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">lock</span>
-                            </button>
-                        </form>
+                        <a href="{{ route('checkout.index') }}" class="w-full bg-primary text-white font-bold py-4 rounded-lg glow-button transition-all flex items-center justify-center gap-2 mb-4 group hover:bg-blue-700">
+                            <span>Secure Checkout</span>
+                            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </a>
 
                         <div class="flex flex-col gap-3">
                             <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-[#929bc9]">
