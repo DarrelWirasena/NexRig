@@ -29,7 +29,8 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 
 // Fitur Keranjang (Cart)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::get('/add-to-cart/{id}', [CartController::class, 'store'])->name('cart.add');
+// Ubah dari GET ke POST, dan sesuaikan nama URL-nya
+Route::post('/add-to-cart/{id}', [CartController::class, 'store'])->name('cart.add');
 Route::patch('/update-cart', [CartController::class, 'update'])->name('cart.update');
 Route::get('/remove-from-cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
 
@@ -64,7 +65,7 @@ Route::middleware('auth')->group(function () {
 
     // Proses Checkout (Simpan Order)
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
     // Riwayat Pesanan (History)
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
