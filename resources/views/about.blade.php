@@ -6,6 +6,7 @@
         .clip-diagonal { clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); }
         .clip-card { clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
         .text-outline { -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1); color: transparent; }
+        
         .scanline {
             width: 100%;
             height: 100px;
@@ -14,167 +15,210 @@
             opacity: 0.1;
             position: absolute;
             bottom: 100%;
-            animation: scanline 10s linear infinite;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
         }
         @keyframes scanline {
             0% { bottom: 100%; }
             100% { bottom: -100%; }
         }
+
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
     </style>
 
-    <div class="bg-[#050505] min-h-screen text-white overflow-hidden">
+    <div class="bg-[#050505] min-h-screen text-white overflow-hidden font-sans selection:bg-blue-500 selection:text-white">
 
         {{-- SECTION 1: HERO MANIFESTO --}}
-        <div class="relative py-32 px-4 flex items-center justify-center overflow-hidden">
-            {{-- Background Elements --}}
+        <div class="relative py-40 px-4 flex items-center justify-center overflow-hidden min-h-[85vh]">
             <div class="absolute inset-0 z-0">
-                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070')] bg-cover bg-center opacity-20 grayscale mix-blend-luminosity"></div>
-                <div class="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]"></div>
-                <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                {{-- Background Image --}}
+                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?q=80&w=2070')] bg-cover bg-center opacity-20 grayscale mix-blend-luminosity"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent"></div>
+                <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
                 <div class="scanline"></div>
             </div>
 
-            <div class="relative z-10 text-center max-w-4xl mx-auto">
-                <span class="inline-block py-1 px-3 rounded border border-primary/30 bg-primary/10 text-primary text-xs font-bold tracking-[0.3em] uppercase mb-6 animate-pulse">
-                    System Manifesto // v.1.0
-                </span>
-                <h1 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none mb-6">
-                    We Don't Just Build PCs. <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600">We Forge Weapons.</span>
+            <div class="relative z-10 text-center max-w-5xl mx-auto px-4">
+                <div class="flex justify-center mb-8">
+                    <span class="inline-flex items-center gap-2 py-1 px-4 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs font-bold tracking-[0.3em] uppercase animate-pulse">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        System Manifesto v.2.0
+                    </span>
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none mb-8 drop-shadow-2xl">
+                    Engineered for <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-gray-500">Dominance.</span>
                 </h1>
-                <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-                    NexRig lahir dari rasa frustrasi. Frustrasi terhadap kabel yang berantakan, bloatware, dan komponen murah. 
-                    Kami hadir untuk mendefinisikan ulang standar performa gaming.
+                <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-light">
+                    Kami bukan sekadar toko komputer. Kami adalah laboratorium performa. 
+                    Setiap NexRig dirakit dengan presisi bedah untuk satu tujuan: 
+                    <strong class="text-white">Menghancurkan batasan FPS.</strong>
                 </p>
             </div>
         </div>
 
-        {{-- SECTION 2: THE PHILOSOPHY (Grid Layout) --}}
-        <div class="max-w-[1440px] mx-auto px-4 md:px-10 py-20">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {{-- SECTION 2: STATS STRIP --}}
+        <div class="border-y border-white/5 bg-[#0a0a0a] py-12 relative z-10">
+            <div class="max-w-[1440px] mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/5">
+                <div class="p-4 group">
+                    <span class="block text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-blue-500 transition-colors">500+</span>
+                    <span class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest">Rigs Deployed</span>
+                </div>
+                <div class="p-4 group">
+                    <span class="block text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-blue-500 transition-colors">0.1%</span>
+                    <span class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest">RMA Rate</span>
+                </div>
+                <div class="p-4 group">
+                    <span class="block text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-blue-500 transition-colors">24/7</span>
+                    <span class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest">Elite Support</span>
+                </div>
+                <div class="p-4 group">
+                    <span class="block text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-blue-500 transition-colors">100%</span>
+                    <span class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest">Performance</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION 3: ORIGIN SEQUENCE (STORY) --}}
+        <div class="py-24 px-4 relative overflow-hidden">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                {{-- Text Content --}}
+                <div class="order-2 lg:order-1">
+                    <h2 class="text-4xl font-black text-white uppercase italic tracking-tighter mb-6">The Origin Sequence</h2>
+                    <div class="space-y-6 text-gray-400 leading-relaxed text-sm md:text-base">
+                        <p>
+                            NexRig lahir di tengah kekacauan "Silicon Shortage" tahun 2020. Saat itu, gamer dipaksa memilih antara PC pre-built yang mahal dengan komponen murahan, atau merakit sendiri dengan harga komponen yang tidak masuk akal.
+                        </p>
+                        <p>
+                            Kami menolak kedua pilihan itu.
+                        </p>
+                        <p>
+                            Dimulai dari sebuah garasi kecil dengan 3 teknisi obsesif, kami mulai merakit PC dengan filosofi sederhana: <span class="text-white font-bold">Rakit seolah-olah itu milik sendiri.</span> Tanpa kabel semrawut. Tanpa power supply "bom waktu". Tanpa kompromi.
+                        </p>
+                        <div class="pt-4">
+                            <div class="h-1 w-20 bg-blue-600"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Image Visual --}}
+                <div class="order-1 lg:order-2 relative">
+                    <div class="absolute -inset-4 bg-blue-600/20 blur-3xl rounded-full opacity-20"></div>
+                    <div class="relative aspect-video bg-[#111] border border-white/10 p-2 clip-card">
+                        <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1000" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                        {{-- Overlay UI --}}
+                        <div class="absolute bottom-4 left-4 bg-black/80 backdrop-blur px-3 py-1 border-l-2 border-blue-500">
+                            <span class="text-[10px] font-mono text-blue-400">EST. 2020 // JAKARTA_HQ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION 4: THE FORGE PROTOCOL (PROCESS REPLACEMENT) --}}
+        <div class="py-24 bg-[#080808] relative">
+            <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
+            <div class="max-w-[1440px] mx-auto px-4 relative z-10">
                 
-                {{-- Card 1 --}}
-                <div class="bg-[#0a0a0a] p-8 border border-white/10 hover:border-primary/50 transition-colors group relative overflow-hidden clip-card">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <span class="material-symbols-outlined text-9xl">cable</span>
-                    </div>
-                    <h3 class="text-2xl font-bold uppercase mb-4 text-white group-hover:text-primary transition-colors">Obsessive Wiring</h3>
-                    <p class="text-gray-400 leading-relaxed text-sm">
-                        Kami tidak menyembunyikan kabel; kami menatanya. Setiap jalur kabel dirancang untuk aliran udara maksimal dan estetika visual. Bagian belakang PC kami sama indahnya dengan bagian depan.
-                    </p>
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter">The Forge Protocol</h2>
+                    <p class="text-gray-500 mt-4 max-w-xl mx-auto">Standar operasional kami lebih ketat daripada militer. Setiap sistem melewati 4 tahap kritis sebelum menyentuh meja Anda.</p>
                 </div>
 
-                {{-- Card 2 --}}
-                <div class="bg-[#0a0a0a] p-8 border border-white/10 hover:border-primary/50 transition-colors group relative overflow-hidden clip-card">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <span class="material-symbols-outlined text-9xl">speed</span>
-                    </div>
-                    <h3 class="text-2xl font-bold uppercase mb-4 text-white group-hover:text-primary transition-colors">Zero Bloatware</h3>
-                    <p class="text-gray-400 leading-relaxed text-sm">
-                        Windows murni. Driver terbaru. Tanpa antivirus trial atau software sampah yang memperlambat boot time. Nyalakan, install game, mainkan.
-                    </p>
-                </div>
-
-                {{-- Card 3 --}}
-                <div class="bg-[#0a0a0a] p-8 border border-white/10 hover:border-primary/50 transition-colors group relative overflow-hidden clip-card">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <span class="material-symbols-outlined text-9xl">verified_user</span>
-                    </div>
-                    <h3 class="text-2xl font-bold uppercase mb-4 text-white group-hover:text-primary transition-colors">Torture Tested</h3>
-                    <p class="text-gray-400 leading-relaxed text-sm">
-                        Setiap rig melewati "The Gauntlet": Stress test 24 jam penuh pada CPU, GPU, dan RAM sebelum dikirim. Jika tidak lulus, tidak kami kirim.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- SECTION 3: STATS STRIP --}}
-        <div class="border-y border-white/10 bg-white/5 backdrop-blur-sm py-12">
-            <div class="max-w-[1440px] mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div>
-                    <span class="block text-4xl md:text-5xl font-black text-white mb-2">500+</span>
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Systems Deployed</span>
-                </div>
-                <div>
-                    <span class="block text-4xl md:text-5xl font-black text-white mb-2">99.9%</span>
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Customer Satisfaction</span>
-                </div>
-                <div>
-                    <span class="block text-4xl md:text-5xl font-black text-white mb-2">365</span>
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Days Support</span>
-                </div>
-                <div>
-                    <span class="block text-4xl md:text-5xl font-black text-white mb-2">0%</span>
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Compromise</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- SECTION 4: THE ARCHITECTS (Team) --}}
-        <div class="py-24 px-4">
-            <div class="max-w-[1440px] mx-auto">
-                <div class="flex items-end justify-between mb-12">
-                    <div>
-                        <h2 class="text-4xl font-black text-white uppercase italic">The Architects</h2>
-                        <div class="h-1 w-24 bg-primary mt-2"></div>
-                    </div>
-                    <div class="hidden md:block text-right">
-                        <p class="text-gray-500 font-mono text-xs">PERSONNEL_FILE // CLASSIFIED</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {{-- Team Member 1 --}}
-                    <div class="group relative">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-900 clip-card grayscale group-hover:grayscale-0 transition-all duration-500">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=800" class="w-full h-full object-cover">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {{-- Step 1 --}}
+                    <div class="group bg-[#050505] p-8 border border-white/10 hover:border-blue-600 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 group-hover:text-blue-600 transition-all">
+                            <span class="text-6xl font-black text-outline">01</span>
                         </div>
-                        <div class="mt-4">
-                            <h3 class="text-xl font-bold text-white uppercase">Alex "Core" Mercer</h3>
-                            <p class="text-primary text-xs font-bold tracking-widest uppercase mb-2">Lead Technician</p>
-                            <p class="text-gray-400 text-sm">Overclocking specialist. Holds the record for highest stable clock on 14900KS in the region.</p>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-blue-600/10 rounded flex items-center justify-center mb-6 text-blue-500">
+                                <span class="material-symbols-outlined">inventory_2</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white uppercase mb-2">Component Selection</h3>
+                            <p class="text-gray-500 text-sm">Kami hanya menggunakan komponen Tier-A. Tidak ada PSU generik atau motherboard murah yang membatasi performa.</p>
                         </div>
                     </div>
 
-                    {{-- Team Member 2 --}}
-                    <div class="group relative">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-900 clip-card grayscale group-hover:grayscale-0 transition-all duration-500">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800" class="w-full h-full object-cover">
+                    {{-- Step 2 --}}
+                    <div class="group bg-[#050505] p-8 border border-white/10 hover:border-blue-600 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 group-hover:text-blue-600 transition-all">
+                            <span class="text-6xl font-black text-outline">02</span>
                         </div>
-                        <div class="mt-4">
-                            <h3 class="text-xl font-bold text-white uppercase">Sarah "Valkyrie" Chen</h3>
-                            <p class="text-primary text-xs font-bold tracking-widest uppercase mb-2">System Architect</p>
-                            <p class="text-gray-400 text-sm">Cable management artist. Ensures airflow dynamics are optimal for every custom loop.</p>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-blue-600/10 rounded flex items-center justify-center mb-6 text-blue-500">
+                                <span class="material-symbols-outlined">precision_manufacturing</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white uppercase mb-2">Precision Assembly</h3>
+                            <p class="text-gray-500 text-sm">Manajemen kabel yang obsesif. Alur udara yang dikalkulasi. Setiap baut dikencangkan dengan torsi yang tepat.</p>
                         </div>
                     </div>
 
-                    {{-- Team Member 3 --}}
-                    <div class="group relative">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-900 clip-card grayscale group-hover:grayscale-0 transition-all duration-500">
-                            <img src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=800" class="w-full h-full object-cover">
+                    {{-- Step 3 --}}
+                    <div class="group bg-[#050505] p-8 border border-white/10 hover:border-blue-600 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 group-hover:text-blue-600 transition-all">
+                            <span class="text-6xl font-black text-outline">03</span>
                         </div>
-                        <div class="mt-4">
-                            <h3 class="text-xl font-bold text-white uppercase">David "Glitch" Ross</h3>
-                            <p class="text-primary text-xs font-bold tracking-widest uppercase mb-2">Logistics & QA</p>
-                            <p class="text-gray-400 text-sm">The final gatekeeper. Nothing leaves the warehouse without his stamp of approval.</p>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-blue-600/10 rounded flex items-center justify-center mb-6 text-blue-500">
+                                <span class="material-symbols-outlined">bug_report</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white uppercase mb-2">The Gauntlet</h3>
+                            <p class="text-gray-500 text-sm">Stress test 24 jam. Cinebench, 3DMark, Furmark. Kami menyiksa PC Anda untuk memastikan ia tidak akan pernah gagal saat Anda bermain.</p>
+                        </div>
+                    </div>
+
+                    {{-- Step 4 --}}
+                    <div class="group bg-[#050505] p-8 border border-white/10 hover:border-blue-600 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 group-hover:text-blue-600 transition-all">
+                            <span class="text-6xl font-black text-outline">04</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-blue-600/10 rounded flex items-center justify-center mb-6 text-blue-500">
+                                <span class="material-symbols-outlined">rocket_launch</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white uppercase mb-2">Armored Shipping</h3>
+                            <p class="text-gray-500 text-sm">Dikemas dengan Instapak foam yang mengikuti bentuk komponen. Aman dari guncangan kurir hingga sampai di meja Anda.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- SECTION 5: CTA --}}
-        <div class="relative py-24 text-center overflow-hidden">
-            <div class="absolute inset-0 bg-primary/10"></div>
+        {{-- SECTION 5: COMPONENT ALLIANCE (Partners) --}}
+        <div class="py-20 px-4 border-t border-white/5">
+            <div class="max-w-5xl mx-auto text-center">
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-[0.3em] mb-10">Powered By Industry Leaders</p>
+                <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                    {{-- Logo Placeholder (Text Based for simplicity & speed) --}}
+                    <span class="text-2xl font-black text-white hover:text-green-500 transition-colors">NVIDIA</span>
+                    <span class="text-2xl font-black text-white hover:text-blue-500 transition-colors">INTEL</span>
+                    <span class="text-2xl font-black text-white hover:text-red-600 transition-colors">AMD</span>
+                    <span class="text-2xl font-black text-white hover:text-gray-300 transition-colors">ASUS ROG</span>
+                    <span class="text-2xl font-black text-white hover:text-yellow-500 transition-colors">CORSAIR</span>
+                    <span class="text-2xl font-black text-white hover:text-orange-500 transition-colors">GIGABYTE</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION 6: CTA --}}
+        <div class="relative py-32 text-center overflow-hidden">
+            <div class="absolute inset-0 bg-blue-600/5"></div>
             <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
             
-            <div class="relative z-10 px-4">
-                <h2 class="text-4xl md:text-6xl font-black text-white uppercase italic mb-6">Ready to Ascend?</h2>
-                <p class="text-gray-300 max-w-xl mx-auto mb-8 text-lg">
-                    Join the elite. Build your dream machine with components that refuse to compromise.
+            <div class="relative z-10 px-4 max-w-4xl mx-auto">
+                <h2 class="text-5xl md:text-7xl font-black text-white uppercase italic mb-8 tracking-tighter">Ready to Ascend?</h2>
+                <p class="text-gray-300 max-w-xl mx-auto mb-10 text-lg md:text-xl font-light">
+                    Jangan biarkan hardware menahan skill-mu. Rakit mesin impianmu sekarang dan rasakan perbedaannya.
                 </p>
-                <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all clip-card shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                    Start Your Build <span class="material-symbols-outlined">arrow_forward</span>
+                <a href="{{ route('products.index') }}" class="group relative inline-flex items-center gap-3 px-10 py-5 bg-white text-black font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all clip-card shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(37,99,235,0.5)] overflow-hidden">
+                    <span class="relative z-10">Start Configuration</span>
+                    <span class="material-symbols-outlined relative z-10 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <div class="absolute inset-0 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
                 </a>
             </div>
         </div>

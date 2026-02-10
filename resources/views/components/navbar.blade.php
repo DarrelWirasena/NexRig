@@ -6,34 +6,76 @@
             <a class="flex items-center hover:opacity-80 transition-opacity" href="{{ route('home') }}">
                 <img src="{{ asset('images/nexrig.png') }}" 
                      alt="NexRig Logo" 
-                     class="h-10 w-auto object-contain"> 
+                     class="h-14 w-auto object-contain"> 
             </a>
 
-            {{-- 2. NAVIGATION --}}
+            {{-- 2. NAVIGATION (DYNAMIC CATEGORIES) --}}
             <nav class="hidden lg:flex items-center gap-8">
-                <div class="group static">
-                    <button class="flex items-center gap-1 py-4 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors outline-none border-b-2 border-transparent group-hover:border-blue-600">
-                        Gaming PCs
-                    </button>
-                    {{-- Mega Menu --}}
-                    <div class="absolute left-0 top-full w-full bg-[#080808] border-t border-b border-white/10 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden z-50">
-                        <div class="max-w-[1440px] mx-auto p-8">
-                            <div class="grid grid-cols-4 gap-8">
-                                <div class="flex flex-col items-center text-center group/item">
-                                    <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
-                                        <div class="absolute inset-0 bg-blue-600/20 blur-xl rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"></div>
-                                        <img src="https://placehold.co/200x200/101010/FFF?text=Core+PC" class="relative z-10 w-full h-full object-contain drop-shadow-2xl">
-                                    </div>
-                                    <h3 class="text-white font-black uppercase tracking-widest mb-4 border-b border-blue-600/50 pb-1">Core Series</h3>
-                                    <div class="flex flex-col gap-2 w-full">
-                                        <a href="{{ route('products.index', ['search' => 'Horizon']) }}" class="text-gray-400 hover:text-white text-sm hover:translate-x-1 transition-all">Horizon II Core</a>
-                                    </div>
+                
+                {{-- LOOPING MAIN CATEGORIES --}}
+                @foreach($navbarCategories as $category)
+                    <div class="group static">
+                        <button class="flex items-center gap-1 py-4 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors outline-none border-b-2 border-transparent group-hover:border-blue-600">
+                            {{ $category->name }}
+                        </button>
+                        
+                        {{-- MEGA MENU CONTENT --}}
+                        <div class="absolute left-0 top-full w-full bg-[#080808] border-t border-b border-white/10 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden z-50">
+                            <div class="max-w-[1440px] mx-auto p-8">
+                                
+                                {{-- GRID SERIES --}}
+                                <div class="grid grid-cols-4 gap-8">
+                                    
+                                    {{-- LOOPING SERIES WITHIN CATEGORY --}}
+                                    @foreach($category->series as $series)
+                                        <div class="flex flex-col items-center text-center group/item">
+                                            
+                                            {{-- SERIES IMAGE (Taken from first product) --}}
+                                            @php
+                                                $firstProduct = $series->products->first();
+                                                $imgUrl = $firstProduct && $firstProduct->images->first() 
+                                                    ? $firstProduct->images->first()->image_url 
+                                                    : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
+                                            @endphp
+
+                                            <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
+                                                <div class="absolute inset-0 bg-blue-600/20 blur-xl rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"></div>
+                                                <img src="{{ $imgUrl }}" class="relative z-10 w-full h-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover/item:scale-105">
+                                            </div>
+                                            
+                                            {{-- SERIES NAME --}}
+                                            <h3 class="text-white font-black uppercase tracking-widest mb-4 border-b border-blue-600/50 pb-1">
+                                                {{ $series->name }}
+                                            </h3>
+                                            
+                                            {{-- 
+                                                LIST OF ALL PRODUCTS IN SERIES 
+                                                Added 'max-h' and 'overflow-y-auto' so if there are many products, 
+                                                the menu can be scrolled neatly (custom scrollbar optional).
+                                            --}}
+                                            <div class="flex flex-col gap-2 w-full max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                                @forelse($series->products as $product)
+                                                    {{-- LINK TO PRODUCT DETAIL --}}
+                                                    <a href="{{ route('products.show', $product->slug) }}" class="text-gray-400 hover:text-white text-sm hover:translate-x-1 transition-all block py-1">
+                                                        {{ $product->name }}
+                                                    </a>
+                                                @empty
+                                                    <span class="text-xs text-gray-600">No products yet</span>
+                                                @endforelse
+                                            </div>
+
+                                        </div>
+                                    @endforeach
+
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
+                
+                {{-- STATIC MENU --}}
                 <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="{{ route('about') }}">About Us</a>
+                <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="#">Support</a>
             </nav>
         </div>
 
@@ -102,44 +144,23 @@
     </header>
 </div>
 
-{{-- 
-    ====================================================================
-    FULL SCREEN SEARCH OVERLAY
-    ====================================================================
---}}
+{{-- FULL SCREEN SEARCH OVERLAY --}}
 <div id="searchOverlay" class="fixed inset-0 z-[100] bg-[#050505]/90 backdrop-blur-md flex items-start justify-center pt-32 opacity-0 invisible transition-all duration-300">
-    
-    {{-- Tombol Close --}}
     <button onclick="closeSearch()" class="absolute top-8 right-8 text-gray-400 hover:text-white transition-colors z-[102]">
         <span class="material-symbols-outlined text-4xl">close</span>
     </button>
-
-    {{-- SEARCH CONTAINER --}}
     <div class="w-full max-w-3xl px-4 z-[101] transform transition-all duration-300 scale-95 translate-y-0" id="searchContainer">
-        
         <form action="{{ route('products.index') }}" method="GET" class="relative group w-full">
-            
-            {{-- 
-                FIX ICON POSITION:
-                1. 'absolute left-6': Jarak dari kiri tetap.
-                2. 'top-0 h-full': Tinggi container icon sama persis dengan tinggi input.
-                3. 'flex items-center': Memaksa icon berada persis di tengah secara vertikal (Y-Axis).
-            --}}
             <div class="absolute left-6 top-0 h-full flex items-center justify-center pointer-events-none text-gray-500 group-focus-within:text-blue-500 transition-colors">
                 <span class="material-symbols-outlined text-2xl">search</span>
             </div>
-
-            {{-- Input Field --}}
             <input type="text" 
                    name="search" 
                    id="searchInput"
                    placeholder="Search products..." 
                    class="w-full bg-[#1a1a1a] border border-white/10 text-white text-lg py-5 pl-16 pr-8 rounded-full focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all placeholder-gray-500"
                    autocomplete="off">
-
         </form>
-
-        {{-- Helper Text --}}
         <div class="mt-4 text-center text-sm text-gray-500 font-mono">
             Press <span class="text-gray-300 font-bold">ENTER</span> to search
         </div>
@@ -177,3 +198,20 @@
         if (e.target === searchOverlay) closeSearch();
     });
 </script>
+
+{{-- Optional Style for Dropdown Scrollbar --}}
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>

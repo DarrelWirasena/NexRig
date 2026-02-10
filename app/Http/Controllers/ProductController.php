@@ -62,14 +62,14 @@ class ProductController extends Controller
                     });
                 })
 
-                // D. ATAU Cari di Series
-                ->orWhereHas('series', function($qSeries) use ($keywords) {
-                    $qSeries->where(function($deepQ) use ($keywords) {
-                        foreach ($keywords as $word) {
-                            $deepQ->where('name', 'like', "%{$word}%");
-                        }
-                    });
-                });
+             // D. ATAU Cari di Series
+->orWhereHas('series', function($qSeries) use ($keywords) {
+    $qSeries->where(function($deepQ) use ($keywords) {
+        foreach ($keywords as $word) {
+            $deepQ->where('name', 'like', "%{$word}%");
+        }
+    });
+});
             });
         }
 
@@ -81,6 +81,8 @@ class ProductController extends Controller
 
         return view('products.index', compact('products', 'categories'));
     }
+
+    
 
     /**
      * Menampilkan halaman detail produk berdasarkan Slug
