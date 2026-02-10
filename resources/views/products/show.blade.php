@@ -98,7 +98,7 @@
                         </p>
 
                         {{-- 5. ADD TO CART --}}
-                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-8">
+                        <form action="{{ route('cart.add', $product->id) }}" method="POST" onsubmit="addToCartAjax(event, this)" class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-8">
                             
                             {{-- WAJIB ADA: Token Keamanan --}}
                             @csrf 

@@ -23,18 +23,16 @@ class CartController extends Controller
         ]);
     }
 
-    // 2. Tambah Barang ke Keranjang
+    // 2. Tambah Barang ke Keranjang (DIPERBARUI)
     public function store(Request $request, $id)
     {
         $product = Product::with('images')->findOrFail($id);
         $cart = session()->get('cart', []);
 
-        // Ambil gambar utama, atau placeholder jika tidak ada
+        // Ambil gambar utama
         $image = $product->images->where('is_primary', true)->first();
         $imageUrl = $image ? $image->image_url : 'https://placehold.co/100';
 
-        // Cek apakah ada request jumlah spesifik? (Misal dari input form)
-        // Kalau tidak ada, default nambah 1
         $quantityToAdd = $request->input('quantity', 1);
 
         if(isset($cart[$id])) {
@@ -49,8 +47,32 @@ class CartController extends Controller
         }
 
         session()->put('cart', $cart);
+
+        // ======================================================
+        // [BARU] CEK APAKAH INI REQUEST AJAX?
+        // ======================================================
+        if ($request->wantsJson() || $request->ajax()) {
+            
+            // 1. Render HTML item keranjang terbaru
+            // Pastikan file resources/views/components/mini-cart-items.blade.php SUDAH ADA
+            $cartHtml = view('components.mini-cart-items', ['cart' => $cart])->render();
+            
+            // 2. Hitung Subtotal Baru
+            $subtotal = 0;
+            foreach($cart as $details) {
+                $subtotal += $details['price'] * $details['quantity'];
+            }
+
+            // 3. Kirim respon JSON ke JavaScript
+            return response()->json([
+                'success' => true,
+                'cartHtml' => $cartHtml,
+                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.')
+            ]);
+        }
+        // ======================================================
         
-        // Redirect back dengan pesan sukses
+        // Fallback: Jika bukan AJAX (Browser biasa/JavaScript mati), lakukan redirect biasa
         return redirect()->back()->with('success', 'Product added to cart successfully!');
     }
 
@@ -72,16 +94,35 @@ class CartController extends Controller
         }
     }
 
-    // 4. Hapus Barang
-    public function destroy($id)
+    // 4. Hapus Barang (DIPERBARUI)
+    public function destroy(Request $request, $id)
     {
         $cart = session()->get('cart');
-        
+
         if(isset($cart[$id])) {
             unset($cart[$id]);
             session()->put('cart', $cart);
         }
-        
+
+        // --- LOGIKA AJAX UNTUK MINI CART ---
+        if ($request->wantsJson() || $request->ajax()) {
+            // 1. Render HTML terbaru (kosong atau sisa item)
+            $cartHtml = view('components.mini-cart-items', ['cart' => $cart])->render();
+            
+            // 2. Hitung Subtotal Baru
+            $subtotal = 0;
+            foreach($cart as $details) {
+                $subtotal += $details['price'] * $details['quantity'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'cartHtml' => $cartHtml,
+                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.')
+            ]);
+        }
+        // -----------------------------------
+
         return redirect()->back()->with('success', 'Product removed successfully');
     }
 }

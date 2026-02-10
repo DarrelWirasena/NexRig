@@ -2,6 +2,7 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{{ $title ?? 'NexRig - High Performance Gaming PCs' }}</title>
     
@@ -107,5 +108,136 @@
 
     {{-- Pastikan file resources/views/components/footer.blade.php ada --}}
     <x-footer /> 
+
+    {{-- Panggil Mini Cart --}}
+    <x-mini-cart />
+
+    {{-- Script untuk logika Mini Cart --}}
+    @stack('scripts')
+
+    {{-- SCRIPT GLOBAL (WAJIB ADA DI SINI) --}}
+    <script>
+        // 1. Fungsi Buka/Tutup Sidebar (Ini yang tadi hilang!)
+        function toggleMiniCart() {
+            const cart = document.getElementById('miniCart');
+            const overlay = document.getElementById('miniCartOverlay');
+            
+            // Cek apakah elemen ada (untuk menghindari error di halaman tanpa cart)
+            if (!cart || !overlay) return; 
+
+            if (cart.classList.contains('translate-x-full')) {
+                // Buka Sidebar
+                cart.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Tutup Sidebar
+                cart.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // 2. Fungsi Add to Cart AJAX
+        function addToCartAjax(e, form) {
+            e.preventDefault(); 
+
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Adding...';
+            btn.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest', // Header wajib 1
+                    'Accept': 'application/json',         // [BARU] Header wajib 2 (Agar controller tau kita butuh JSON)
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => {
+                // Jika redirect (302) terjadi, fetch biasanya mengikutinya secara transparan.
+                // Kita harus cek apakah url berubah atau statusnya oke.
+                return response.json(); 
+            })
+            .then(data => {
+                if(data.success) {
+                    const itemsContainer = document.getElementById('miniCartItems');
+                    const subtotalEl = document.getElementById('miniCartSubtotal');
+
+                    if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
+                    if(subtotalEl) subtotalEl.innerText = data.subtotal;
+
+                    toggleMiniCart();
+                } else {
+                    // Jika json dikirim tapi success: false
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Pesan error lebih spesifik
+                console.log("Kemungkinan controller me-redirect halaman, bukan mengirim JSON.");
+                alert("Terjadi kesalahan. Cek Console (F12) untuk detail.");
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        // 3. Fungsi Hapus Item dari Mini Cart
+        function removeCartItem(id) {
+
+            // 1. Ambil elemen item yang mau dihapus
+            const itemElement = document.getElementById(`cart-item-${id}`);
+
+            // 2. [UX] Bikin item jadi redup & gak bisa diklik (Visual Feedback)
+            // Ini menggantikan fungsi cursor loading yang stuck tadi
+            if(itemElement) {
+                itemElement.style.opacity = '0.3'; 
+                itemElement.style.pointerEvents = 'none'; // Mencegah klik ganda
+            }
+
+            // 3. Kirim Request Hapus
+            // Kita butuh URL yang benar. Asumsi URL: /cart/remove/{id}
+            // Atau sesuaikan dengan route delete kamu
+            const url = `/cart/${id}`; 
+
+            fetch(url, {
+                method: 'DELETE', // Method DELETE sesuai standar Laravel Resource
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to remove');
+                return response.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    const itemsContainer = document.getElementById('miniCartItems');
+                    const subtotalEl = document.getElementById('miniCartSubtotal');
+
+                    if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
+                    if(subtotalEl) subtotalEl.innerText = data.subtotal;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Jika gagal, kembalikan opacity (agar user tau gagal)
+                if(itemElement) {
+                    itemElement.style.opacity = '1';
+                    itemElement.style.pointerEvents = 'auto';
+                }
+                alert('Gagal menghapus item.');
+            });
+        }
+    </script>
 </body>
 </html>
