@@ -98,7 +98,7 @@
                         </p>
 
                         {{-- 5. ADD TO CART --}}
-                        <form action="{{ route('cart.add', $product->id) }}" method="GET" class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-8">
+                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-8">
                             <div class="flex items-center justify-between mb-4">
                                 <label class="text-sm font-bold text-white uppercase">Quantity</label>
                                 <div class="flex items-center bg-white/5 rounded border border-white/10">
