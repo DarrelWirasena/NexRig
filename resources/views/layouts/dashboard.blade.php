@@ -69,7 +69,7 @@
         <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-30 hidden lg:hidden backdrop-blur-sm transition-opacity no-bounce"></div>
 
         {{-- PANGGIL COMPONENT SIDEBAR --}}
-        <x-dashboard-sidebar />
+        <x-sidebar />
 
         {{-- MAIN CONTENT --}}
         <main class="flex-1 h-full overflow-y-auto p-4 md:p-6 lg:p-12 w-full relative z-10 no-bounce scroll-smooth">
