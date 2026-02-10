@@ -75,7 +75,7 @@
                 
                 {{-- STATIC MENU --}}
                 <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="{{ route('about') }}">About Us</a>
-                <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="#">Support</a>
+                <a class="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors py-4 border-b-2 border-transparent hover:border-white" href="{{ route('support') }}">Support</a>
             </nav>
         </div>
 

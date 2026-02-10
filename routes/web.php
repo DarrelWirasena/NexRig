@@ -23,6 +23,29 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Halaman About Us (Tanpa Controller)
 Route::view('/about', 'about')->name('about');
 
+Route::get('/support', function () {
+    return view('support'); // pastikan nama file view-nya support.blade.php
+})->name('support');
+
+
+Route::get('/warranty', function () {
+    return view('warranty');
+})->name('warranty');
+
+// Route untuk Setup Guide
+// Pastikan nama file Anda adalah: resources/views/setup-guide.blade.php
+Route::get('/setup-guide', function () {
+    return view('setup-guide'); 
+})->name('setup-guide');
+
+Route::get('/returns', function () {
+    return view('returns'); // Terus panggil nama fail tanpa 'policies.'
+})->name('returns');
+
+Route::get('/privacy-policy', function () {
+    return view('privacy');
+})->name('privacy');
+
 // Halaman Katalog & Detail Produk
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');

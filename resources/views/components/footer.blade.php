@@ -76,8 +76,8 @@
                 <div>
                     <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Support</h5>
                     <ul class="space-y-4 text-xs">
-                        <li><a href="#" class="hover:text-blue-500 transition-colors">Track Order</a></li>
-                        <li><a href="#" class="hover:text-blue-500 transition-colors">Warranty Info</a></li>
+                        <li><a href="{{ route('setup-guide') }}" class="hover:text-blue-500 transition-colors">Setup Guide</a></li>
+                        <li><a href="{{ route('warranty') }}" class="hover:text-blue-500 transition-colors">Warranty Info</a></li>
                         <li><a href="#" class="hover:text-blue-500 transition-colors">Contact Us</a></li>
                     </ul>
                 </div>
@@ -86,7 +86,7 @@
                     <ul class="space-y-4 text-xs">
                         <li><a href="{{ route('about') }}" class="hover:text-blue-500 transition-colors">About NexRig</a></li>
                         <li><a href="#" class="hover:text-blue-500 transition-colors">Careers</a></li>
-                        <li><a href="#" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
