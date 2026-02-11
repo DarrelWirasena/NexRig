@@ -14,8 +14,41 @@
             mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
         }
         /* Marquee Animation */
-        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-scroll { animation: scroll 20s linear infinite; }
+        @keyframes infinite-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); } /* KUNCI SEAMLESS */
+        }
+
+        .animate-infinite-scroll {
+            /* Mainkan angka ini untuk kecepatan. Makin kecil = makin ngebut. */
+            /* 30s adalah sweet spot (bisa dibaca tapi dinamis) */
+            animation: infinite-scroll 30s linear infinite; 
+            display: flex; /* Pastikan flex agar width dihitung benar */
+            width: max-content; /* Pastikan container selebar isinya */
+        }
+
+        /* Animasi Muncul dari bawah */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0; /* Mulai dari invisible */
+        }
+
+        /* Scrollbar styling untuk horizontal scroll mobile */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(19, 55, 236, 0.5); /* Primary color */
+            border-radius: 10px;
+        }
+
     </style>
 
     {{-- SECTION 1: CINEMATIC HERO --}}
@@ -59,100 +92,104 @@
     </div>
 
     {{-- SECTION 2: INFINITE RUNNING TEXT (Hype Bar) --}}
-    <div class="bg-primary text-white py-3 overflow-hidden border-y border-white/10 relative z-20">
-        <div class="whitespace-nowrap flex animate-scroll">
-            @for($i = 0; $i < 10; $i++)
-                <span class="mx-8 font-black italic uppercase tracking-widest text-lg flex items-center gap-4 opacity-80">
-                    High FPS Guarantee <span class="text-black">•</span> 
-                    RTX 4090 Ready <span class="text-black">•</span> 
-                    Liquid Cooled <span class="text-black">•</span> 
-                    Lifetime Support <span class="text-black">•</span>
-                </span>
-            @endfor
-        </div>
-    </div>
+    @php
+        $hypes = [
+            "High FPS Guarantee",
+            "RTX 50-Series Ready",
+            "Liquid Cooled",
+            "24/7 Stress Tested",
+            "Lifetime Support",
+            "Zero Bloatware",
+            "Professional Cable Management"
+        ];
+    @endphp
 
-    {{-- SECTION 3: BENTO GRID CATEGORIES --}}
-    <div id="featured" class="bg-[#050505] py-24 px-4 sm:px-10">
-        <div class="max-w-[1440px] mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-                <div>
-                    <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-2">Curated Series</h2>
-                    <div class="h-1 w-20 bg-gradient-to-r from-primary to-transparent"></div>
-                </div>
-                <p class="text-gray-400 max-w-md text-right md:text-left">
-                    From esports dominance to workstation powerhouses, choose the chassis that fits your ambition.
-                </p>
+    <div class="bg-primary text-white py-4 overflow-hidden border-y border-white/10 relative z-20 group">
+        {{-- Wrapper Utama --}}
+        <div class="flex">
+            
+            {{-- SET 1 (Original) --}}
+            {{-- Perhatikan class 'min-w-full' dan gap di sini --}}
+            <div class="animate-infinite-scroll flex items-center gap-16 px-8"> 
+                @foreach($hypes as $text)
+                    <span class="font-black italic uppercase tracking-widest text-lg opacity-90 whitespace-nowrap">
+                        {{ $text }}
+                    </span>
+                    <span class="text-black text-xl">•</span>
+                @endforeach
             </div>
 
-            @if($featured->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[600px]">
-                    
-                    {{-- ITEM 1: FLAGSHIP --}}
-                    @php $p1 = $featured->get(0); @endphp
-                    @if($p1)
-                    <div class="group md:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                        <img src="{{ $p1->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/800' }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                        <div class="absolute bottom-0 p-8 w-full">
-                            <span class="text-primary text-xs font-bold uppercase tracking-widest mb-2 block">Flagship Series</span>
-                            <h3 class="text-4xl font-black text-white uppercase italic mb-2">{{ $p1->name }}</h3>
-                            <p class="text-gray-300 text-sm mb-6 line-clamp-2">{{ $p1->short_description }}</p>
-                            <a href="{{ route('products.show', $p1->slug) }}" class="inline-flex items-center gap-2 text-white border-b border-primary pb-1 hover:text-primary transition-colors">
-                                VIEW COLLECTION <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                            </a>
-                        </div>
-                    </div>
-                    @endif
+            {{-- SET 2 (Duplicate) --}}
+            <div class="animate-infinite-scroll flex items-center gap-16 px-8" aria-hidden="true">
+                @foreach($hypes as $text)
+                    <span class="font-black italic uppercase tracking-widest text-lg opacity-90 whitespace-nowrap">
+                        {{ $text }}
+                    </span>
+                    <span class="text-black text-xl">•</span>
+                @endforeach
+            </div>
 
-                    {{-- ITEM 2: BEST SELLER --}}
-                    @php $p2 = $featured->get(1); @endphp
-                    @if($p2)
-                    <div class="group md:col-span-2 relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                        <img src="{{ $p2->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/800' }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-100">
-                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent"></div>
-                        <div class="absolute inset-0 p-8 flex flex-col justify-center items-start">
-                            <span class="bg-white/10 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded mb-2">TRENDING</span>
-                            <h3 class="text-2xl font-black text-white uppercase italic">{{ $p2->name }}</h3>
-                            <p class="text-gray-400 text-sm mt-1 mb-4">Starting at Rp {{ number_format($p2->price, 0, ',', '.') }}</p>
-                            <a href="{{ route('products.show', $p2->slug) }}" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary text-white transition-colors">
-                                <span class="material-symbols-outlined">arrow_outward</span>
-                            </a>
-                        </div>
-                    </div>
-                    @endif
-
-                    {{-- ITEM 3: CREATOR --}}
-                    @php $p3 = $featured->get(2); @endphp
-                    @if($p3)
-                    <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                        <img src="{{ $p3->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/800' }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-100">
-                        <div class="absolute inset-0 bg-black/40 hover:bg-transparent transition-colors"></div>
-                        <div class="absolute bottom-0 p-6">
-                            <h3 class="text-xl font-bold text-white uppercase truncate">{{ $p3->name }}</h3>
-                            <p class="text-gray-400 text-xs">{{ $p3->series->category->name ?? 'Gaming PC' }}</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    {{-- ITEM 4: CUSTOM BUILDER --}}
-                    <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                        <div class="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-colors"></div>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                            <span class="material-symbols-outlined text-5xl text-primary mb-2">tune</span>
-                            <h3 class="text-xl font-bold text-white uppercase">Custom Builder</h3>
-                            <p class="text-gray-400 text-xs mt-2">Coming Soon</p>
-                        </div>
-                    </div>
-                </div>
-            @else
-                <p class="text-gray-400 text-center">No featured products available yet.</p>
-            @endif
         </div>
+        
+        {{-- Fade Effect --}}
+        <div class="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-primary to-transparent z-10 pointer-events-none"></div>
+        <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-primary to-transparent z-10 pointer-events-none"></div>
     </div>
+    
+   {{-- SECTION 3: BENTO GRID CATEGORIES --}}
+<div id="featured" class="scroll-trigger opacity-0 bg-[#050505] py-24 px-4 sm:px-10">
+    <div class="max-w-[1440px] mx-auto">
+        {{-- Header Section (Tetap) --}}
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+            <div>
+                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-2">Curated Series</h2>
+                <div class="h-1 w-20 bg-gradient-to-r from-primary to-transparent"></div>
+            </div>
+            <p class="text-gray-400 max-w-md text-left md:text-right">
+                From esports dominance to workstation powerhouses, choose the chassis that fits your ambition.
+            </p>
+        </div>
+
+        {{-- Logika Keamanan Data --}}
+        @if($featured->count() > 0)
+            {{-- 
+                GRID SYSTEM (4 Kolom Konsisten):
+                - grid-cols-4: Memaksa 4 kolom terkecil sekalipun di HP.
+                - md:grid-rows-2: Baris kaku hanya di desktop.
+                - h-auto: Agar tidak tumpang tindih di mobile.
+            --}}
+            <div class="grid grid-cols-4 md:grid-rows-2 gap-2 md:gap-4 h-auto md:h-[600px]">
+                
+                {{-- ITEM 1: FLAGSHIP --}}
+                @if($featured->has(0))
+                    <x-bento-card :product="$featured->get(0)" type="flagship" />
+                @endif
+
+                {{-- ITEM 2: BEST SELLER --}}
+                @if($featured->has(1))
+                    <x-bento-card :product="$featured->get(1)" type="bestseller" />
+                @endif
+
+                {{-- ITEM 3: STANDARD --}}
+                @if($featured->has(2))
+                    <x-bento-card :product="$featured->get(2)" type="standard" />
+                @endif
+
+                {{-- ITEM 4: CUSTOM (Selalu Muncul sebagai Placeholder) --}}
+                <x-bento-card type="custom" />
+            </div>
+        @else
+            {{-- Tampilan jika data kosong --}}
+            <div class="text-center py-20 border border-dashed border-white/20 rounded-xl bg-white/5">
+                <span class="material-symbols-outlined text-4xl text-gray-600 mb-2">dns</span>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">No featured systems deployed yet.</p>
+            </div>
+        @endif
+    </div>
+</div>
 
    {{-- NEW SECTION: THE NEXRIG DNA --}}
-    <div class="bg-background-dark py-24 px-4 relative overflow-hidden">
+    <div class="scroll-trigger opacity-0 bg-background-dark py-24 px-4 relative overflow-hidden">
         {{-- Background Accents --}}
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -213,103 +250,106 @@
         </div>
     </div>
 
-    {{-- SECTION 4: LATEST DEPLOYMENTS --}}
-    <div class="bg-[#080808] py-24 px-4 sm:px-10 border-t border-white/5 relative">
-        <div class="absolute top-0 left-10 w-px h-24 bg-gradient-to-b from-primary to-transparent"></div>
-        <div class="absolute bottom-0 right-10 w-px h-24 bg-gradient-to-t from-primary to-transparent"></div>
+{{-- SECTION 4: LATEST DEPLOYMENTS --}}
+{{-- Section terluar tanpa max-width agar hitamnya full kanan-kiri di PC --}}
+<div class="scroll-trigger opacity-0 w-full bg-[#080808] py-16 md:py-24 border-t border-white/5 relative">
+    
+    {{-- Decorative Lines (PC Only) --}}
+    <div class="hidden md:block absolute top-0 left-10 w-px h-24 bg-gradient-to-b from-primary to-transparent"></div>
+    <div class="hidden md:block absolute bottom-0 right-10 w-px h-24 bg-gradient-to-t from-primary to-transparent"></div>
 
-        <div class="max-w-[1440px] mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
-                <div class="flex items-center gap-4">
-                    <span class="text-primary font-bold text-xl">///</span>
-                    <h2 class="text-3xl font-bold text-white uppercase tracking-wider">Latest Deployments</h2>
-                </div>
-                <a href="{{ route('products.index') }}" class="hidden md:flex items-center gap-2 text-white hover:text-primary transition-colors font-bold uppercase text-sm tracking-wider">
-                    View All Systems <span class="material-symbols-outlined">arrow_forward</span>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {{-- MENGGUNAKAN COMPONENT + DATA FEATURED --}}
-                {{-- Pastikan file resources/views/components/product-home-card.blade.php ADA --}}
-                @foreach($featured as $product)
-                    <x-product-home-card :product="$product" />
-                @endforeach
+    {{-- 1. HEADER: Terpisah agar alignment max-width-nya aman --}}
+    <div class="max-w-[1440px] mx-auto px-4 md:px-10 mb-8 md:mb-12">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+            <div class="flex items-center gap-4">
+                <span class="text-primary font-bold text-xl animate-pulse">///</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white uppercase tracking-wider">Latest Deployments</h2>
             </div>
             
-            <div class="mt-16 text-center md:hidden">
-                <a href="{{ route('products.index') }}" class="inline-block px-12 py-4 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all clip-button">
-                    View All Systems
-                </a>
-            </div>
+            <a href="{{ route('products.index') }}" class="group hidden md:flex items-center gap-2 text-white hover:text-primary transition-colors font-bold uppercase text-sm tracking-wider">
+                View All Systems <span class="material-symbols-outlined transition-transform duration-300 group-hover:translate-x-2">arrow_forward</span>
+            </a>
         </div>
     </div>
 
-     {{-- NEW SECTION: PERFORMANCE METRICS --}}
-    <div class="bg-[#050505] py-20 px-4 border-t border-white/5">
-        <div class="max-w-[1440px] mx-auto">
-            <div class="text-center mb-16">
-                <span class="text-primary font-bold tracking-widest uppercase text-sm mb-2 block animate-pulse">Real World Performance</span>
-                <h2 class="text-3xl md:text-5xl font-black text-white uppercase italic">Dominate Every Lobby</h2>
+    {{-- 2. SLIDER AREA: Full width untuk scroll yang lancar --}}
+    <div class="relative w-full">
+        {{-- 
+            Container Flex:
+            - md:max-w-[1440px] md:mx-auto: Di PC tetap rapi di tengah.
+            - px-4 md:px-10: Memberi jarak awal kartu agar sejajar judul.
+            - overflow-x-auto: Mengaktifkan swipe.
+        --}}
+        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-8 px-4 md:px-10 md:grid md:grid-cols-3 lg:grid-cols-4 custom-scrollbar max-w-[1440px] mx-auto md:overflow-visible">
+            
+            @foreach($featured as $index => $product)
+                {{-- 
+                    Kartu:
+                    - w-[80vw]: Jangan 85 agar kartu ke-2 lebih terlihat sebagai indikasi scroll.
+                    - shrink-0: Mencegah kartu gepeng.
+                --}}
+                <div class="w-[80vw] sm:w-[350px] md:w-auto shrink-0 snap-start">
+                    <x-product-home-card :product="$product" />
+                </div>
+            @endforeach
+
+            {{-- Spacer Akhir agar kartu terakhir tidak mepet kanan di HP --}}
+            <div class="w-4 shrink-0 md:hidden"></div>
+        </div>
+
+        {{-- Indikator Fade Kanan (Mobile Only) --}}
+        <div class="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#080808] to-transparent pointer-events-none md:hidden z-20"></div>
+    </div>
+
+    {{-- Mobile View All Button --}}
+    <div class="max-w-[1440px] mx-auto px-4 mt-4 md:hidden">
+        <a href="{{ route('products.index') }}" class="w-full inline-block py-4 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all clip-button text-center">
+            View All Systems
+        </a>
+    </div>
+</div>
+    
+{{-- SECTION 5 ALTERNATIF: BATTLESTATION GALLERY --}}
+<section class="scroll-trigger opacity-0 bg-[#080808] py-24 border-t border-white/5"> 
+    <div class="max-w-[1440px] mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-black text-white uppercase italic">Deployed <span class="text-primary">&</span> Operational</h2>
+            <p class="text-gray-500 mt-4 uppercase tracking-[0.2em] text-xs font-bold">NexRig setup around the world</p>
+        </div>
+
+        {{-- Grid Foto --}}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="aspect-square bg-gray-900 rounded-xl overflow-hidden group relative">
+                <img src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=600" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                <div class="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-[10px] font-bold bg-primary px-2 py-1 uppercase italic">User Setup #021</span>
+                </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {{-- CARD 1: FPS GAME --}}
-                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                    <div class="absolute bottom-0 p-6 w-full">
-                        <h3 class="text-white font-bold text-xl mb-1">Competitive Shooters</h3>
-                        <p class="text-gray-400 text-xs mb-4">Valorant / CS2 / Apex</p>
-                        <div class="flex items-end gap-2">
-                            <span class="text-5xl font-black text-primary text-glow">300+</span>
-                            <span class="text-white font-bold mb-2">FPS</span>
-                        </div>
-                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
-                            <div class="h-full bg-primary w-[95%]"></div>
-                        </div>
-                    </div>
+            {{-- Ulangi untuk foto lainnya --}}
+            <div class="aspect-square bg-gray-900 rounded-xl overflow-hidden group relative">
+                <img src="https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?q=80&w=600" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                <div class="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-[10px] font-bold bg-primary px-2 py-1 uppercase italic">User Setup #044</span>
                 </div>
-
-                {{-- CARD 2: AAA TITLE --}}
-                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                    <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                    <div class="absolute bottom-0 p-6 w-full">
-                        <h3 class="text-white font-bold text-xl mb-1">AAA Titles</h3>
-                        <p class="text-gray-400 text-xs mb-4">Cyberpunk / Starfield / COD</p>
-                        <div class="flex items-end gap-2">
-                            <span class="text-5xl font-black text-cyan-400 text-glow">144+</span>
-                            <span class="text-white font-bold mb-2">FPS @ 1440p</span>
-                        </div>
-                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
-                            <div class="h-full bg-cyan-400 w-[75%]"></div>
-                        </div>
-                    </div>
+            </div>
+            <div class="aspect-square bg-gray-900 rounded-xl overflow-hidden group relative">
+                <img src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=600" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                <div class="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-[10px] font-bold bg-primary px-2 py-1 uppercase italic">User Setup #089</span>
                 </div>
-
-                {{-- CARD 3: CREATIVE --}}
-                <div class="relative group h-64 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
-                    <img src="https://images.unsplash.com/photo-1633419461186-7d40a2e50594?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                    <div class="absolute bottom-0 p-6 w-full">
-                        <h3 class="text-white font-bold text-xl mb-1">Content Creation</h3>
-                        <p class="text-gray-400 text-xs mb-4">Rendering / Streaming</p>
-                        <div class="flex items-end gap-2">
-                            <span class="text-5xl font-black text-purple-500 text-glow">40%</span>
-                            <span class="text-white font-bold mb-2">Faster Render</span>
-                        </div>
-                        <div class="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
-                            <div class="h-full bg-purple-500 w-[85%]"></div>
-                        </div>
-                    </div>
+            </div>
+            <div class="aspect-square bg-gray-900 rounded-xl overflow-hidden group relative">
+                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                <div class="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-[10px] font-bold bg-primary px-2 py-1 uppercase italic">User Setup #102</span>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
     {{-- SECTION 5: CTA --}}
-    <div class="bg-gradient-to-r from-primary to-blue-900 py-24 px-4 text-center relative overflow-hidden">
+    <div class="scroll-trigger opacity-0 bg-gradient-to-r from-primary to-blue-900 py-24 px-4 text-center relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
         <div class="relative z-10 max-w-3xl mx-auto">
             <h2 class="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-6">Ready to Ascend?</h2>
@@ -323,5 +363,41 @@
             </div>
         </div>
     </div>
+
+
+    {{-- Script Animasi Scroll --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Opsi Observer (Kapan animasi dimulai?)
+        const observerOptions = {
+            root: null, // Viewport browser
+            rootMargin: '0px',
+            threshold: 0.1 // Animasi jalan ketika 10% bagian kartu sudah terlihat
+        };
+
+        // 2. Fungsi Callback (Apa yang dilakukan saat terlihat?)
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Tambahkan class animasi
+                    entry.target.classList.add('animate-fade-in-up');
+                    
+                    // Hapus opacity-0 agar tidak bentrok dengan animasi
+                    entry.target.classList.remove('opacity-0');
+                    
+                    // Stop memantau elemen ini (biar animasi cuma sekali seumur hidup)
+                    observer.unobserve(entry.target);
+                }
+            });
+        };
+
+        // 3. Inisialisasi Observer
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+        // 4. Targetkan semua elemen dengan class .scroll-trigger
+        const hiddenElements = document.querySelectorAll('.scroll-trigger');
+        hiddenElements.forEach((el) => observer.observe(el));
+    });
+</script>
 
 @endsection
