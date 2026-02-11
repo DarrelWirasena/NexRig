@@ -47,6 +47,13 @@
   }
 }
 
+html {
+    scroll-behavior: smooth;
+    /* Sesuaikan nilai ini dengan tinggi navbar kamu (misal 80px atau 100px) */
+    /* Ini memberi jarak agar judul tidak ketutup navbar pas di-klik */
+    scroll-padding-top: 80px; 
+}
+
 html, body {
         max-width: 100%;
         overflow-x: hidden;
