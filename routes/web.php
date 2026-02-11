@@ -52,11 +52,10 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 
 // Fitur Keranjang (Cart)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-// Ubah dari GET ke POST, dan sesuaikan nama URL-nya
-Route::post('/add-to-cart/{id}', [CartController::class, 'store'])->name('cart.add');
-Route::patch('/update-cart', [CartController::class, 'update'])->name('cart.update');
-Route::get('/remove-from-cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
-
+// [DIPERBARUI] Menggunakan URL Standar RESTful
+Route::post('/cart/{id}', [CartController::class, 'store'])->name('cart.add');       // URL lebih bersih
+Route::patch('/cart/update', [CartController::class, 'update'])->name('cart.update'); // URL update quantity
+Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove'); // [PENTING] Method DELETE
 
 /*
 |--------------------------------------------------------------------------
