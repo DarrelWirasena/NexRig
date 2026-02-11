@@ -9,3 +9,61 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+    /* Sudut terpotong ala tech-wear / Cyberpunk (Starforge Style) */
+    .clip-path-button {
+        clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    }
+
+    /* Sembunyikan scrollbar bawaan browser */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Memastikan Mega Menu Desktop muncul melebar */
+    .group.static {
+        position: static !important;
+    }
+
+    /* Efek gambar melayang 3D */
+    .drop-shadow-pc {
+        filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.9));
+    }
+
+    @layer utilities {
+  /* Sembunyikan scrollbar untuk Chrome, Safari dan Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Sembunyikan scrollbar untuk IE, Edge dan Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Utilitas untuk elemen spesifik (seperti menu navigasi) */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    

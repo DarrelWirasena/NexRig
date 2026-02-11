@@ -36,13 +36,11 @@
     {{-- Pastikan file resources/views/components/navbar.blade.php ada --}}
     <x-navbar />
 
-    <main class="flex-grow flex flex-col items-center w-full">
-  
-        
-        {{-- INI KUNCI PERUBAHANNYA: --}}
+  {{-- UBAH MENJADI SEPERTI INI --}}
+<main class="flex-grow w-full relative">
         @yield('content')
-        
     </main>
+
     {{-- 
         =========================================================
         TOAST NOTIFICATION (POP UP OTOMATIS)
