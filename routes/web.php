@@ -10,7 +10,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\ContactController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Bisa diakses siapa saja)
@@ -108,4 +108,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/address/{id}/edit', [ProfileController::class, 'editAddress'])->name('address.edit');
     // Route untuk Proses Update (Update)
     Route::put('/profile/address/{id}', [ProfileController::class, 'updateAddress'])->name('address.update');
+
+    // 2. TAMBAHKAN ROUTE INI (INI YANG HILANG)
+Route::post('/support/send', [ContactController::class, 'store'])
+    ->name('contact.store')
+    ->middleware('auth');
+
+    Route::get('/support-history', [ContactController::class, 'index'])->name('support.history');
+    
+    // Mengirim pesan baru
+    Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');
 });

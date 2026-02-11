@@ -78,7 +78,7 @@
                     <ul class="space-y-4 text-xs">
                         <li><a href="{{ route('setup-guide') }}" class="hover:text-blue-500 transition-colors">Setup Guide</a></li>
                         <li><a href="{{ route('warranty') }}" class="hover:text-blue-500 transition-colors">Warranty Info</a></li>
-                        <li><a href="#" class="hover:text-blue-500 transition-colors">Contact Us</a></li>
+                        <li><a href="{{ route('support') }}#contact" class="hover:text-blue-500 transition-colors">Contact Us</a></li>
                     </ul>
                 </div>
                 <div>

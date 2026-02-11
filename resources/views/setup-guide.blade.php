@@ -291,7 +291,7 @@
                             <h3 class="!mt-0 !mb-2 text-white !text-xl">Masih Bingung?</h3>
                             <p class="!mb-0 text-gray-400 text-sm">Jika PC tidak menyala setelah mengikuti panduan, hubungi teknisi kami.</p>
                         </div>
-                        <a href="{{ route('support') }}" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                        <a href="{{ route('support') }}#contact" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-blue-600/20">
                             Contact Support
                         </a>
                     </div>
