@@ -30,7 +30,7 @@
                                     @foreach($category->series as $series)
                                         <div class="flex flex-col items-center text-center group/item">
                                             
-                                            {{-- SERIES IMAGE (Taken from first product) --}}
+                                            {{-- SERIES IMAGE --}}
                                             @php
                                                 $firstProduct = $series->products->first();
                                                 $imgUrl = $firstProduct && $firstProduct->images->first() 
@@ -48,14 +48,9 @@
                                                 {{ $series->name }}
                                             </h3>
                                             
-                                            {{-- 
-                                                LIST OF ALL PRODUCTS IN SERIES 
-                                                Added 'max-h' and 'overflow-y-auto' so if there are many products, 
-                                                the menu can be scrolled neatly (custom scrollbar optional).
-                                            --}}
+                                            {{-- LIST OF ALL PRODUCTS --}}
                                             <div class="flex flex-col gap-2 w-full max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                                                 @forelse($series->products as $product)
-                                                    {{-- LINK TO PRODUCT DETAIL --}}
                                                     <a href="{{ route('products.show', $product->slug) }}" class="text-gray-400 hover:text-white text-sm hover:translate-x-1 transition-all block py-1">
                                                         {{ $product->name }}
                                                     </a>
@@ -115,12 +110,26 @@
                                 <p class="text-sm text-white font-bold">{{ Auth::user()->name }}</p>
                                 <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
                             </div>
+
+                            {{-- MENU PROFILE --}}
                             <a href="{{ route('profile.app') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">
                                 <span class="material-symbols-outlined text-lg">person</span> My Profile
                             </a>
+
+                            {{-- MENU ORDER HISTORY --}}
                             <a href="{{ route('orders.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">
                                 <span class="material-symbols-outlined text-lg">history</span> Order History
                             </a>
+
+                            {{-- MENU MY TICKETS (BARU) --}}
+                                                    {{-- Menu Support History --}}
+                            <a href="{{ route('support.history') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">
+                                <span class="material-symbols-outlined text-lg">history</span> Support History
+                            </a>
+
+                            <div class="my-1 border-t border-white/10"></div>
+
+                            {{-- LOGOUT --}}
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors mt-1">
@@ -144,7 +153,7 @@
     </header>
 </div>
 
-{{-- FULL SCREEN SEARCH OVERLAY --}}
+{{-- FULL SCREEN SEARCH OVERLAY (SAMA SEPERTI SEBELUMNYA) --}}
 <div id="searchOverlay" class="fixed inset-0 z-[100] bg-[#050505]/90 backdrop-blur-md flex items-start justify-center pt-32 opacity-0 invisible transition-all duration-300">
     <button onclick="closeSearch()" class="absolute top-8 right-8 text-gray-400 hover:text-white transition-colors z-[102]">
         <span class="material-symbols-outlined text-4xl">close</span>

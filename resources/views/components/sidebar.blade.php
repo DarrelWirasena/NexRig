@@ -33,6 +33,11 @@
         <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders.index') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">receipt_long</span> My Orders
         </a>
+
+        {{-- MENU BARU: SUPPORT HISTORY --}}
+        <a href="{{ route('support.history') }}" class="nav-item {{ request()->routeIs('support.history') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
+            <span class="material-symbols-outlined">history</span> Support History
+        </a>
     </nav>
 
     {{-- BAGIAN 3: USER PROFILE --}}
