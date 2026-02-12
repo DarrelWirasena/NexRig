@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
 <head>
+    
     <meta charset="utf-8"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -11,9 +12,15 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> -->
     
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+    <style>
+        /* Ini adalah kunci utama: Sembunyikan apapun yang punya atribut x-cloak */
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -32,8 +39,10 @@
             },
         }
     </script>
+    
+    @stack('styles')
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden min-h-screen flex flex-col">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden min-h-screen pt-20 flex flex-col">
     
     {{-- Pastikan file resources/views/components/navbar.blade.php ada --}}
     <x-navbar />
@@ -115,6 +124,65 @@
     {{-- Script untuk logika Mini Cart --}}
     @stack('scripts')
 
+    {{-- VIDEO OVERLAY COMPONENT --}}
+    <div x-data="{ open: false, videoUrl: '' }" 
+        x-on:open-video.window="open = true; videoUrl = $event.detail.url"
+        x-on:keydown.escape.window="open = false; videoUrl = ''"
+        x-show="open" 
+        class="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-10"
+        x-cloak>
+        
+        {{-- Backdrop dengan Blur --}}
+        <div x-show="open" 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="open = false; videoUrl = ''"
+            class="absolute inset-0 bg-black/90 backdrop-blur-xl">
+        </div>
+
+        {{-- Container Video --}}
+        <div x-show="open"
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(19,55,236,0.3)]">
+            
+            {{-- Close Button --}}
+            <button @click="open = false; videoUrl = ''" 
+                    class="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white border border-white/10 hover:bg-primary transition-colors group">
+                <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+            </button>
+
+            {{-- Loading Spinner (Sambil nunggu YouTube load) --}}
+            <div class="absolute inset-0 flex items-center justify-center -z-10">
+                <span class="material-symbols-outlined text-primary text-5xl animate-spin">progress_activity</span>
+            </div>
+
+            {{-- Iframe --}}
+            <template x-if="open">
+                <iframe class="w-full h-full" 
+                        :src="videoUrl" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                </iframe>
+            </template>
+        </div>
+
+        {{-- Garis Dekorasi ala NexRig --}}
+        <div class="absolute bottom-10 left-10 hidden md:block opacity-20">
+            <p class="text-primary font-mono text-xs tracking-[0.5em] uppercase">Visual Feed Established // 4K Resolution</p>
+        </div>
+    </div>
+
     {{-- SCRIPT GLOBAL (WAJIB ADA DI SINI) --}}
     <script>
         // 1. Fungsi Buka/Tutup Sidebar (Ini yang tadi hilang!)
@@ -191,53 +259,77 @@
 
         // 3. Fungsi Hapus Item dari Mini Cart
         function removeCartItem(id) {
+        const itemElement = document.getElementById(`cart-item-${id}`);
 
-            // 1. Ambil elemen item yang mau dihapus
-            const itemElement = document.getElementById(`cart-item-${id}`);
-
-            // 2. [UX] Bikin item jadi redup & gak bisa diklik (Visual Feedback)
-            // Ini menggantikan fungsi cursor loading yang stuck tadi
-            if(itemElement) {
-                itemElement.style.opacity = '0.3'; 
-                itemElement.style.pointerEvents = 'none'; // Mencegah klik ganda
-            }
-
-            // 3. Kirim Request Hapus
-            // Kita butuh URL yang benar. Asumsi URL: /cart/remove/{id}
-            // Atau sesuaikan dengan route delete kamu
-            const url = `/cart/${id}`; 
-
-            fetch(url, {
-                method: 'DELETE', // Method DELETE sesuai standar Laravel Resource
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to remove');
-                return response.json();
-            })
-            .then(data => {
-                if(data.success) {
-                    const itemsContainer = document.getElementById('miniCartItems');
-                    const subtotalEl = document.getElementById('miniCartSubtotal');
-
-                    if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
-                    if(subtotalEl) subtotalEl.innerText = data.subtotal;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Jika gagal, kembalikan opacity (agar user tau gagal)
-                if(itemElement) {
-                    itemElement.style.opacity = '1';
-                    itemElement.style.pointerEvents = 'auto';
-                }
-                alert('Gagal menghapus item.');
-            });
+        if(itemElement) {
+            itemElement.style.opacity = '0.3'; 
+            itemElement.style.pointerEvents = 'none';
         }
+
+        const url = `/cart/${id}`; 
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to remove');
+            return response.json();
+        })
+        .then(data => {
+            if(data.success) {
+                const itemsContainer = document.getElementById('miniCartItems');
+                const subtotalEl = document.getElementById('miniCartSubtotal');
+                
+                // 1. Update List Item (Bisa jadi Empty State)
+                if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
+                
+                // 2. Update Subtotal
+                if(subtotalEl) subtotalEl.innerText = data.subtotal;
+
+                // 3. KONTEKS BARU: Update Badge Navbar (Jika ada)
+                // Cari elemen badge di navbar (asumsi ID 'cart-count' atau cari class-nya)
+                const cartBadges = document.querySelectorAll('.absolute.-top-1.-right-1'); // Selector badge merah di navbar
+                cartBadges.forEach(badge => {
+                    if (data.cartCount > 0) {
+                        badge.innerText = data.cartCount;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden'); // Sembunyikan jika 0
+                    }
+                });
+
+                // 4. KONTEKS BARU: Update Tombol Checkout Footer
+                if(data.cartCount === 0) {
+                    const footerArea = document.querySelector('#miniCart .p-6.border-t'); // Area footer sidebar
+                    if(footerArea) {
+                        // Kita bisa ganti tombolnya jadi disabled state
+                        const checkoutBtn = footerArea.querySelector('a, button');
+                        if(checkoutBtn) {
+                            // Ganti tag <a> ke <button disabled> secara dinamis atau manipulasi class
+                            const disabledBtn = document.createElement('button');
+                            disabledBtn.disabled = true;
+                            disabledBtn.className = "block w-full py-4 bg-white/10 text-gray-500 text-center font-bold uppercase tracking-widest cursor-not-allowed clip-button";
+                            disabledBtn.innerText = 'Checkout Now';
+                            checkoutBtn.parentNode.replaceChild(disabledBtn, checkoutBtn);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if(itemElement) {
+                itemElement.style.opacity = '1';
+                itemElement.style.pointerEvents = 'auto';
+            }
+            alert('Gagal menghapus item.');
+        });
+    }
     </script>
 </body>
 </html>

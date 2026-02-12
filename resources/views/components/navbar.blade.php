@@ -62,12 +62,12 @@
                     <span class="material-symbols-outlined text-[24px] group-hover:text-blue-500 transition-colors">search</span>
                 </button>
 
-                <a href="{{ route('cart.index') }}" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-colors group">
+                <button onclick="toggleMiniCart()" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-colors group">
                     <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
                     @if(session('cart') && count(session('cart')) > 0)
                         <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center border border-black">{{ count(session('cart')) }}</span>
                     @endif
-                </a>
+                </button>
 
                 @auth
                     <div class="relative group h-10 flex items-center z-50">

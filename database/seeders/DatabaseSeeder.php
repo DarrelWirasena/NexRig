@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             ComponentSeeder::class, // Bikin Gudang Komponen
             GameSeeder::class,      // Bikin Master Game
             ProductSeeder::class,   // Bikin Produk (Menggunakan data dari Kategori, Komponen, & Game)
+            ArticleSeeder::class    // Bikin Artikel
         ]);
     }
 }

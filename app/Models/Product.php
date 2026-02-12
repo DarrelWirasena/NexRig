@@ -46,15 +46,15 @@ class Product extends Model
                     ->withPivot(['resolution', 'avg_fps']);
     }
 
-    // 6. Relasi Kegunaan (Icon Fitur)
+    // 6. Relasi Kegunaan yang Dituju (Many-to-Many)
     public function intendedUses()
     {
-        return $this->hasMany(IntendedUse::class);
+        return $this->belongsToMany(IntendedUse::class, 'intended_use_product');
     }
 
     // 7. Relasi Spesifikasi Tambahan
     public function attributes()
     {
-        return $this->hasMany(ProductAttribute::class);
+        return $this->belongsToMany(IntendedUse::class);
     }
 }

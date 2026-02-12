@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
 use Illuminate\Support\Facades\Route;
 
 // Import Semua Controller
@@ -27,6 +28,12 @@ Route::get('/support', function () {
     return view('support'); // pastikan nama file view-nya support.blade.php
 })->name('support');
 
+// Route untuk halaman daftar artikel (Index)
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+// Route untuk detail artikel (Show)
+Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+// Jika section Intel ada di halaman Home, pastikan route home Anda memanggil controller yang tepat
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/warranty', function () {
     return view('warranty');
@@ -49,6 +56,8 @@ Route::get('/privacy-policy', function () {
 // Halaman Katalog & Detail Produk
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 
 // Fitur Keranjang (Cart)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

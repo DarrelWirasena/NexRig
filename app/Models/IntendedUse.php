@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class IntendedUse extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = ['title', 'description', 'icon_url'];
 
-    public function product()
+    public function products()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsToMany(Product::class, 'intended_use_product');
     }
 }

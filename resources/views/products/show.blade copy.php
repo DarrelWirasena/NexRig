@@ -7,23 +7,6 @@
         .text-glow { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Card Intended Use ala Starforge */
-        .intended-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .intended-card:hover {
-            border-color: rgba(59, 130, 246, 0.5);
-            background: rgba(59, 130, 246, 0.05);
-            transform: translateY(-5px);
-        }
-        .icon-container {
-            background: linear-gradient(45deg, #3b82f6, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
     </style>
 
     <div class="bg-[#050505] min-h-screen pb-20">
@@ -71,7 +54,7 @@
                         
                         {{-- 1. TITLE & SERIES --}}
                         <h1 class="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tight mb-4">{{ $product->name }}</h1>
-                        
+
                         {{-- [BARU] VARIANT SELECTOR --}}
                         <div class="mb-8">
                             <p class="text-xs text-gray-500 uppercase font-bold mb-2">Select Edition:</p>
@@ -188,7 +171,7 @@
                     </div>
                 </div>
 
-                {{-- [MODIFIKASI] TABEL BENCHMARK (Kanan) --}}
+{{-- [MODIFIKASI] TABEL BENCHMARK (Kanan) --}}
                 <div>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <h3 class="text-2xl font-bold text-white uppercase flex items-center gap-2">
@@ -282,49 +265,6 @@
                         *Performance metrics based on average FPS. Actual results may vary depending on driver version.
                     </p>
                 </div>
-            </div>
-            
-            {{-- [DIPINDAHKAN KE LUAR GRID] SECTION: STARFORGE STYLE INTENDED USE --}}
-                {{-- Dengan ditaruh di sini, ia akan mengambil lebar penuh kontainer (12 kolom) --}}
-                <section class="mt-32 py-20 border-t border-white/5">
-                    <div class="max-w-[1440px] mx-auto">
-                        
-                        {{-- Deskripsi Header --}}
-                        <div class="max-w-3xl mb-16">
-                            <h3 class="text-primary font-mono text-xs tracking-[0.4em] uppercase mb-4">/// System Capabilities</h3>
-                            <h2 class="text-4xl md:text-5xl font-black text-white italic uppercase mb-6 leading-tight">
-                                Intended Use
-                            </h2>
-                            <p class="text-gray-400 text-lg leading-relaxed">
-                                The <span class="text-white font-bold">{{ $product->series->name ?? 'Navigator' }} Series</span> features PCs that are fine-tuned for the performance needed for a competitive edge. Ideal for higher resolution or higher frame rates.
-                            </p>
-                        </div>
-
-                        {{-- Grid Card: Diatur menjadi 4 kolom (lg:grid-cols-4) --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            @foreach($product->intendedUses as $use)
-                                <div class="group p-8 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 hover:border-primary/50 transition-all duration-500">
-                                    
-                                    {{-- Ikon dengan Efek Cahaya --}}
-                                    <div class="w-14 h-14 mb-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/50 transition-all">
-                                        <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
-                                            {{ $use->icon_url }}
-                                        </span>
-                                    </div>
-
-                                    {{-- Konten Teks --}}
-                                    <h4 class="text-white font-black uppercase italic tracking-wider text-xl mb-3">
-                                        {{ $use->title }}
-                                    </h4>
-                                    <p class="text-gray-500 text-sm leading-relaxed group-hover:text-gray-400 transition-colors">
-                                        {{ $use->description }}
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </section>
-                
 
     <script>
         function changeImage(url) {

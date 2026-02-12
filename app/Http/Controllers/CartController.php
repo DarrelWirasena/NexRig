@@ -97,19 +97,18 @@ class CartController extends Controller
     // 4. Hapus Barang (DIPERBARUI)
     public function destroy(Request $request, $id)
     {
-        $cart = session()->get('cart');
+        $cart = session()->get('cart', []); // Default array kosong
 
         if(isset($cart[$id])) {
             unset($cart[$id]);
             session()->put('cart', $cart);
         }
 
-        // --- LOGIKA AJAX UNTUK MINI CART ---
         if ($request->wantsJson() || $request->ajax()) {
-            // 1. Render HTML terbaru (kosong atau sisa item)
+            // 1. Render partial view sisa item atau empty state
             $cartHtml = view('components.mini-cart-items', ['cart' => $cart])->render();
             
-            // 2. Hitung Subtotal Baru
+            // 2. Hitung Subtotal
             $subtotal = 0;
             foreach($cart as $details) {
                 $subtotal += $details['price'] * $details['quantity'];
@@ -118,10 +117,11 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'cartHtml' => $cartHtml,
-                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.')
+                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                // KONTEKS TAMBAHAN: Kirim jumlah item tersisa
+                'cartCount' => count($cart) 
             ]);
         }
-        // -----------------------------------
 
         return redirect()->back()->with('success', 'Product removed successfully');
     }
