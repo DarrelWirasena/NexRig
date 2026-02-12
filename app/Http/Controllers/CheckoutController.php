@@ -2,107 +2,121 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\UserAddress;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    // Menampilkan Halaman Checkout
+    /**
+     * Menampilkan Halaman Checkout
+     */
     public function index()
     {
-        // Cek cart kosong
+        // 1. Cek apakah keranjang kosong
         if (!session('cart') || count(session('cart')) == 0) {
             return redirect()->route('products.index');
         }
-        return view('checkout.index');
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        // 2. Ambil alamat default atau alamat pertama
+        $address = $user->addresses()->where('is_default', true)->first() ?? $user->addresses()->first();
+
+        return view('checkout.index', compact('address'));
     }
 
-    // Proses Checkout (Simpan ke DB)
+    /**
+     * Memproses Transaksi (Place Order)
+     */
     public function store(Request $request)
     {
-        // 1. Cek User Login
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Please login to checkout');
-        }
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        // 2. Cek Keranjang Kosong
-        $cart = session()->get('cart');
-        if (!$cart) {
-            return redirect()->back()->with('error', 'Cart is empty!');
-        }
-
-        // [BARU] 3. Validasi Input Alamat
-        // Pastikan input form dari checkout/index.blade.php valid
+        // 1. Validasi Input (Data ini datang dari Card Hidden Input atau Form Component)
         $request->validate([
-            'name' => 'required|string',
-            'phone' => 'required|string',
-            'address' => 'required|string',
-            'city' => 'required|string',
-            'postal_code' => 'required|string',
+            'recipient_name' => 'required|string|max:255',
+            'phone'          => 'required|string|max:20',
+            'full_address'   => 'required|string',
+            'city'           => 'required|string|max:100',
+            'postal_code'    => 'required|string|max:20',
         ]);
 
-        // 4. Hitung Total
-        $total = 0;
-        foreach ($cart as $details) {
-            $total += $details['price'] * $details['quantity'];
+        // 2. LOGIKA OTOMATIS: Jika user belum punya alamat, simpan ke buku alamat
+        if ($user->addresses()->doesntExist()) {
+            $user->addresses()->create([
+                'label'          => $request->label ?? 'Home',
+                'recipient_name' => $request->recipient_name,
+                'phone'          => $request->phone,
+                'city'           => $request->city,
+                'postal_code'    => $request->postal_code,
+                'full_address'   => $request->full_address,
+                'is_default'     => true, // Otomatis jadi utama
+            ]);
         }
 
-        // 5. Mulai Transaksi Database
-        DB::beginTransaction();
+        // 3. Hitung Total Harga
+        $cart = session()->get('cart');
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+        $tax = $subtotal * 0.11; // Pajak 11%
+        $grandTotal = $subtotal + $tax;
 
+        // 4. Mulai Transaksi Database
+        DB::beginTransaction();
         try {
-            // A. Simpan Header Pesanan (Order)
-            // [MODIFIKASI] Menambahkan data pengiriman ke tabel orders
-            // Pastikan kolom-kolom ini sudah ada di migration 'orders' Anda
-            // Jika belum ada, jalankan migration 'add_shipping_details_to_orders_table' dulu
+            // A. Simpan Order (Snapshot Alamat)
             $order = Order::create([
-                'user_id' => Auth::id(),
-                'order_date' => now(),
-                'total_price' => $total,
-                'status' => 'pending', 
-                // Data Shipping
-                'shipping_name' => $request->name,
-                'shipping_phone' => $request->phone,
-                'shipping_address' => $request->address,
-                'shipping_city' => $request->city,
+                'user_id'              => $user->id,
+                'order_date'           => now(),
+                'total_price'          => $grandTotal,
+                'status'               => 'pending',
+                // Data Snapshot (disalin permanen ke tabel orders)
+                'shipping_name'        => $request->recipient_name,
+                'shipping_phone'       => $request->phone,
+                'shipping_address'     => $request->full_address,
+                'shipping_city'        => $request->city,
                 'shipping_postal_code' => $request->postal_code,
             ]);
 
-            // B. Simpan Detail Item (OrderItem)
+            // B. Simpan Item Pesanan
             foreach ($cart as $id => $details) {
                 OrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id'   => $order->id,
                     'product_id' => $id,
-                    'quantity' => $details['quantity'],
-                    'price' => $details['price'],
+                    'quantity'   => $details['quantity'],
+                    'price'      => $details['price'],
                 ]);
             }
 
-            // C. Kosongkan Keranjang
+            DB::commit();
+            
+            // C. Hapus Keranjang
             session()->forget('cart');
 
-            DB::commit(); // Simpan permanen
-            
-            // [MODIFIKASI PENTING] Redirect ke Halaman Success, bukan Home
             return redirect()->route('checkout.success', $order->id);
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Batalkan semua kalau error
-            return redirect()->back()->with('error', 'Checkout failed: ' . $e->getMessage());
+            DB::rollBack();
+            return back()->with('error', 'Gagal memproses pesanan: ' . $e->getMessage());
         }
     }
 
-    // [METODE BARU] Menampilkan Halaman Order Success
+    /**
+     * Menampilkan Halaman Sukses
+     */
     public function success($id)
     {
-        // Ambil order berdasarkan ID, pastikan milik user yang sedang login (Security)
-        $order = Order::where('id', $id)
-                      ->where('user_id', Auth::id())
-                      ->firstOrFail();
-
+        // Cari order, pastikan milik user yang sedang login
+        $order = Order::where('user_id', auth()->id())->findOrFail($id);
+        
         return view('checkout.success', compact('order'));
     }
 }

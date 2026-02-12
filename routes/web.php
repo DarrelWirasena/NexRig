@@ -11,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AddressController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Bisa diakses siapa saja)
@@ -98,16 +99,9 @@ Route::middleware('auth')->group(function () {
        // PROFILE ROUTES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.app');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile/address', [ProfileController::class, 'address'])->name('profile.address');
 
-    // Route untuk menampilkan form Tambah
-    Route::get('/profile/address/create', [ProfileController::class, 'createAddress'])->name('address.create');
-    // Route untuk Proses Simpan (Store)
-    Route::post('/profile/address', [ProfileController::class, 'storeAddress'])->name('address.store');
-    // Route untuk menampilkan form Edit (dengan ID)
-    Route::get('/profile/address/{id}/edit', [ProfileController::class, 'editAddress'])->name('address.edit');
-    // Route untuk Proses Update (Update)
-    Route::put('/profile/address/{id}', [ProfileController::class, 'updateAddress'])->name('address.update');
+
+    
 
     // 2. TAMBAHKAN ROUTE INI (INI YANG HILANG)
 Route::post('/support/send', [ContactController::class, 'store'])
@@ -118,4 +112,15 @@ Route::post('/support/send', [ContactController::class, 'store'])
     
     // Mengirim pesan baru
     Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');
+Route::get('/address-book', [AddressController::class, 'index'])->name('address.index');
+
+    // 2. Route untuk Simpan Data (Metode POST)
+    // Pastikan URL ini yang digunakan di <form action="...">
+    Route::post('/profile/address', [AddressController::class, 'store'])->name('address.store');
+    
+    // Route lainnya...
+    Route::get('/address/create', [AddressController::class, 'create'])->name('address.create');
+    Route::get('/address/{id}/edit', [AddressController::class, 'edit'])->name('address.edit');
+    Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
+    Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
 });
