@@ -1,131 +1,134 @@
 @extends('layouts.app')
 
 @section('content')
-    {{-- Custom CSS untuk halaman ini (bisa dipindah ke CSS global jika mau) --}}
-    <style>
-        .clip-corner-sm { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
-        .input-tech {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .input-tech:focus {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: var(--primary-color, #3b82f6);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-            outline: none;
-        }
-    </style>
+<style>
+    .clip-corner-nex { 
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); 
+    }
+    
+    .scanline {
+        width: 100%;
+        height: 1px;
+        background: rgba(37, 99, 235, 0.2);
+        position: absolute;
+        animation: scan 3s linear infinite;
+        z-index: 10;
+        pointer-events: none;
+    }
 
-    {{-- BACKGROUND WRAPPER --}}
-    <div class="relative min-h-screen flex items-center justify-center bg-[#050505] overflow-hidden py-20 px-4">
+    @keyframes scan {
+        0% { top: 0; }
+        100% { top: 100%; }
+    }
+
+    .input-tech {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .input-tech:focus {
+        background: rgba(37, 99, 235, 0.05);
+        border-color: #2563eb;
+        box-shadow: 0 0 15px rgba(37, 99, 235, 0.15);
+        outline: none;
+    }
+
+    /* Memastikan layar tidak bisa scroll */
+    body, html {
+        overflow: hidden;
+    }
+</style>
+
+{{-- FIXED BACKGROUND --}}
+<div class="fixed inset-0 z-0 bg-[#050505]">
+    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-[400px] bg-blue-600/10 blur-[100px] rounded-full"></div>
+</div>
+
+{{-- TOMBOL KEMBALI (Dikecilkan) --}}
+<a href="/" class="fixed top-6 left-6 z-50 flex items-center gap-2 text-slate-500 hover:text-white transition-all group">
+    <span class="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+    <span class="text-[9px] font-black uppercase tracking-[0.2em] italic">Home</span>
+</a>
+
+{{-- MAIN CONTENT --}}
+<div class="relative h-screen w-full flex items-center justify-center p-4">
+    
+    <div class="relative z-20 w-full max-w-[360px] flex flex-col items-center">
         
-        {{-- Background Effects (Sama seperti Home) --}}
-        <div class="absolute inset-0 z-0 pointer-events-none">
-            <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/20 blur-[120px] rounded-full mix-blend-screen"></div>
+        {{-- HEADER SECTION (Dibuat Lebih Rapat) --}}
+        <div class="text-center mb-6 w-full relative z-50">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-blue-500/20 bg-blue-500/5 mb-4">
+                <span class="w-1 h-1 rounded-full bg-blue-500 animate-pulse"></span>
+                <span class="text-blue-500 text-[8px] font-black uppercase tracking-[0.3em]">Auth_Required</span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tighter uppercase italic leading-[0.85]">
+                Identify <br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-200 to-cyan-100"
+                      style="-webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));">
+                    Yourself
+                </span>
+            </h1>
         </div>
 
-        {{-- LOGIN CARD --}}
-        <div class="relative z-10 w-full max-w-md">
+        {{-- LOGIN CARD (Padding dikurangi dari 12 ke 8) --}}
+        <div class="w-full relative bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 p-6 sm:p-8 clip-corner-nex shadow-2xl overflow-hidden">
+            <div class="scanline"></div>
             
-            {{-- Header Title --}}
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded border border-primary/30 bg-primary/10 mb-4">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <span class="text-primary text-[10px] font-bold tracking-[0.2em] uppercase">System Access</span>
-                </div>
-                <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">
-                    Identify <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-400">Yourself</span>
-                </h1>
-                <p class="text-gray-500 text-sm mt-2">Enter your credentials to access the NexRig mainframe.</p>
-            </div>
+            <form method="POST" action="{{ route('login') }}" class="space-y-4 relative z-30">
+                @csrf
 
-            {{-- ALERT MESSAGES (Success/Error) --}}
-            @if(session('success'))
-                <div class="mb-6 p-4 bg-green-500/10 border border-green-500/50 text-green-400 text-sm rounded flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg">check_circle</span>
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="mb-6 p-4 bg-red-500/10 border border-red-500/50 text-red-400 text-sm rounded flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg">error</span>
-                    {{ session('error') }}
-                </div>
-            @endif
+              {{-- Input Email --}}
+<div class="space-y-1.5">
+    <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Email Command</label>
+    <div class="relative flex items-center group"> {{-- Ditambah flex items-center --}}
+        <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-blue-500 transition-colors pointer-events-none">
+            alternate_email
+        </span>
+        <input type="email" name="email" required autofocus
+               {{-- pl-12 (48px) memberikan ruang yang pas untuk icon yang berada di left-4 (16px) --}}
+               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none relative z-20" 
+               placeholder="user@nexrig.net">
+    </div>
+</div>
 
-            {{-- FORM CONTAINER --}}
-            <div class="bg-[#0a0a0a] border border-white/10 p-8 relative clip-corner-sm backdrop-blur-xl">
-                {{-- Decorative Line --}}
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-6">
-                    @csrf
-
-                    {{-- Email Input --}}
-                    <div>
-                        <label for="email" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email Command</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined">alternate_email</span>
-                            <input type="email" name="email" id="email" 
-                                   class="w-full pl-12 pr-4 py-3 input-tech rounded-sm" 
-                                   placeholder="pilot@nexrig.com" 
-                                   value="{{ old('email') }}" required autofocus>
-                        </div>
-                        @error('email')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Password Input --}}
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="password" class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Access Code</label>
-                        </div>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined">lock</span>
-                            <input type="password" name="password" id="password" 
-                                   class="w-full pl-12 pr-4 py-3 input-tech rounded-sm" 
-                                   placeholder="••••••••" required>
-                        </div>
-                        @error('password')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Remember Me --}}
-                    {{-- (Opsional: Kalau mau nambah fitur remember token nanti) --}}
-                    {{-- <div class="flex items-center">
-                        <input id="remember_me" type="checkbox" class="rounded bg-white/10 border-white/20 text-primary focus:ring-primary">
-                        <label for="remember_me" class="ml-2 text-sm text-gray-400">Keep session active</label>
-                    </div> --}}
-
-                    {{-- Submit Button --}}
+{{-- Input Password --}}
+<div class="space-y-1.5">
+    <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Access Code</label>
+    <div class="relative flex items-center group">
+        <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-blue-500 transition-colors pointer-events-none">
+            terminal
+        </span>
+        <input type="password" name="password" required 
+               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none tracking-widest relative z-20" 
+               placeholder="••••••••">
+    </div>
+</div>
+                <div class="pt-2">
                     <button type="submit" 
-                            class="w-full py-4 bg-primary hover:bg-white hover:text-black text-white font-bold uppercase tracking-[0.15em] transition-all duration-300 clip-corner-sm shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] flex justify-center items-center gap-2 group">
-                        Initialize Session
-                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">login</span>
+                            class="w-full py-4 bg-blue-600 hover:bg-white text-white hover:text-black font-black uppercase italic tracking-[0.2em] text-[9px] transition-all duration-500 clip-corner-nex shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 group">
+                        <span>Initialize Session</span>
+                        <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">bolt</span>
                     </button>
-                </form>
-
-                {{-- Footer Links --}}
-                <div class="mt-8 pt-6 border-t border-white/5 text-center">
-                    <p class="text-gray-500 text-sm">
-                        New Recruit? 
-                        <a href="{{ route('register') }}" class="text-white hover:text-primary font-bold transition-colors uppercase tracking-wide ml-1">
-                            Deploy Here
-                        </a>
-                    </p>
                 </div>
+            </form>
+
+            <div class="mt-6 pt-5 border-t border-white/5 text-center relative z-30">
+                <p class="text-slate-600 text-[9px] font-bold uppercase tracking-[0.1em]">
+                    New Pilot? 
+                    <a href="{{ route('register') }}" class="text-white hover:text-blue-500 transition-colors ml-1 border-b border-white/20 pb-0.5">Deploy New Identity</a>
+                </p>
             </div>
-            
-            {{-- Decorative Text Bottom --}}
-            <div class="flex justify-between text-[10px] text-gray-600 mt-4 uppercase font-mono px-2">
-                <span>NexRig OS v2.0</span>
-                <span>Secure Connection // TLS 1.3</span>
-            </div>
+        </div>
+
+        {{-- FOOTER MINIMALIS --}}
+        <div class="w-full mt-5 flex justify-between items-center px-4 text-[8px] font-mono text-slate-700 uppercase tracking-[0.1em] opacity-50">
+            <span>Secure_Conn</span>
+            <span>TLS_v1.3</span>
         </div>
     </div>
+</div>
 @endsection

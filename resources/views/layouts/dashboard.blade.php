@@ -13,15 +13,31 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    {{-- GLOBAL DASHBOARD STYLES --}}
     <style>
         body { font-family: 'Space Grotesk', sans-serif; }
-        
         .clip-card { clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
         
+        /* NexRig Cyberpunk SweetAlert Style */
+        .nexrig-swal-popup {
+            background: #0a0a0a !important;
+            border: 1px solid rgba(37, 99, 235, 0.3) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+        }
+
+        @media (max-width: 640px) {
+            .nexrig-swal-popup { width: 90% !important; padding: 1.25rem !important; }
+            .swal2-actions { flex-direction: column-reverse !important; gap: 12px; width: 100% !important; }
+            .swal2-actions button { width: 100% !important; margin: 0 !important; }
+        }
+
         .input-tech {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -29,30 +45,18 @@
             transition: all 0.3s ease;
         }
         .input-tech:focus {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: #2563eb;
+            background: rgba(0, 0, 0, 0.5); border-color: #2563eb; outline: none;
             box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
-            outline: none;
         }
 
-        /* Sidebar Styles */
         .nav-item.active {
-            background-color: #2563eb;
-            color: white;
-            font-weight: 700;
+            background-color: #2563eb; color: white; font-weight: 700;
             box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
         }
-        .nav-item:hover:not(.active) {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
         
-        /* Scrollbar */
         main::-webkit-scrollbar { width: 8px; }
         main::-webkit-scrollbar-track { background: #050014; }
         main::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 4px; }
-        main::-webkit-scrollbar-thumb:hover { background: #333; }
         
         .no-bounce { overscroll-behavior: none; }
     </style>
@@ -60,23 +64,18 @@
 <body class="font-sans antialiased bg-[#050014] text-white">
 
     <div class="h-screen flex overflow-hidden relative no-bounce">
-        
-        {{-- Background Elements --}}
+        {{-- Background Glow --}}
         <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
             <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
             <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-900/10 blur-[120px] rounded-full"></div>
         </div>
 
-        {{-- Overlay Mobile --}}
         <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-30 hidden lg:hidden backdrop-blur-sm transition-opacity no-bounce"></div>
 
-        {{-- PANGGIL COMPONENT SIDEBAR --}}
         <x-sidebar />
 
-        {{-- MAIN CONTENT --}}
         <main class="flex-1 h-full overflow-y-auto p-4 md:p-6 lg:p-12 w-full relative z-10 no-bounce scroll-smooth">
-            
-            {{-- Mobile Toggle Button --}}
+            {{-- Mobile Menu --}}
             <div class="lg:hidden mb-6 flex items-center justify-between bg-[#0a0a0a] border border-white/10 p-4 rounded-xl">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-blue-500">dashboard</span>
@@ -87,9 +86,7 @@
                 </button>
             </div>
 
-            {{-- Slot Konten Halaman --}}
             @yield('content')
-
         </main>
     </div>
 
@@ -104,6 +101,49 @@
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
             }
+        }
+
+        // --- GLOBAL DELETE ---
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'HAPUS ALAMAT?',
+                text: "Data ini akan dihapus secara permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#1f2937',
+                confirmButtonText: 'YA, HAPUS!',
+                cancelButtonText: 'BATAL',
+                background: '#0a0a0a',
+                color: '#fff',
+                width: window.innerWidth < 640 ? '90%' : '30rem',
+                customClass: { popup: 'nexrig-swal-popup' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('delete-form-' + id);
+                    if (form) form.submit();
+                }
+            })
+        }
+
+        // --- FLASH MESSAGES (Gaya Penulisan agar VS Code tidak merah) ---
+        const msgSuccess = "{{ session('success') }}";
+        const msgError = "{{ session('error') }}";
+
+        if (msgSuccess) {
+            Swal.fire({
+                icon: 'success', title: 'BERHASIL', text: msgSuccess,
+                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
+                customClass: { popup: 'nexrig-swal-popup' }
+            });
+        }
+
+        if (msgError) {
+            Swal.fire({
+                icon: 'error', title: 'GAGAL', text: msgError,
+                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
+                customClass: { popup: 'nexrig-swal-popup' }
+            });
         }
     </script>
 </body>

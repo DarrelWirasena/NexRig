@@ -217,18 +217,18 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Email Support</p>
-                                    <p class="text-white font-medium">support@nexrig.com</p>
+                                    <p class="text-white font-medium">nexrigsupp0rt@gmail.com</p>
                                 </div>
                             </a>
 
                             {{-- WhatsApp --}}
-                            <a href="https://wa.me/6281234567890" target="_blank" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
+                            <a href="https://wa.me/6289507094710" target="_blank" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                                 <div class="w-12 h-12 bg-[#25D366]/10 rounded-lg flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-colors">
                                     <span class="material-symbols-outlined">chat</span>
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">WhatsApp Chat</p>
-                                    <p class="text-white font-medium">+62 812-3456-7890</p>
+                                    <p class="text-white font-medium">+62 895-0709-4710</p>
                                 </div>
                             </a>
                         </div>

@@ -11,7 +11,11 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-
+// Tambahkan di dalam class User
+        public function addresses()
+        {
+            return $this->hasMany(UserAddress::class);
+        }
     /**
      * The attributes that are mass assignable.
      *

@@ -45,42 +45,41 @@
             </div>
         </div>
     </div>
+{{-- Footer Actions --}}
+<div class="mt-auto p-4 bg-[#050014]/50 border-t border-white/5 flex items-center justify-between">
+    <div class="flex gap-2">
+        {{-- TOMBOL EDIT --}}
+        <a href="{{ $id ? route('address.edit', $id) : '#' }}" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
+            <span class="material-symbols-outlined text-xl">edit</span>
+        </a>
 
-    {{-- Footer Actions --}}
-    <div class="mt-auto p-4 bg-[#050014]/50 border-t border-white/5 flex items-center justify-between">
-        <div class="flex gap-2">
-            {{-- TOMBOL EDIT (Link ke Route Edit) --}}
-            {{-- Gunakan ID jika ada, atau '#' untuk preview statis --}}
-            <a href="{{ $id ? route('address.edit', $id) : '#' }}" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
-                <span class="material-symbols-outlined text-xl">edit</span>
-            </a>
-
-            {{-- TOMBOL DELETE (Form) --}}
-            @if($id)
-                <form action="#" method="POST" onsubmit="return confirm('Delete this address?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                        <span class="material-symbols-outlined text-xl">delete</span>
-                    </button>
-                </form>
-            @else
-                {{-- Tampilan Statis --}}
-                <button class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                    <span class="material-symbols-outlined text-xl">delete</span>
-                </button>
-            @endif
-        </div>
-
-        @if($isActive)
-            <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest pointer-events-none">
-                Currently Active
-            </span>
+        {{-- TOMBOL DELETE (Dihubungkan ke SweetAlert2) --}}
+        @if($id)
+            {{-- Kita tidak perlu form di sini karena form sudah ada di file address.blade.php --}}
+            {{-- Tombol ini hanya memicu fungsi JavaScript global --}}
+            <button type="button" 
+                    onclick="confirmDelete('{{ $id }}')" 
+                    class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                <span class="material-symbols-outlined text-xl">delete</span>
+            </button>
         @else
-            {{-- TOMBOL SET DEFAULT --}}
-            <button class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors">
-                Set as Default
+            {{-- Tampilan Statis --}}
+            <button class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                <span class="material-symbols-outlined text-xl">delete</span>
             </button>
         @endif
     </div>
+
+    @if($isActive)
+        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest pointer-events-none">
+            Currently Active
+        </span>
+    @else
+        {{-- TOMBOL SET DEFAULT --}}
+        {{-- Anda bisa menghubungkan ini ke form update jika ingin fitur set default sekali klik --}}
+        <button class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors">
+            Set as Default
+        </button>
+    @endif
+</div>
 </div>

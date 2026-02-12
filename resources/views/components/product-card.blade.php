@@ -10,18 +10,13 @@
             </div>
         @endif
         
-        <button class="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary">
-            <span class="material-symbols-outlined text-[20px]">favorite</span>
-        </button>
+       
     </div>
 
     <div class="p-5 flex flex-col flex-1">
         <div class="flex justify-between items-start mb-2">
             <h3 class="text-gray-900 dark:text-white text-lg font-bold group-hover:text-primary transition-colors line-clamp-1">{{ $name }}</h3>
             @if($rating)
-                <div class="flex items-center gap-1 text-yellow-400 text-xs font-bold shrink-0">
-                    <span class="material-symbols-outlined text-[14px] fill-current">star</span> {{ $rating }}
-                </div>
             @endif
         </div>
         
