@@ -87,8 +87,61 @@
     @include('components.footer') {{-- Sesuaikan dengan nama file footer Anda --}}
 @endif
 
-    {{-- SIDEBARS & OVERLAYS --}}
+    {{-- 
+        =========================================================
+        SIDEBARS & OVERLAYS 
+        =========================================================
+    --}}
     <x-mini-cart />
+
+    {{-- VIDEO OVERLAY COMPONENT (Dipindah ke luar agar tidak terbungkus script) --}}
+    <div x-data="{ open: false, videoUrl: '' }" 
+        x-on:open-video.window="open = true; videoUrl = $event.detail.url"
+        x-on:keydown.escape.window="open = false; videoUrl = ''"
+        x-show="open" 
+        class="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-10"
+        x-cloak>
+        
+        <div x-show="open" 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="open = false; videoUrl = ''"
+            class="absolute inset-0 bg-black/90 backdrop-blur-xl">
+        </div>
+
+        <div x-show="open"
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(19,55,236,0.3)]">
+            
+            <button @click="open = false; videoUrl = ''" 
+                    class="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white border border-white/10 hover:bg-primary transition-colors group">
+                <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+            </button>
+
+            <div class="absolute inset-0 flex items-center justify-center -z-10">
+                <span class="material-symbols-outlined text-primary text-5xl animate-spin">progress_activity</span>
+            </div>
+
+            <template x-if="open">
+                <iframe class="w-full h-full" 
+                        :src="videoUrl" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                </iframe>
+            </template>
+        </div>
+    </div>
 
     {{-- 
         =========================================================
@@ -269,68 +322,9 @@
             });
         }
 
-        {{-- VIDEO OVERLAY COMPONENT --}}
-        <div x-data="{ open: false, videoUrl: '' }" 
-            x-on:open-video.window="open = true; videoUrl = $event.detail.url"
-            x-on:keydown.escape.window="open = false; videoUrl = ''"
-            x-show="open" 
-            class="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-10"
-            x-cloak>
-            
-            {{-- Backdrop dengan Blur --}}
-            <div x-show="open" 
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                @click="open = false; videoUrl = ''"
-                class="absolute inset-0 bg-black/90 backdrop-blur-xl">
-            </div>
-
-            {{-- Container Video --}}
-            <div x-show="open"
-                x-transition:enter="transition ease-out duration-500"
-                x-transition:enter-start="opacity-0 scale-90 translate-y-8"
-                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-300"
-                x-transition:leave-start="opacity-100 scale-100"
-                x-transition:leave-end="opacity-0 scale-95"
-                class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(19,55,236,0.3)]">
-                
-                {{-- Close Button --}}
-                <button @click="open = false; videoUrl = ''" 
-                        class="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white border border-white/10 hover:bg-primary transition-colors group">
-                    <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
-                </button>
-
-                {{-- Loading Spinner (Sambil nunggu YouTube load) --}}
-                <div class="absolute inset-0 flex items-center justify-center -z-10">
-                    <span class="material-symbols-outlined text-primary text-5xl animate-spin">progress_activity</span>
-                </div>
-
-                {{-- Iframe --}}
-                <template x-if="open">
-                    <iframe class="w-full h-full" 
-                            :src="videoUrl" 
-                            title="YouTube video player" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen>
-                    </iframe>
-                </template>
-            </div>
-
-            {{-- Garis Dekorasi ala NexRig --}}
-            <div class="absolute bottom-10 left-10 hidden md:block opacity-20">
-                <p class="text-primary font-mono text-xs tracking-[0.5em] uppercase">Visual Feed Established // 4K Resolution</p>
-            </div>
-        </div>
-
-        @stack('scripts')
     </script>
-
+    
+        @stack('scripts')
     
 </body>
 </html>
