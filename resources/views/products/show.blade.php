@@ -155,7 +155,8 @@
 
             </div>
 
-            {{-- SECTION: SPESIFIKASI & BENCHMARK --}}
+        {{-- SECTION: SPESIFIKASI & BENCHMARK --}}
+            {{-- PERBAIKAN: Pastikan ada kata 'div' di sini --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-24">
                 
                 {{-- TABEL SPESIFIKASI (Kiri) --}}
@@ -188,21 +189,19 @@
                     </div>
                 </div>
 
-                {{-- [MODIFIKASI] TABEL BENCHMARK (Kanan) --}}
+                {{-- TABEL BENCHMARK (Kanan) --}}
                 <div>
+                    {{-- HEADER & TOMBOL RESOLUSI --}}
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <h3 class="text-2xl font-bold text-white uppercase flex items-center gap-2">
-                            {{-- Ganti warna balok jadi primary (biru) --}}
                             <span class="w-1 h-8 bg-primary block"></span> Performance
                         </h3>
 
-                        {{-- RESOLUTION SWITCHER BUTTONS --}}
                         <div class="flex bg-white/5 p-1 rounded-lg border border-white/10">
                             @foreach(['1080p', '1440p', '4k'] as $res)
                                 <button onclick="switchBenchmark('{{ $res }}')" 
                                         id="btn-{{ $res }}"
                                         class="px-4 py-1.5 rounded text-xs font-bold uppercase transition-all
-                                        {{-- Logic warna aktif jadi Primary --}}
                                         {{ $res === '1080p' ? 'bg-primary text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-400 hover:text-white' }}">
                                     {{ $res }}
                                 </button>
@@ -213,49 +212,41 @@
                     {{-- SIAPKAN DATA --}}
                     @php
                         $groupedBenchmarks = $product->benchmarks->groupBy(function($item) {
-                            return strtolower($item->pivot->resolution);
+                            return strtolower($item->resolution ?? '1080p');
                         });
                     @endphp
 
-                    {{-- LOOPING CONTAINER --}}
+                    {{-- LOOPING KONTEN --}}
                     @foreach(['1080p', '1440p', '4k'] as $res)
                         <div id="content-{{ $res }}" class="{{ $res === '1080p' ? 'block' : 'hidden' }} transition-opacity duration-300">
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                @if(isset($groupedBenchmarks[$res]))
+                                @if(isset($groupedBenchmarks[$res]) && $groupedBenchmarks[$res]->count() > 0)
                                     @foreach($groupedBenchmarks[$res] as $benchmark)
                                         
                                         {{-- CARD GAME --}}
                                         <div class="relative h-40 rounded-xl overflow-hidden border border-white/10 group hover:border-primary/50 transition-all">
                                             
-                                            {{-- 1. Background Image Game --}}
-                                            {{-- Pastikan di Model Game ada kolom 'image_url' atau sesuaikan nama kolomnya --}}
-                                            <img src="{{ $benchmark->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
-                                                 alt="{{ $benchmark->name }}" 
+                                            <img src="{{ $benchmark->game->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
+                                                 alt="{{ $benchmark->game->name ?? 'Game' }}" 
                                                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                                             
-                                            {{-- 2. Dark Overlay (Supaya teks terbaca) --}}
                                             <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent"></div>
 
-                                            {{-- 3. Konten --}}
                                             <div class="absolute inset-0 p-5 flex flex-col justify-between">
-                                                
-                                                {{-- Bagian Atas: Nama Game --}}
                                                 <div class="relative z-10">
-                                                    <h4 class="text-white font-bold text-lg leading-tight">{{ $benchmark->name }}</h4>
+                                                    <h4 class="text-white font-bold text-lg leading-tight">
+                                                        {{ $benchmark->game->name ?? 'Unknown Game' }}
+                                                    </h4>
                                                     <span class="text-[10px] text-gray-300 uppercase tracking-widest">
                                                         {{ $res }} Ultra
                                                     </span>
                                                 </div>
 
-                                                {{-- Bagian Bawah: FPS --}}
                                                 <div class="relative z-10 flex items-end gap-2">
-                                                    {{-- Angka FPS --}}
                                                     <span class="text-5xl font-black text-white text-glow shadow-black drop-shadow-md">
-                                                        {{ $benchmark->pivot->avg_fps }}
+                                                        {{ $benchmark->avg_fps }}
                                                     </span>
-                                                    
-                                                    {{-- Badge FPS Kecil --}}
                                                     <span class="mb-2 px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold uppercase tracking-wider">
                                                         FPS
                                                     </span>
@@ -265,27 +256,26 @@
 
                                     @endforeach
                                 @else
-                                    {{-- Empty State --}}
                                     <div class="col-span-2 py-12 text-center border border-dashed border-white/10 rounded-xl bg-white/5">
                                         <span class="material-symbols-outlined text-4xl text-gray-600 mb-2">speed</span>
                                         <p class="text-gray-500 italic text-sm">
-                                            Benchmark data for {{ $res }} coming soon.
+                                            No benchmark data available for {{ $res }}.
                                         </p>
                                     </div>
                                 @endif
                             </div>
-
                         </div>
                     @endforeach
                     
-                    <p class="text-gray-600 text-[10px] mt-6 text-center border-t border-white/5 pt-4">
+                  <p class="text-gray-600 text-[10px] mt-6 text-center border-t border-white/5 pt-4">
                         *Performance metrics based on average FPS. Actual results may vary depending on driver version.
                     </p>
-                </div>
-            </div>
-            
+                </div> {{-- Penutup Kolom Kanan (Benchmark) --}}
+
+            </div> {{-- [PENTING] TAMBAHKAN INI: Penutup Grid Utama (Specs & Benchmark) --}}
+
+            {{-- SEKARANG SECTION INI SUDAH BENAR-BENAR DI LUAR GRID --}}
             {{-- [DIPINDAHKAN KE LUAR GRID] SECTION: STARFORGE STYLE INTENDED USE --}}
-                {{-- Dengan ditaruh di sini, ia akan mengambil lebar penuh kontainer (12 kolom) --}}
                 <section class="mt-32 py-20 border-t border-white/5">
                     <div class="max-w-[1440px] mx-auto">
                         
@@ -300,19 +290,15 @@
                             </p>
                         </div>
 
-                        {{-- Grid Card: Diatur menjadi 4 kolom (lg:grid-cols-4) --}}
+                        {{-- Grid Card --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             @foreach($product->intendedUses as $use)
                                 <div class="group p-8 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 hover:border-primary/50 transition-all duration-500">
-                                    
-                                    {{-- Ikon dengan Efek Cahaya --}}
                                     <div class="w-14 h-14 mb-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/50 transition-all">
                                         <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
                                             {{ $use->icon_url }}
                                         </span>
                                     </div>
-
-                                    {{-- Konten Teks --}}
                                     <h4 class="text-white font-black uppercase italic tracking-wider text-xl mb-3">
                                         {{ $use->title }}
                                     </h4>
@@ -324,8 +310,10 @@
                         </div>
                     </div>
                 </section>
-                
-
+        
+        </div> {{-- Penutup Wrapper Utama (max-w-[1440px]) --}}
+    </div> {{-- Penutup Background Hitam Utama (bg-[#050505]) --}}
+    
     <script>
         function changeImage(url) {
             document.getElementById('mainImage').src = url;

@@ -35,11 +35,18 @@ return [
     |
     */
 
-    'guards' => [
+ 'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // --- TAMBAHKAN INI ---
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'users', // Tetap pakai tabel users
+        ],
+        // ---------------------
     ],
 
     /*

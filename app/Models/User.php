@@ -7,15 +7,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+// --- 1. IMPORT TAMBAHAN UNTUK FILAMENT ---
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+
+// --- 2. TAMBAHKAN 'implements FilamentUser' DI SINI ---
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-// Tambahkan di dalam class User
-        public function addresses()
-        {
-            return $this->hasMany(UserAddress::class);
-        }
+
+    // --- KODE LAMA ANDA (TIDAK DIUBAH) ---
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -49,5 +56,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // --- 3. FUNGSI BARU UNTUK FILAMENT (Cek Role Admin) ---
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Hanya user dengan kolom role berisi 'admin' yang bisa masuk
+        return $this->role === 'admin';
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AddressController;
+
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Bisa diakses siapa saja)
