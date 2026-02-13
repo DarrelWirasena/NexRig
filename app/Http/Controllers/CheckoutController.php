@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\CartItem;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
 {
@@ -99,6 +100,9 @@ class CheckoutController extends Controller
             DB::commit();
             
             // C. Hapus Keranjang
+            if (Auth::check()) {
+                CartItem::where('user_id', Auth::id())->delete();
+            }
             session()->forget('cart');
 
             return redirect()->route('checkout.success', $order->id);
@@ -115,7 +119,7 @@ class CheckoutController extends Controller
     public function success($id)
     {
         // Cari order, pastikan milik user yang sedang login
-        $order = Order::where('user_id', auth()->id())->findOrFail($id);
+        $order = Order::where('user_id', Auth::id())->findOrFail($id);
         
         return view('checkout.success', compact('order'));
     }

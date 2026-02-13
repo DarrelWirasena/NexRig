@@ -69,35 +69,60 @@
     <div class="absolute inset-0 p-3 md:p-8 flex flex-col justify-end z-10">
         
         @if($type === 'flagship')
-            <span class="text-primary text-[7px] md:text-xs font-bold uppercase tracking-widest mb-1 block">Flagship</span>
-            <h3 class="text-[12px] md:text-5xl font-black text-white uppercase italic leading-none truncate">
+            {{-- Label Flagship --}}
+            <span class="text-primary text-[clamp(10px,2vw,14px)] font-bold uppercase tracking-[0.3em] mb-2 block animate-pulse">
+                Flagship
+            </span>
+            
+            {{-- Nama Produk: Hapus 'truncate', gunakan 'line-clamp' jika ingin membatasi baris --}}
+            <h3 class="text-[clamp(18px,5vw,48px)] font-black text-white uppercase italic leading-[0.9] mb-4 break-words">
                 {{ $product->name ?? 'Next Gen' }}
             </h3>
-            <div class="hidden md:flex items-center gap-2 text-white border-b border-primary w-max mt-4 pb-1 text-xs font-bold group-hover:text-primary transition-colors">
-                VIEW COLLECTION <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            
+            <div class="flex items-center gap-2 text-white border-b border-primary w-max pb-1 text-[clamp(9px,1.5vw,12px)] font-bold group-hover:text-primary transition-colors cursor-pointer">
+                VIEW COLLECTION <span class="material-symbols-outlined text-[clamp(12px,1.8vw,16px)]">arrow_forward</span>
             </div>
 
         @elseif($type === 'bestseller')
-            <span class="bg-primary/20 backdrop-blur text-primary border border-primary/30 text-[6px] md:text-[10px] font-bold px-1 py-0.5 rounded mb-1 inline-block w-max">TRENDING</span>
-            <h3 class="text-[10px] md:text-3xl font-black text-white uppercase italic truncate">
+            <span class="bg-primary/20 backdrop-blur text-primary border border-primary/30 text-[clamp(9px,1.5vw,12px)] font-bold px-2 py-1 rounded mb-2 inline-block w-max tracking-widest">
+                TRENDING
+            </span>
+
+            {{-- Gunakan 'line-clamp-2' agar jika judul sangat panjang, maksimal hanya 2 baris --}}
+            <h3 class="text-[clamp(16px,4vw,30px)] font-black text-white uppercase italic leading-tight break-words line-clamp-2 group-hover:text-primary transition-colors">
                 {{ $product->name ?? 'Popular' }}
             </h3>
-
         @elseif($type === 'custom')
             {{-- Bagian ini Statis, tidak butuh data $product --}}
-            <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-                <div class="w-8 h-8 md:w-16 md:h-16 rounded-lg bg-white/5 flex items-center justify-center mb-1 border border-white/10 group-hover:border-primary/50 transition-colors">
-                    <span class="material-symbols-outlined text-lg md:text-5xl text-primary group-hover:rotate-90 transition-transform duration-500">tune</span>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                {{-- Container Icon: Min 56px (hampir w-14), Preferred 15vw, Max 100px --}}
+                <div class="w-[clamp(56px,15vw,100px)] h-[clamp(56px,15vw,100px)] rounded-2xl bg-white/5 flex items-center justify-center mb-4 border border-white/10 group-hover:border-primary/50 transition-all duration-500 shadow-2xl shadow-primary/10">
+                    
+                    {{-- Icon: Min 28px sampai 60px --}}
+                    <span class="material-symbols-outlined text-[clamp(28px,8vw,60px)] text-primary group-hover:rotate-180 transition-transform duration-700">
+                        tune
+                    </span>
                 </div>
-                <h3 class="text-[8px] md:text-xl font-bold text-white uppercase tracking-tighter">Custom Build</h3>
-                <p class="text-gray-500 text-[6px] md:text-xs uppercase mt-1">Coming Soon</p>
+
+                {{-- Title: Min 14px (text-sm), Preferred 4vw, Max 32px (text-3xl) --}}
+                <h3 class="text-[clamp(14px,4vw,32px)] font-black text-white uppercase italic tracking-tighter leading-none">
+                    Custom Build
+                </h3>
+
+                {{-- Subtitle: Min 9px sampai 16px --}}
+                <p class="text-gray-500 text-[clamp(9px,2vw,16px)] uppercase mt-2 font-bold tracking-[0.2em]">
+                    Coming Soon
+                </p>
             </div>
 
         @else
-            <h3 class="text-[10px] md:text-xl font-bold text-white uppercase truncate group-hover:text-primary transition-colors">
+           {{-- Standar Series Card --}}
+            <h3 class="text-[clamp(14px,3vw,24px)] font-bold text-white uppercase italic leading-tight break-words line-clamp-2 group-hover:text-primary transition-colors">
                 {{ $product->name ?? 'Series' }}
             </h3>
-            <p class="text-gray-500 text-[6px] md:text-xs uppercase">{{ $product->series->category->name ?? 'Gaming PC' }}</p>
+            <p class="text-gray-500 text-[clamp(9px,1.5vw,13px)] uppercase tracking-wider font-medium mt-1">
+                {{ $product->series->category->name ?? 'Gaming PC' }}
+            </p>
         @endif
 
     </div>

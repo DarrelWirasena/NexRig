@@ -117,14 +117,14 @@
             
             {{-- Header Drawer --}}
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
-                <img src="{{ asset('images/nexrig.png') }}" class="h-6 w-auto">
+                <img src="{{ asset('images/nexrig.png') }}" class="h-14 w-auto">
                 <button @click="mobileMenuOpen = false" class="text-white">
                     <span class="material-symbols-outlined text-3xl">close</span>
                 </button>
             </div>
 
-            {{-- Content Navigation - TAMBAHKAN CLASS scrollbar-hide DI SINI --}}
-            <div class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+            {{-- Content Navigation - TAMBAHKAN CLASS scrollbar-custome DI SINI --}}
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 custom-sidebar-scroll">
                 @foreach($navbarCategories as $category)
                     <div x-data="{ categoryOpen: false }">
                         {{-- Button Kategori Utama --}}
@@ -173,6 +173,39 @@
 
                 <a href="{{ route('about') }}" class="block text-white font-black uppercase italic tracking-tighter text-xl border-b border-white/5 pb-3">About Us</a>
                 <a href="{{ route('support') }}" class="block text-white font-black uppercase italic tracking-tighter text-xl border-b border-white/5 pb-3">Support</a>
+
+                {{-- [TAMBAHKAN DI SINI] SECTION AKUN / LOGIN --}}
+                <div class="pt-8 space-y-4">
+                    <p class="text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em] mb-2">/// Account Systems</p>
+                    
+                    @auth
+                        {{-- Jika User Sudah Login --}}
+                        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
+                            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-black text-white italic">
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <p class="text-white text-xs font-bold uppercase leading-none">{{ Auth::user()->name }}</p>
+                                <p class="text-gray-500 text-[9px] mt-1">Status: Active Operator</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('profile.app') }}" class="block w-full py-3 text-center border border-white/10 text-white text-xs font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full py-3 text-xs font-black uppercase italic tracking-widest text-red-500 bg-red-500/10 border border-red-500/20">Logout</button>
+                        </form>
+                    @else
+                        {{-- Jika User Belum Login --}}
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="{{ route('login') }}" class="py-4 bg-white text-black text-center text-xs font-black uppercase italic tracking-widest clip-button">
+                                Login
+                            </a>
+                            <a href="{{ route('register') }}" class="py-4 border border-white/20 text-white text-center text-xs font-black uppercase italic tracking-widest hover:bg-white/5 transition-all">
+                                Register
+                            </a>
+                        </div>
+                    @endauth
+                </div>
             </div>
         </div>
     </div>

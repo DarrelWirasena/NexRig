@@ -50,16 +50,17 @@
                 View Cart
             </a>
             
-            {{-- Tombol Checkout dengan kondisi --}}
-            @if(count($cart) > 0)
-                <a href="{{ route('checkout.index') }}" id="miniCartCheckoutBtn" class="px-4 py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg text-center transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] text-[11px] tracking-widest uppercase flex items-center justify-center gap-2">
-                    Checkout <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                </a>
-            @else
-                <button disabled id="miniCartCheckoutBtn" class="px-4 py-3 bg-white/10 text-gray-600 font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase flex items-center justify-center gap-2 cursor-not-allowed">
-                    Checkout <span class="material-symbols-outlined text-sm">lock</span>
-                </button>
-            @endif
+           {{-- Kita buat satu anchor tunggal, statusnya kita kontrol via JS --}}
+            <a href="{{ route('checkout.index') }}" 
+            id="miniCartCheckoutBtn" 
+            class="px-4 py-3 font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase flex items-center justify-center gap-2 
+            {{ count($cart) > 0 ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-white/10 text-gray-600 cursor-not-allowed pointer-events-none' }}">
+                
+                <span id="checkoutBtnText">{{ count($cart) > 0 ? 'Checkout' : 'Empty' }}</span>
+                <span id="checkoutBtnIcon" class="material-symbols-outlined text-sm">
+                    {{ count($cart) > 0 ? 'arrow_forward' : 'lock' }}
+                </span>
+            </a>
         </div>
     </div>
 </div>

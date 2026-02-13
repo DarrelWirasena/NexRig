@@ -19,9 +19,29 @@
                         <span class="text-primary font-bold text-sm">
                             Rp {{ number_format($details['price'], 0, ',', '.') }}
                         </span>
-                        <span class="text-gray-500 text-[10px] font-mono bg-white/5 px-2 py-1 rounded border border-white/5">
-                            Qty: {{ $details['quantity'] }}
-                        </span>
+
+                       {{-- [UBAH BAGIAN INI] QUANTITY CONTROLS --}}
+                        <div class="flex items-center gap-2 bg-[#050505] rounded-lg border border-white/10 p-1">
+                            
+                            {{-- Tombol Kurang (-) --}}
+                            {{-- LOGIKA: Jika quantity <= 1, tambahkan class 'invisible' dan matikan klik --}}
+                            <button onclick="updateCartQuantity('{{ $id }}', -1)" 
+                                    class="w-5 h-5 flex items-center justify-center rounded bg-white/5 hover:bg-primary hover:text-white text-gray-500 transition-colors {{ $details['quantity'] <= 1 ? 'invisible pointer-events-none' : '' }}">
+                                <span class="material-symbols-outlined text-xs">remove</span>
+                            </button>
+
+                            {{-- Angka --}}
+                            <span class="text-white text-[10px] font-mono font-bold w-4 text-center">
+                                {{ $details['quantity'] }}
+                            </span>
+
+                            {{-- Tombol Tambah (+) --}}
+                            <button onclick="updateCartQuantity('{{ $id }}', 1)" 
+                                    class="w-5 h-5 flex items-center justify-center rounded bg-white/5 hover:bg-primary hover:text-white text-gray-500 transition-colors">
+                                <span class="material-symbols-outlined text-xs">add</span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 

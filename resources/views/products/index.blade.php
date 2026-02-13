@@ -1,142 +1,111 @@
 @extends('layouts.app')
 
 @section('content')
-    <main class="flex-1 flex flex-col w-full max-w-[1440px] mx-auto px-4 md:px-10 py-6">
+    {{-- Header Statis: Akan hilang saat scroll ke bawah --}}
+    <div class="mb-6 px-4 md:px-10">
+        <h1 class="text-white text-3xl md:text-4xl font-bold italic tracking-tighter uppercase">The Rigs</h1>
+        <p class="text-gray-400 text-xs uppercase tracking-widest mt-1">
+            {{ $products->total() }} Premium Builds Available
+        </p>
+    </div>
+
+{{-- STICKY NAVIGATION BAR WRAPPER --}}
+<div x-data="{ 
+        openFilter: false, 
+        openSort: false,
+        isSticky: false,
+        checkScroll() {
+            this.isSticky = window.scrollY > 85;
+        }
+     }"
+     x-init="window.addEventListener('scroll', () => checkScroll())"
+     class="w-full relative">
+
+    {{-- KUNCI PERBAIKAN: Kontainer dengan tinggi tetap agar tidak lompat --}}
+    {{-- h-[120px] disesuaikan dengan tinggi total elemen filter bar kamu --}}
+    <div class="h-[120px] md:h-[130px] w-full relative">
         
-        {{-- Header & Breadcrumbs --}}
-        <div class="mb-8">
-            <h1 class="text-white text-3xl md:text-4xl font-bold">High-Performance Gaming PCs</h1>
-            <p class="text-gray-400">
-                Showing {{ $products->total() }} premium builds
-                @if(request('category')) in <span class="text-primary font-bold">{{ str_replace('-', ' ', request('category')) }}</span> @endif
-                @if(request('search')) matching "<span class="text-primary font-bold">{{ request('search') }}</span>" @endif
-            </p>
-        </div>
-
-        <div class="flex flex-col lg:flex-row gap-8">
-            {{-- SIDEBAR FILTER --}}
-            <aside class="w-full lg:w-64 shrink-0 space-y-8">
-                
-                {{-- 1. SEARCH BAR (Penting untuk filter spesifik) --}}
-                <x-filter-section title="Search Rigs">
-                    <form action="{{ route('products.index') }}" method="GET" class="relative">
-                        {{-- Keep category if selected --}}
-                        @if(request('category'))
-                            <input type="hidden" name="category" value="{{ request('category') }}">
-                        @endif
-                        
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Ex: RTX 4090..." 
-                               class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none">
-                        <button type="submit" class="absolute right-3 top-2.5 text-gray-500 hover:text-white">
-                            <span class="material-symbols-outlined text-lg">search</span>
-                        </button>
+        {{-- Elemen Bar --}}
+        <div :class="isSticky ? 'fixed top-[75px] left-4 right-4 md:left-10 md:right-10 rounded-2xl shadow-2xl animate-soft-landing' : 'relative w-full'"
+             class="z-40 bg-[#101322]/95 backdrop-blur-md border border-white/10 py-3 px-4 transition-all duration-500 ease-in-out">
+            
+            <div class="max-w-[1440px] mx-auto flex flex-col gap-4">
+                {{-- Row 1: Search, Sort, Filter --}}
+                <div class="flex items-center h-10 bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <form action="{{ route('products.index') }}" method="GET" class="flex-1 flex items-center h-full px-3">
+                        @foreach(request()->except(['search', 'page']) as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endforeach
+                        <span class="material-symbols-outlined text-gray-500 text-xl mr-2">search</span>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search model..." 
+                               class="w-full bg-transparent border-none p-0 text-white text-sm focus:ring-0 outline-none placeholder-gray-500">
                     </form>
-                </x-filter-section>
+                    <div class="w-[1px] h-6 bg-white/10"></div>
+                    <button @click="openSort = !openSort" class="px-3 flex items-center justify-center h-full text-gray-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-2xl">swap_vert</span>
+                    </button>
+                    <div class="w-[1px] h-6 bg-white/10"></div>
+                    <button @click="openFilter = true" class="px-3 flex items-center justify-center h-full text-gray-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-2xl">filter_list</span>
+                    </button>
+                </div>
 
-                {{-- 2. CATEGORIES (Dinamis dari Database) --}}
-                <x-filter-section title="Categories" subtitle="By Chassis Type">
-                    {{-- Tombol ALL MODELS --}}
-                    <a href="{{ route('products.index') }}" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ !request('category') ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                        <span class="material-symbols-outlined text-[20px]">grid_view</span> 
-                        All Models
-                    </a>
-
-                    {{-- Loop Categories --}}
-                    @foreach($categories as $cat)
-                        <a href="{{ route('products.index', array_merge(request()->query(), ['category' => $cat->slug, 'page' => null])) }}" 
-                           class="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ request('category') == $cat->slug ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-[20px]">
-                                    {{-- Icon logic sederhana --}}
-                                    {{ $cat->name == 'Laptops' ? 'laptop_chromebook' : 'desktop_windows' }}
-                                </span>
-                                {{ $cat->name }}
-                            </div>
-                            
-                            {{-- Opsional: Badge jumlah series (kalau mau) --}}
-                            {{-- <span class="text-xs opacity-50">{{ $cat->series->count() }}</span> --}}
+                {{-- Row 2: Chips --}}
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+                    @php $chips = ['RTX 4090', 'RTX 4080', 'Intel i9', 'Ryzen 9', 'White Build', 'Mini ITX']; @endphp
+                    @foreach($chips as $chip)
+                        <a href="{{ route('products.index', array_merge(request()->query(), ['spec' => $chip])) }}" 
+                           class="whitespace-nowrap px-4 py-1.5 rounded-lg text-[10px] font-black uppercase border transition-all
+                           {{ request('spec') == $chip ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white' }}">
+                            {{ $chip }}
                         </a>
                     @endforeach
-                </x-filter-section>
-
-              {{-- 3. QUICK SPECS FILTER (FIXED: Menjaga Kategori Tetap Ada) --}}
-                <x-filter-section title="Quick Filter" subtitle="Popular Specs">
-                    <div class="flex flex-col gap-2">
-                        @php
-                            $popularSpecs = ['RTX 4090', 'RTX 4080', 'Intel i9', 'Ryzen 9'];
-                        @endphp
-
-                        @foreach($popularSpecs as $spec)
-                            {{-- 
-                                LOGIC PERBAIKAN: 
-                                1. request()->query(): Ambil semua parameter URL saat ini (misal: category=gaming-pc).
-                                2. array_merge: Gabungkan dengan parameter baru ('search' => $spec).
-                                3. 'page' => null: Reset pagination ke halaman 1 setiap kali filter berubah.
-                            --}}
-                            <a href="{{ route('products.index', array_merge(request()->query(), ['search' => $spec, 'page' => null])) }}" 
-                               class="flex items-center gap-3 cursor-pointer group">
-                                
-                                {{-- Checkbox Style --}}
-                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors
-                                    {{ request('search') == $spec ? 'border-primary bg-primary' : 'border-gray-500 group-hover:border-white' }}">
-                                    @if(request('search') == $spec)
-                                        <span class="material-symbols-outlined text-white text-[10px] font-bold">check</span>
-                                    @endif
-                                </div>
-
-                                {{-- Text Style --}}
-                                <span class="text-sm transition-colors
-                                    {{ request('search') == $spec ? 'text-white font-bold' : 'text-gray-400 group-hover:text-white' }}">
-                                    {{ $spec }}
-                                </span>
-                            </a>
-                        @endforeach
-                        
-                        {{-- Tombol Reset Filter Search (Hanya muncul jika sedang mencari) --}}
-                        @if(request('search'))
-                            <a href="{{ route('products.index', array_merge(request()->except('search'), ['page' => null])) }}" 
-                               class="text-xs text-red-400 hover:text-red-300 mt-2 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">close</span> Clear Search
-                            </a>
-                        @endif
-                    </div>
-                </x-filter-section>
-            </aside>
-
-            {{-- PRODUCT GRID --}}
-            <div class="flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    @forelse($products as $product)
-                        <a href="{{ route('products.show', $product->slug) }}" class="block group">
-                            <x-product-card 
-                                :name="$product->name"
-                                :price="$product->price"
-                                :description="$product->short_description"
-                                :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/600'"
-                                badge="{{ $product->tier ?? 'Custom' }}"
-                                rating="5.0"
-                                :specs="$product->components->take(3)->pluck('name')->toArray()"
-                            />
-                        </a>
-                    @empty
-                        <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
-                            <span class="material-symbols-outlined text-6xl text-gray-700 mb-4">search_off</span>
-                            <h3 class="text-xl font-bold text-white mb-2">No rigs found</h3>
-                            <p class="text-gray-500 mb-6">We couldn't find any builds matching your filters.</p>
-                            <a href="{{ route('products.index') }}" class="px-6 py-2 bg-white/10 hover:bg-primary text-white rounded transition-colors uppercase font-bold text-sm">
-                                Clear Filters
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
-
-                {{-- Pagination --}}
-                <div class="mt-12">
-                    {{ $products->links() }} 
                 </div>
             </div>
+
+            {{-- Dropdown Sort --}}
+            <div x-show="openSort" @click.away="openSort = false" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="absolute right-0 mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl py-2 z-50">
+                 @foreach(['newest' => 'Newest Arrivals', 'price_asc' => 'Lowest Price', 'price_desc' => 'Highest Price'] as $val => $label)
+                    <a href="{{ route('products.index', array_merge(request()->query(), ['sort' => $val])) }}" 
+                       class="block px-4 py-2 text-xs font-bold {{ request('sort') == $val ? 'text-primary' : 'text-gray-400' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
         </div>
-    </main>
+    </div>
+</div>
+{{-- END STICKY NAVIGATION BAR WRAPPER --}}
+
+
+{{-- 3. PRODUCT GRID --}}
+        <div class="px-4 md:px-10 pb-20">
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                @forelse($products as $product)
+                   <a href="{{ route('products.show', $product->slug) }}" class="block group h-full">
+                        <x-product-card 
+                            :name="$product->name"
+                            :price="$product->price"
+                            :description="$product->short_description"
+                            :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/600'"
+                            badge="{{ $product->tier ?? 'Custom' }}"
+                            :specs="$product->components->take(3)->pluck('name')->toArray()"
+                        />
+                    </a>
+                @empty
+                    <div class="col-span-full py-20 text-center">
+                        <span class="material-symbols-outlined text-6xl text-gray-800 mb-4 italic">search_off</span>
+                        <p class="text-gray-500 font-bold uppercase italic tracking-widest">No builds found in the database.</p>
+                    </div>
+                @endforelse
+            </div>
+            
+            <div class="mt-12">
+                {{ $products->appends(request()->query())->links() }}
+            </div>
+        </div>
 @endsection

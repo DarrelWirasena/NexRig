@@ -2,161 +2,114 @@
 
 @section('content')
 
-{{-- 1. HEADER & STEPPER --}}
-<div class="max-w-7xl mx-auto py-12">
-    <div class="flex items-center justify-center gap-4 mb-12">
-        <div class="flex items-center gap-2 text-primary">
-            <span class="font-bold text-sm">01</span>
-            <span class="font-medium text-sm">Cart</span>
-        </div>
-        <div class="w-12 h-[1px] bg-slate-200 dark:bg-[#232948]"></div>
-        <div class="flex items-center gap-2 text-slate-400">
-            <span class="font-bold text-sm">02</span>
-            <span class="font-medium text-sm">Shipping</span>
-        </div>
-        <div class="w-12 h-[1px] bg-slate-200 dark:bg-[#232948]"></div>
-        <div class="flex items-center gap-2 text-slate-400">
-            <span class="font-bold text-sm">03</span>
-            <span class="font-medium text-sm">Payment</span>
-        </div>
-    </div>
-
-    {{-- LOGIC: Cek Apakah Cart Kosong? --}}
+<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6">
+    {{-- Stepper tetap sama --}}
+    
     @if(session('cart') && count(session('cart')) > 0)
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            {{-- 2. PRODUCT LIST (Kiri) --}}
-            <div class="lg:col-span-8">
+            {{-- PRODUCT LIST --}}
+            <div class="lg:col-span-8 space-y-6">
                 <div class="flex items-baseline justify-between mb-8">
-                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Your Rig Setup</h1>
-                    <p class="text-slate-500 dark:text-[#929bc9]">{{ count(session('cart')) }} Build(s) in cart</p>
+                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white font-display uppercase italic">Your Rig Setup</h1>
+                    <p class="text-slate-500 dark:text-[#929bc9] font-mono">{{ count(session('cart')) }} Item(s)</p>
                 </div>
 
-                <div class="space-y-6">
-                    @foreach(session('cart') as $id => $details)
-                    <div class="group relative bg-white dark:bg-[#161b30] p-6 rounded-xl border border-slate-200 dark:border-[#232948] transition-all hover:border-primary/50">
-                        <div class="flex flex-col md:flex-row gap-8">
-                            <div class="relative w-full md:w-48 aspect-[4/3] rounded-lg overflow-hidden bg-slate-100 dark:bg-[#111422]">
-                                <img src="{{ $details['image'] }}" alt="{{ $details['name'] }}" class="w-full h-full object-cover transition-transform group-hover:scale-105">
+                @foreach(session('cart') as $id => $details)
+                {{-- Tambahkan ID unik per baris item --}}
+                <div id="cart-row-{{ $id }}" class="group relative bg-white dark:bg-[#0a0a0a] p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-white/10 transition-all hover:border-primary/50 shadow-lg shadow-black/5">
+                    <div class="flex flex-col sm:flex-row gap-6">
+                        
+                        <div class="relative w-full sm:w-40 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-[#111422] border border-white/5 shrink-0">
+                            <img src="{{ $details['image'] }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        </div>
+
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2 gap-4">
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">{{ $details['name'] }}</h3>
+                                    <p class="text-lg font-bold text-primary whitespace-nowrap">Rp {{ number_format($details['price'], 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-[#929bc9] mb-4">
+                                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded">
+                                        <span class="material-symbols-outlined text-[14px]">verified</span><span>Official Build</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="flex-1 flex flex-col justify-between">
-                                <div>
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ $details['name'] }}</h3>
-                                        <p class="text-xl font-bold text-primary">Rp {{ number_format($details['price'], 0, ',', '.') }}</p>
-                                    </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/10">
+                                
+                                {{-- BUTTON QUANTITY (Tanpa Form, Pake OnClick) --}}
+                                <div class="flex items-center bg-slate-100 dark:bg-[#111422] rounded-lg p-1 border border-white/5">
+                                    <button type="button" onclick="updateMainCartItem('{{ $id }}', -1)" 
+                                            class="w-8 h-8 flex items-center justify-center hover:bg-white/10 hover:text-red-500 rounded transition-colors {{ $details['quantity'] <= 1 ? 'opacity-30 pointer-events-none' : '' }}">
+                                        <span class="material-symbols-outlined text-sm">remove</span>
+                                    </button>
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-sm text-slate-500 dark:text-[#929bc9] mb-6">
-                                        <div class="flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-xs">verified</span>
-                                            <span>Official NexRig Build</span>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-xs">package_2</span>
-                                            <span>Ready to Ship</span>
-                                        </div>
-                                    </div>
+                                    {{-- ID UNIK untuk Angka --}}
+                                    <span id="qty-display-{{ $id }}" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white font-mono">
+                                        {{ $details['quantity'] }}
+                                    </span>
+                                    
+                                    <button type="button" onclick="updateMainCartItem('{{ $id }}', 1)" 
+                                            class="w-8 h-8 flex items-center justify-center hover:bg-white/10 hover:text-primary rounded transition-colors">
+                                        <span class="material-symbols-outlined text-sm">add</span>
+                                    </button>
                                 </div>
 
-                                <div class="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-[#232948]">
-                                    
-                                    <form action="{{ route('cart.update') }}" method="POST" class="flex items-center gap-6 update-cart-form">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="id" value="{{ $id }}">
-                                        
-                                        <div class="flex items-center bg-slate-100 dark:bg-[#111422] rounded-lg p-1">
-                                            <button type="button" onclick="updateQty(this, -1)" class="w-8 h-8 flex items-center justify-center hover:text-primary transition-colors">
-                                                <span class="material-symbols-outlined text-sm">remove</span>
-                                            </button>
-                                            
-                                            <input type="number" name="quantity" value="{{ $details['quantity'] }}" readonly class="w-10 bg-transparent text-center font-bold border-none p-0 focus:ring-0">
-                                            
-                                            <button type="button" onclick="updateQty(this, 1)" class="w-8 h-8 flex items-center justify-center hover:text-primary transition-colors">
-                                                <span class="material-symbols-outlined text-sm">add</span>
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    <a href="{{ route('cart.remove', $id) }}" class="text-sm font-medium text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-sm">delete</span>
-                                        Remove
-                                    </a>
-                                </div>
+                                {{-- BUTTON REMOVE (Tanpa Form) --}}
+                                <button onclick="removeMainCartItem('{{ $id }}')" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 group/del">
+                                    <span class="material-symbols-outlined text-base group-hover/del:animate-bounce">delete</span>
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     </div>
-                    @endforeach
-
-                    <div class="neon-divider opacity-20"></div>
-                    <div class="flex items-center gap-4 p-4 rounded-xl border border-dashed border-slate-300 dark:border-[#232948] bg-slate-50/50 dark:bg-transparent">
-                        <span class="material-symbols-outlined text-primary">verified_user</span>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-900 dark:text-white">NexGuard 2-Year Premium Warranty</p>
-                            <p class="text-xs text-slate-500 dark:text-[#929bc9]">On-site repair and accidental damage coverage included.</p>
-                        </div>
-                        <span class="text-sm font-bold text-green-500">FREE</span>
-                    </div>
                 </div>
+                @endforeach
             </div>
 
-            {{-- 3. SUMMARY SIDEBAR (Kanan) --}}
+            {{-- SUMMARY SIDEBAR --}}
             <div class="lg:col-span-4">
                 <div class="sticky top-24 space-y-6">
-                    <div class="bg-white dark:bg-[#161b30] p-8 rounded-xl border border-slate-200 dark:border-[#232948]">
-                        <h2 class="text-xl font-bold mb-6 text-slate-900 dark:text-white">Order Summary</h2>
+                    <div class="bg-white dark:bg-[#0a0a0a] p-8 rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl">
+                        <h2 class="text-xl font-black italic uppercase mb-6 text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="w-1 h-6 bg-primary block"></span> Order Summary
+                        </h2>
                         
                         @php
-                            $tax = $total * 0.11; // PPN 11%
+                            $tax = $total * 0.11; 
                             $grandTotal = $total + $tax;
                         @endphp
 
-                        <div class="space-y-4 mb-8">
-                            <div class="flex justify-between text-sm text-slate-500 dark:text-[#929bc9]">
+                        <div class="space-y-4 mb-8 font-mono text-sm">
+                            <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
                                 <span>Subtotal</span>
-                                <span class="text-slate-900 dark:text-white font-medium">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                                {{-- ID UNTUK SUBTOTAL --}}
+                                <span id="summary-subtotal" class="text-slate-900 dark:text-white">Rp {{ number_format($total, 0, ',', '.') }}</span>
                             </div>
-                            <div class="flex justify-between text-sm text-slate-500 dark:text-[#929bc9]">
-                                <span>Shipping Estimate</span>
-                                <span class="text-green-500 font-medium">Free</span>
+                            <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
+                                <span>Shipping</span>
+                                <span class="text-green-500">Free via JNE Trucking</span>
                             </div>
-                            <div class="flex justify-between text-sm text-slate-500 dark:text-[#929bc9]">
-                                <span>Estimated Tax (11%)</span>
-                                <span class="text-slate-900 dark:text-white font-medium">Rp {{ number_format($tax, 0, ',', '.') }}</span>
+                            <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
+                                <span>Tax (11%)</span>
+                                {{-- ID UNTUK TAX --}}
+                                <span id="summary-tax" class="text-slate-900 dark:text-white">Rp {{ number_format($tax, 0, ',', '.') }}</span>
                             </div>
                         </div>
 
-                        <div class="pt-6 border-t border-slate-100 dark:border-[#232948] mb-8">
+                        <div class="pt-6 border-t border-slate-100 dark:border-white/10 mb-8">
                             <div class="flex justify-between items-baseline">
-                                <span class="text-lg font-bold text-slate-900 dark:text-white">Total</span>
-                                <span class="text-2xl font-bold text-primary">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
+                                <span class="text-lg font-bold text-slate-900 dark:text-white uppercase">Total</span>
+                                {{-- ID UNTUK GRAND TOTAL --}}
+                                <span id="summary-grand-total" class="text-2xl font-black text-primary italic">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                             </div>
                         </div>
 
-                        {{-- TOMBOL CHECKOUT (Login Check via Middleware/Controller) --}}
-                        <a href="{{ route('checkout.index') }}" class="w-full bg-primary text-white font-bold py-4 rounded-lg glow-button transition-all flex items-center justify-center gap-2 mb-4 group hover:bg-blue-700">
-                            <span>Secure Checkout</span>
-                            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </a>
-
-                        <div class="flex flex-col gap-3">
-                            <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-[#929bc9]">
-                                <span class="material-symbols-outlined text-sm">shield_lock</span>
-                                <span>256-bit SSL Secure Encryption</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-[#929bc9]">
-                                <span class="material-symbols-outlined text-sm">local_shipping</span>
-                                <span>Estimated Delivery: 3-5 Days</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="px-4 flex flex-col gap-3">
-                        <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center justify-between">
-                            <span>Continue Shopping</span>
-                            <span class="material-symbols-outlined text-sm">chevron_right</span>
+                        <a href="{{ route('checkout.index') }}" class="w-full bg-primary hover:bg-blue-600 text-white font-black italic uppercase py-4 rounded-lg shadow-[0_0_20px_rgba(19,55,236,0.5)] transition-all flex items-center justify-center gap-2">
+                            Secure Checkout <span class="material-symbols-outlined">arrow_forward</span>
                         </a>
                     </div>
                 </div>

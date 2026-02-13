@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 
+/* 1. CONFIGURATION & SOURCES */
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -10,67 +11,123 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-    /* Sudut terpotong ala tech-wear / Cyberpunk (Starforge Style) */
-    .clip-path-button {
-        clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
-    }
+/* 2. BASE STYLES */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px; 
+}
 
-    /* Sembunyikan scrollbar bawaan browser */
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    /* Menyembunyikan scrollbar utama windows yang jelek */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/* 3. ANIMATIONS (KEYFRAMES) - Kemarin ini hilang */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 4. UTILITIES LAYER */
+@layer utilities {
+    /* --- Scrollbars --- */
+    
+    /* Hide Scrollbar */
     .scrollbar-hide {
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-
-    /* Memastikan Mega Menu Desktop muncul melebar */
-    .group.static {
-        position: static !important;
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
     }
 
+    /* Custom Thin Scrollbar (Sidebar Dashboard) */
+    .custom-sidebar-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-sidebar-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-sidebar-scroll::-webkit-scrollbar-thumb {
+        background: rgba(19, 55, 236, 0.3);
+        border-radius: 20px;
+    }
+    .custom-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(19, 55, 236, 0.8);
+    }
+
+    /* Global Custom Scrollbar (Untuk elemen umum) - Kemarin ini hilang */
+    .custom-scrollbar::-webkit-scrollbar { 
+        width: 6px; 
+    }
+    .custom-scrollbar::-webkit-scrollbar-track { 
+        background: #101322; 
+    }
+    .custom-sidebar-scroll::-webkit-scrollbar-thumb { 
+        background: #232948; 
+        border-radius: 10px; 
+    }
+
+    /* --- Animations Classes --- */
+    .animate-reveal { 
+        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+    }
+    .scroll-trigger { 
+        opacity: 0; 
+    }
+
+    /* --- Visual Effects --- */
+    
     /* Efek gambar melayang 3D */
     .drop-shadow-pc {
         filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.9));
     }
 
-    @layer utilities {
-  /* Sembunyikan scrollbar untuk Chrome, Safari dan Opera */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+    /* Sudut terpotong ala tech-wear */
+    .clip-path-button {
+        clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    }
 
-  /* Sembunyikan scrollbar untuk IE, Edge dan Firefox */
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-}
+    /* --- Typography --- */
+    .font-gaming { 
+        font-family: 'Inter', sans-serif; 
+        font-style: italic; 
+        font-weight: 900; 
+        letter-spacing: -0.05em; 
+        text-transform: uppercase; 
+    }
 
-html {
-    scroll-behavior: smooth;
-    /* Sesuaikan nilai ini dengan tinggi navbar kamu (misal 80px atau 100px) */
-    /* Ini memberi jarak agar judul tidak ketutup navbar pas di-klik */
-    scroll-padding-top: 80px; 
-}
+    /* --- Logic & Helpers --- */
+    [x-cloak] { 
+        display: none !important; 
+    }
 
-html, body {
-        max-width: 100%;
-        overflow-x: hidden;
+    /* Fix Mega Menu */
+    .group.static {
+        position: static !important;
+    }
+
+    .ease-magnet {
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .animate-soft-landing {
+        animation: softLanding 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Biar scroll chips halus tanpa scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-    body::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Utilitas untuk elemen spesifik (seperti menu navigasi) */
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    
+}
