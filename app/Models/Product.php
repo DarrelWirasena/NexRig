@@ -41,11 +41,10 @@ class Product extends Model
     }
 
     // 5. Relasi Benchmark Game (Many-to-Many)
-    public function benchmarks() {
-        return $this->belongsToMany(Game::class, 'benchmarks')
-                    ->withPivot(['resolution', 'avg_fps']);
-    }
-
+    public function benchmarks()
+{
+    return $this->hasMany(Benchmark::class);
+}
     // 6. Relasi Kegunaan yang Dituju (Many-to-Many)
     public function intendedUses()
     {
@@ -53,8 +52,9 @@ class Product extends Model
     }
 
     // 7. Relasi Spesifikasi Tambahan
-    public function attributes()
-    {
-        return $this->belongsToMany(IntendedUse::class);
-    }
+   public function attributes()
+{
+    // Ini menghubungkan Produk ke banyak ProductAttribute
+    return $this->hasMany(ProductAttribute::class);
+}
 }

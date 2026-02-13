@@ -32,8 +32,8 @@
     
     @stack('styles')
 </head>
-
-<body class="bg-[#f6f6f8] dark:bg-[#101322] text-slate-900 dark:text-white font-display overflow-x-hidden min-h-screen pt-20 flex flex-col">
+{{-- GANTI overflow-x-hidden MENJADI overflow-x-clip --}}
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen pt-20 flex flex-col">
     
     {{-- NAVIGATION --}}
     @if(!Route::is('login') && !Route::is('register'))
