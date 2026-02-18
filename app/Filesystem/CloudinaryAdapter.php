@@ -189,6 +189,8 @@ public function publicUrl(string $path): string
     
     $cloudName = config('cloudinary.cloud_name');
     
+    $path = ltrim($path, '/');
+
     // Path sudah dalam format yang benar (products/nama-file tanpa extension)
     // Cloudinary akan otomatis serve dengan format yang sesuai
     return "https://res.cloudinary.com/{$cloudName}/image/upload/{$path}";
@@ -197,12 +199,12 @@ public function publicUrl(string $path): string
     protected function getPublicId(string $path): string
     {
         // Remove extension
-        $path = preg_replace('/\.[^.]+$/', '', $path);
+        // $path = preg_replace('/\.[^.]+$/', '', $path);
         
         // Add folder prefix if set
-        if ($this->folder) {
-            $path = $this->folder . '/' . $path;
-        }
+        // if ($this->folder) {
+        //     $path = $this->folder . '/' . $path;
+        // }
         
         return $path;
     }

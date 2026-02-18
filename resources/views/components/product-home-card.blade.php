@@ -14,7 +14,7 @@
         <div class="hidden md:block absolute top-4 left-4 w-2 h-2 border-t border-l border-white/30 z-20 transition-all group-hover:w-16 group-hover:h-16 group-hover:border-primary/50"></div>
         <div class="hidden md:block absolute top-4 right-4 w-2 h-2 border-t border-r border-white/30 z-20 transition-all group-hover:w-16 group-hover:h-16 group-hover:border-primary/50"></div>
         
-        <img src="{{ $product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/500x600' }}" 
+        <img src="{{ $product->images->where('is_primary', true)->first()->src ?? 'https://via.placeholder.com/500x600' }}" 
              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-110"
              alt="{{ $product->name }}">
         

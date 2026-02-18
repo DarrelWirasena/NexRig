@@ -31,7 +31,7 @@
                                                 @php
                                                     $firstProduct = $series->products->first();
                                                     $imgUrl = $firstProduct && $firstProduct->images->first() 
-                                                        ? $firstProduct->images->first()->image_url 
+                                                        ? $firstProduct->images->first()->src 
                                                         : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
                                                 @endphp
                                                 <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
@@ -142,7 +142,7 @@
                                         @php
                                             $firstProduct = $series->products->first();
                                             $imgUrl = $firstProduct && $firstProduct->images->first() 
-                                                ? $firstProduct->images->first()->image_url 
+                                                ? $firstProduct->images->first()->src 
                                                 : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
                                         @endphp
                                         <div class="w-12 h-12 bg-[#111] rounded-lg flex items-center justify-center p-1 border border-white/10 shrink-0">

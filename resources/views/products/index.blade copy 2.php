@@ -105,7 +105,7 @@
                         :name="$product->name"
                         :price="$product->price"
                         :description="$product->short_description"
-                        :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/600'"
+                        :image="$product->images->where('is_primary', true)->first()->src ?? 'https://via.placeholder.com/600'"
                         badge="{{ $product->tier ?? 'Custom' }}"
                         :specs="$product->components->take(3)->pluck('name')->toArray()"
                     />

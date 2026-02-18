@@ -44,7 +44,7 @@
                 <div class="relative w-full h-[500px] rounded-2xl overflow-hidden group border border-white/10 hover:border-primary/50 transition-colors duration-500">
                     <a href="{{ route('articles.show', $featured->slug) }}" class="absolute inset-0 z-20"></a>
                     
-                    <img src="{{ $featured->image_url }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                    <img src="{{ $featured->src }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent"></div>
 
                     <div class="absolute bottom-0 left-0 p-6 md:p-12 max-w-4xl z-10 text-left">
@@ -80,7 +80,7 @@
                         <a href="{{ route('articles.show', $article->slug) }}" class="absolute inset-0 z-20"></a>
                         
                         <div class="relative h-56 overflow-hidden">
-                            <img src="{{ $article->image_url }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-110 opacity-80 group-hover:opacity-100">
+                            <img src="{{ $article->src }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-110 opacity-80 group-hover:opacity-100">
                             
                             <div class="absolute top-4 left-4">
                                 <span class="bg-black/60 backdrop-blur border border-white/10 text-white text-[9px] font-bold uppercase px-2 py-1 rounded tracking-wider">

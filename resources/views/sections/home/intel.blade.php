@@ -29,7 +29,7 @@
                         {{-- 1. Image Background --}}
                         <div class="absolute inset-0 overflow-hidden">
                             {{-- Sesuaikan dengan nama kolom di database Anda: image_url --}}
-                            <img src="{{ $article->image_url }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-125">
+                            <img src="{{ $article->src }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-125">
                         </div>
 
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>

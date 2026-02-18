@@ -36,10 +36,11 @@ class ImagesRelationManager extends RelationManager
                 ->imageEditor()
                 ->maxSize(5120)
                 ->required()
-                ->getUploadedFileNameForStorageUsing(function ($file) {
-                    // Hapus extension dari nama file yang disimpan
-                    return pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                }),
+                // ->getUploadedFileNameForStorageUsing(function ($file) {
+                //     // Hapus extension dari nama file yang disimpan
+                //     return pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                // }),
+                ->preserveFilenames(),
                 
             Toggle::make('is_primary')
                 ->label('Set as Primary Image')

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -27,19 +28,22 @@ class ProductImage extends Model
 
     public function getFullUrlAttribute(): string
     {
-        // Jika sudah URL lengkap, return as-is
         if (strpos($this->image_url, 'http') === 0) {
             return $this->image_url;
         }
-        
-        $cloudName = config('cloudinary.cloud_name');
-        $publicId = $this->image_url;
-        
-        // Hapus "products/" jika ada
-        if (strpos($publicId, 'products/') === 0) {
-            $publicId = substr($publicId, 9); // Remove "products/"
+
+        // Biarkan Adapter yang menghitung URL-nya (lebih aman)
+        return Storage::disk('cloudinary')->url($this->image_url);
+    }
+
+    public function getSrcAttribute(): string
+    {
+        if (!$this->image_url) return 'https://placehold.co/200'; // Fallback jika null
+
+        if (strpos($this->image_url, 'http') === 0) {
+            return $this->image_url;
         }
-        
-        return "https://res.cloudinary.com/{$cloudName}/image/upload/{$publicId}";
+
+        return Storage::disk('cloudinary')->url($this->image_url);
     }
 }

@@ -35,7 +35,7 @@
     }
 
     $url = ($type === 'custom') ? '#' : route('products.show', $product->slug ?? '');
-    $imageUrl = $image ?: ($product ? ($product->images->where('is_primary', true)->first()->image_url ?? null) : null);
+    $imageUrl = $image ?: ($product ? ($product->images->where('is_primary', true)->first()->src ?? null) : null);
 
     // 2. Logika URL: Custom build tidak punya slug produk
     $url = ($type === 'custom') ? '#' : route('products.show', $product->slug ?? '');
@@ -43,7 +43,7 @@
     // 3. Logika Gambar: Jika custom, kita bisa beri placeholder atau gambar spesifik
     $imageUrl = $image;
     if ($type !== 'custom' && $product) {
-        $imageUrl = $product->images->where('is_primary', true)->first()->image_url ?? null;
+        $imageUrl = $product->images->where('is_primary', true)->first()->src ?? null;
     }
 @endphp
 

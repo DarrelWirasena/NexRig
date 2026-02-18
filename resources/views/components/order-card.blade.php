@@ -9,7 +9,7 @@
         {{-- GAMBAR PRODUK UTAMA --}}
         <div class="size-24 rounded-lg bg-[#050014] flex items-center justify-center shrink-0 overflow-hidden border border-white/10">
             @if($order->items->first() && $order->items->first()->product->images->first())
-                <img src="{{ $order->items->first()->product->images->where('is_primary', true)->first()->image_url }}" 
+                <img src="{{ $order->items->first()->product->images->where('is_primary', true)->first()->src }}" 
                      alt="Product Image" 
                      class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
             @else

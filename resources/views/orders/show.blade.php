@@ -180,7 +180,7 @@
                             {{-- Image --}}
                             <div class="w-20 h-20 bg-[#050014] rounded-lg border border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                 @if($item->product->images->first())
-                                    <img src="{{ $item->product->images->where('is_primary', true)->first()->image_url }}" 
+                                    <img src="{{ $item->product->images->where('is_primary', true)->first()->src }}" 
                                          class="w-full h-full object-cover">
                                 @else
                                     <span class="material-symbols-outlined text-gray-700">image</span>

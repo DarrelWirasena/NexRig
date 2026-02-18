@@ -29,7 +29,7 @@
                 <div class="lg:col-span-7">
                     <div class="relative w-full aspect-[4/3] bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 mb-4 group">
                         <img id="mainImage" 
-                             src="{{ $product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/800' }}" 
+                             src="{{ $product->images->where('is_primary', true)->first()->src ?? 'https://via.placeholder.com/800' }}" 
                              alt="{{ $product->name }}" 
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                         
@@ -40,9 +40,9 @@
 
                     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                         @foreach($product->images as $img)
-                            <button onclick="changeImage('{{ $img->image_url }}')" 
+                            <button onclick="changeImage('{{ $img->src }}')" 
                                     class="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-primary transition-all focus:ring-2 focus:ring-primary">
-                                <img src="{{ $img->image_url }}" class="w-full h-full object-cover">
+                                <img src="{{ $img->src }}" class="w-full h-full object-cover">
                             </button>
                         @endforeach
                     </div>
@@ -213,7 +213,7 @@
                                             
                                             {{-- 1. Background Image Game --}}
                                             {{-- Pastikan di Model Game ada kolom 'image_url' atau sesuaikan nama kolomnya --}}
-                                            <img src="{{ $benchmark->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
+                                            <img src="{{ $benchmark->src ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
                                                  alt="{{ $benchmark->name }}" 
                                                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                                             

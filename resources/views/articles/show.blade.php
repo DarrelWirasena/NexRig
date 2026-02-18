@@ -34,7 +34,7 @@
     <article class="bg-[#050505] min-h-screen pb-20">
         {{-- HERO SECTION --}}
         <div class="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
-            <img src="{{ $article->image_url }}" 
+            <img src="{{ $article->src }}" 
                  class="w-full h-full object-cover opacity-60" 
                  alt="{{ $article->title }}">
             <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/50 to-[#050505]"></div>
@@ -98,7 +98,7 @@
                         @foreach($relatedArticles as $related)
                             <a href="{{ route('articles.show', $related->slug) }}" class="group flex gap-4">
                                 <div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                                    <img src="{{ $related->image_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <img src="{{ $related->src }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div>
                                     <h4 class="text-white font-bold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">
