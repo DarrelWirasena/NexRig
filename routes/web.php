@@ -68,6 +68,7 @@ Route::post('/cart/{id}', [CartController::class, 'store'])->name('cart.add');  
 Route::patch('/cart/update', [CartController::class, 'update'])->name('cart.update'); // URL update quantity
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove'); // [PENTING] Method DELETE
 
+Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'reply']);
 /*
 |--------------------------------------------------------------------------
 | 2. GUEST ROUTES (Hanya untuk yang BELUM Login)

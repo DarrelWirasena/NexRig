@@ -375,6 +375,160 @@ window.removeMainCartItem = function(id) {
     });
 };
 
+/**
+ * ==========================================
+ * 7. CHATBOT (SAKA Assistant)
+ * ==========================================
+ */
+
+window.toggleChat = function() {
+    const chatWindow = document.getElementById('chat-window');
+    const isHidden   = chatWindow.classList.contains('hidden');
+
+    chatWindow.classList.toggle('hidden');
+
+    if (isHidden) {
+        document.getElementById('chat-input').focus();
+    }
+}
+
+window.sendMessage = async function() {
+    const input    = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+    const sendBtn  = document.getElementById('send-btn');
+    const text     = input.value.trim();
+
+    if (!text) return;
+
+    appendChatMessage('user', text);
+    input.value      = '';
+    sendBtn.disabled = true;
+    showChatLoading();
+
+    try {
+        const res = await fetch('/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ message: text })
+        });
+
+        if (!res.ok) throw new Error('Request gagal');
+
+        const data = await res.json();
+        hideChatLoading();
+
+        if (data.reply) {
+            appendChatMessage('bot', data.reply);
+        }
+
+        if (data.products && data.products.length > 0) {
+            appendChatProductCards(data.products);
+        }
+
+    } catch (error) {
+        hideChatLoading();
+        appendChatMessage('bot', 'Maaf, terjadi kesalahan. Silakan coba lagi.');
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+    sendBtn.disabled   = false;
+}
+
+function appendChatMessage(type, content) {
+    const messages = document.getElementById('chat-messages');
+    const isUser   = type === 'user';
+
+    const wrapper        = document.createElement('div');
+    wrapper.className    = isUser ? 'flex justify-end' : 'flex justify-start';
+
+    const bubble         = document.createElement('div');
+    bubble.className     = isUser
+        ? 'bg-primary text-white text-sm px-3 py-2 rounded-2xl rounded-tr-sm max-w-[85%]'
+        : 'bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%] prose prose-invert prose-sm';
+
+    bubble.innerHTML = isUser
+        ? escapeHtml(content)
+        : (window.marked ? marked.parse(content) : content);
+
+    wrapper.appendChild(bubble);
+    messages.appendChild(wrapper);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function appendChatProductCards(products) {
+    const messages      = document.getElementById('chat-messages');
+    const wrapper       = document.createElement('div');
+    wrapper.className   = 'flex justify-start w-full';
+
+    const container     = document.createElement('div');
+    container.className = 'flex flex-col gap-2 w-full max-w-[85%]';
+
+    products.forEach(p => {
+        const card      = document.createElement('a');
+        card.href       = `/products/${p.slug}`;
+        card.className  = 'flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary rounded-xl p-2 transition-all group';
+        card.innerHTML  = `
+            <img src="${p.image ?? 'https://via.placeholder.com/60'}"
+                 class="w-12 h-12 object-cover rounded-lg shrink-0"
+                 onerror="this.src='https://via.placeholder.com/60'">
+            <div class="flex-1 min-w-0">
+                <p class="text-white text-xs font-bold truncate group-hover:text-primary transition-colors">${p.name}</p>
+                <p class="text-gray-400 text-[10px] truncate">${p.category}</p>
+                <p class="text-primary text-xs font-bold">${p.price}</p>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-sm shrink-0">arrow_forward_ios</span>`;
+
+        container.appendChild(card);
+    });
+
+    wrapper.appendChild(container);
+    messages.appendChild(wrapper);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function showChatLoading() {
+    const messages    = document.getElementById('chat-messages');
+    const loading     = document.createElement('div');
+    loading.id        = 'chat-loading';
+    loading.className = 'flex justify-start';
+    loading.innerHTML = `
+        <div class="bg-white/10 text-gray-400 text-sm px-4 py-3 rounded-2xl rounded-tl-sm flex gap-1 items-center">
+            <span class="chat-dot w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+            <span class="chat-dot w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+            <span class="chat-dot w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+        </div>`;
+    messages.appendChild(loading);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function hideChatLoading() {
+    document.getElementById('chat-loading')?.remove();
+}
+
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// Tutup chat saat klik di luar
+document.addEventListener('click', (e) => {
+    const chatWindow = document.getElementById('chat-window');
+    const chatBtn    = document.getElementById('chat-toggle-btn');
+    if (!chatWindow || !chatBtn) return;
+
+    if (!chatWindow.classList.contains('hidden') &&
+        !chatWindow.contains(e.target) &&
+        !chatBtn.contains(e.target)) {
+        chatWindow.classList.add('hidden');
+    }
+});
+
 // Global Listener untuk animasi scroll (tetap dipertahankan)
 document.addEventListener('DOMContentLoaded', () => {
     const observer = new IntersectionObserver((entries) => {
