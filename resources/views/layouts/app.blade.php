@@ -119,13 +119,21 @@
         
         {{-- Header --}}
         <div class="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-2">
+           <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <p class="text-white font-bold text-sm">SAKA Assistant</p>
             </div>
-            <button onclick="toggleChat()" class="text-gray-400 hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-sm">close</span>
-            </button>
+            <div class="flex items-center gap-2">
+                {{-- Tombol clear --}}
+                <button onclick="clearChatHistory()" 
+                        class="text-gray-500 hover:text-red-400 transition-colors" 
+                        title="Hapus riwayat">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
         </div>
 
         {{-- Messages --}}
@@ -133,7 +141,7 @@
             {{-- Pesan awal --}}
             <div class="flex justify-start">
                 <div class="bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%]">
-                    Halo! Saya <strong>SAKA</strong>, asisten virtual toko ini. Ada yang bisa saya bantu? 👋
+                    Halo! Saya <strong>NexRig</strong>, asisten virtual toko ini. Ada yang bisa saya bantu? 👋
                 </div>
             </div>
         </div>
