@@ -384,19 +384,34 @@ let chatHistoryLoaded = false;
 
 window.toggleChat = function() {
     const chatWindow = document.getElementById('chat-window');
-    const isHidden   = chatWindow.classList.contains('hidden');
+    const chatBtn    = document.getElementById('chat-toggle-btn');
+    const isClosed   = chatWindow.classList.contains('chat-hide') ||
+                       chatWindow.classList.contains('chat-closed');
 
-    chatWindow.classList.toggle('hidden');
+    if (isClosed) {
+        chatWindow.classList.remove('chat-closed', 'chat-hide');
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                chatWindow.classList.add('chat-show');
+            });
+        });
+        chatBtn.classList.add('chat-active');    // ← orbit cepat saat buka
 
-    if (isHidden) {
         if (!chatHistoryLoaded) {
             loadChatHistory();
             chatHistoryLoaded = true;
         }
         document.getElementById('chat-input').focus();
+
+    } else {
+        chatWindow.classList.remove('chat-show');
+        chatWindow.classList.add('chat-hide');
+        chatBtn.classList.remove('chat-active'); // ← orbit lambat saat tutup
+        setTimeout(() => {
+            chatWindow.classList.add('chat-closed');
+        }, 400);
     }
 }
-
 window.sendMessage = async function() {
     const input    = document.getElementById('chat-input');
     const messages = document.getElementById('chat-messages');

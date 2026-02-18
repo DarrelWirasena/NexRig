@@ -114,7 +114,7 @@
 
     {{-- Chat Window --}}
     <div id="chat-window" 
-        class="hidden fixed bottom-24 right-6 z-50 w-80 border border-white/10 rounded-2xl shadow-2xl flex flex-col bg-[#121212]" 
+        class="chat-closed chat-hide fixed bottom-24 right-6 z-50 w-80 border border-white/10 rounded-2xl shadow-2xl flex flex-col bg-[#121212]" 
         style="height: 420px">
         
         {{-- Header --}}
