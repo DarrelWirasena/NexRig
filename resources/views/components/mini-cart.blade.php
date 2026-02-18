@@ -1,8 +1,42 @@
 @php
-    $cart = session('cart', []);
-    $total = 0;
-    foreach($cart as $item) {
-        $total += $item['price'] * $item['quantity'];
+    $cartItems = [];
+    $subtotal = 0;
+
+    if(auth()->check()) {
+        // A. JIKA LOGIN: Ambil dari Database
+        // Kita load relasi product dan images agar hemat query
+        $dbCart = \App\Models\CartItem::with(['product.images', 'product.series.category'])
+                    ->where('user_id', auth()->id())
+                    ->get();
+
+        foreach($dbCart as $item) {
+            $cartItems[] = (object) [
+                'row_id' => $item->id, // ID untuk hapus (Cart ID)
+                'name' => $item->product->name,
+                'price' => $item->product->price,
+                // Pakai Accessor 'src' yang sudah kita buat sebelumnya
+                'image' => $item->product->images->first()->src ?? 'https://placehold.co/100',
+                'quantity' => $item->quantity,
+                'category' => $item->product->series->category->name ?? 'Component'
+            ];
+            $subtotal += $item->product->price * $item->quantity;
+        }
+
+    } else {
+        // B. JIKA GUEST: Ambil dari Session
+        $sessionCart = session('cart', []);
+        
+        foreach($sessionCart as $productId => $details) {
+            $cartItems[] = (object) [
+                'row_id' => $productId, // ID untuk hapus (Product ID)
+                'name' => $details['name'],
+                'price' => $details['price'],
+                'image' => $details['image'],
+                'quantity' => $details['quantity'],
+                'category' => $details['category'] ?? 'Component'
+            ];
+            $subtotal += $details['price'] * $details['quantity'];
+        }
     }
 @endphp
 
@@ -29,7 +63,8 @@
     {{-- BODY (LIST ITEM) --}}
     {{-- Kita tambahkan 'relative' dan 'flex-1' agar empty state bisa centering --}}
     <div id="miniCartItems" class="flex-1 overflow-y-auto p-6 custom-scrollbar relative">
-        @include('components.mini-cart-items', ['cart' => $cart])
+        {{-- Kirim variable $cartItems yang sudah distandarisasi --}}
+        @include('components.mini-cart-items', ['items' => $cartItems])
     </div>
 
     {{-- FOOTER (ACTIONS) --}}
@@ -37,7 +72,7 @@
         <div class="flex justify-between items-center mb-4">
             <span class="text-gray-400 text-sm uppercase font-bold tracking-widest">Subtotal</span>
             <span id="miniCartSubtotal" class="text-xl font-black text-white">
-                Rp {{ number_format($total, 0, ',', '.') }}
+                Rp {{ number_format($subtotal, 0, ',', '.') }}
             </span>
         </div>
         
@@ -52,13 +87,12 @@
             
            {{-- Kita buat satu anchor tunggal, statusnya kita kontrol via JS --}}
             <a href="{{ route('checkout.index') }}" 
-            id="miniCartCheckoutBtn" 
-            class="px-4 py-3 font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase flex items-center justify-center gap-2 
-            {{ count($cart) > 0 ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-white/10 text-gray-600 cursor-not-allowed pointer-events-none' }}">
-                
-                <span id="checkoutBtnText">{{ count($cart) > 0 ? 'Checkout' : 'Empty' }}</span>
+                id="miniCartCheckoutBtn" 
+                class="px-4 py-3 font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase flex items-center justify-center gap-2 
+                {{ count($cartItems) > 0 ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-white/10 text-gray-600 cursor-not-allowed pointer-events-none' }}">   
+                <span id="checkoutBtnText">{{ count($cartItems) > 0 ? 'Checkout' : 'Empty' }}</span>
                 <span id="checkoutBtnIcon" class="material-symbols-outlined text-sm">
-                    {{ count($cart) > 0 ? 'arrow_forward' : 'lock' }}
+                    {{ count($cartItems) > 0 ? 'arrow_forward' : 'lock' }}
                 </span>
             </a>
         </div>

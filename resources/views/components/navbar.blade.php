@@ -62,11 +62,30 @@
                     <span class="material-symbols-outlined text-[24px] group-hover:text-blue-500 transition-colors">search</span>
                 </button>
 
-                <button onclick="toggleMiniCart()" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-colors group">
-                    <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
-                    @if(session('cart') && count(session('cart')) > 0)
-                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center border border-black">{{ count(session('cart')) }}</span>
-                    @endif
+                <button onclick="toggleMiniCart()" class="relative group p-2 text-gray-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">shopping_cart</span>
+                    
+                    @php
+                        $badgeCount = 0;
+                        if(auth()->check()) {
+                            // [PERBAIKAN] Gunakan App\Models\CartItem
+                            $badgeCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
+                        } else {
+                            // Guest: Hitung dari Session
+                            $cartSession = session()->get('cart', []);
+                            $badgeCount = array_reduce($cartSession, function($carry, $item) {
+                                return $carry + $item['quantity'];
+                            }, 0);
+                        }
+                    @endphp
+
+                    {{-- Badge Merah --}}
+                    <div id="cart-badge" class="{{ $badgeCount > 0 ? '' : 'hidden' }} absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-[#0a0a0a]"></div>
+                    
+                    {{-- Angka (Opsional) --}}
+                    <div id="cart-count" class="{{ $badgeCount > 0 ? 'flex' : 'hidden' }} absolute -top-1 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full items-center justify-center font-bold">
+                        {{ $badgeCount }}
+                    </div>
                 </button>
 
                 @auth
