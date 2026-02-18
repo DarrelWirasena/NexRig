@@ -24,43 +24,48 @@ class ImagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'images';
 
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                FileUpload::make('image_url')
-                    ->image()
-                    ->required(),
-                Toggle::make('is_primary')
-                    ->required(),
-                TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-            ]);
-    }
+  public function form(Schema $schema): Schema
+{
+    return $schema
+        ->components([
+            FileUpload::make('image_url')
+                ->label('Product Image')
+                ->disk('cloudinary')
+                ->directory('products')
+                ->image()
+                ->imageEditor()
+                ->maxSize(5120)
+                ->required()
+                ->getUploadedFileNameForStorageUsing(function ($file) {
+                    // Hapus extension dari nama file yang disimpan
+                    return pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                }),
+                
+            Toggle::make('is_primary')
+                ->label('Set as Primary Image')
+                ->default(false),
+                
+            TextInput::make('sort_order')
+                ->label('Sort Order')
+                ->numeric()
+                ->default(0)
+                ->required(),
+        ]);
+}
 
-    public function table(Table $table): Table
-    {
-        return $table
-            ->recordTitleAttribute('image_path')
-            ->columns([
-                ImageColumn::make('image_url'),
-                IconColumn::make('is_primary')
-                    ->boolean(),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
+public function table(Table $table): Table
+{
+    return $table
+        ->recordTitleAttribute('image_url')
+        ->columns([
+            ImageColumn::make('image_url')
+                ->label('Image')
+                ->disk('cloudinary')
+                ->square()
+                ->size(80),
+            // ... kolom lainnya
+        ])
+             ->filters([
                 //
             ])
             ->headerActions([

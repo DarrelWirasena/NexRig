@@ -83,26 +83,40 @@
 
 
 {{-- 3. PRODUCT GRID --}}
-        <div class="px-4 md:px-10 pb-20">
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                @forelse($products as $product)
-                   <a href="{{ route('products.show', $product->slug) }}" class="block group h-full">
-                        <x-product-card 
-                            :name="$product->name"
-                            :price="$product->price"
-                            :description="$product->short_description"
-                            :image="$product->images->where('is_primary', true)->first()->image_url ?? 'https://via.placeholder.com/600'"
-                            badge="{{ $product->tier ?? 'Custom' }}"
-                            :specs="$product->components->take(3)->pluck('name')->toArray()"
-                        />
-                    </a>
-                @empty
-                    <div class="col-span-full py-20 text-center">
-                        <span class="material-symbols-outlined text-6xl text-gray-800 mb-4 italic">search_off</span>
-                        <p class="text-gray-500 font-bold uppercase italic tracking-widest">No builds found in the database.</p>
-                    </div>
-                @endforelse
+<div class="px-4 md:px-10 pb-20">
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+        @forelse($products as $product)
+            @php
+                $primaryImage = $product->images->where('is_primary', true)->first() 
+                                ?? $product->images->first();
+                $imageUrl = $primaryImage ? $primaryImage->full_url : 'https://via.placeholder.com/600';
+            @endphp
+            
+            {{-- DEBUG: Lihat nilai $imageUrl --}}
+            <!-- DEBUG: imageUrl = {{ $imageUrl }} -->
+            
+           <a href="{{ route('products.show', $product->slug) }}" class="block group h-full">
+                <x-product-card 
+                    :name="$product->name"
+                    :price="$product->price"
+                    :description="$product->short_description"
+                    :image="$imageUrl"
+                    badge="{{ $product->tier ?? 'Custom' }}"
+                    :specs="$product->components->take(3)->pluck('name')->toArray()"
+                />
+            </a>
+        @empty
+            <div class="col-span-full py-20 text-center">
+                <span class="material-symbols-outlined text-6xl text-gray-800 mb-4 italic">search_off</span>
+                <p class="text-gray-500 font-bold uppercase italic tracking-widest">No builds found in the database.</p>
             </div>
+        @endforelse
+    </div>
+    
+    <div class="mt-12">
+        {{ $products->appends(request()->query())->links() }}
+    </div>
+</div>
             
             <div class="mt-12">
                 {{ $products->appends(request()->query())->links() }}
