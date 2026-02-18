@@ -9,7 +9,6 @@ window.showToast = function(message, type = 'success') {
     // 1. Hapus toast lama
     const existingToast = document.getElementById('toast-notification');
     if (existingToast) existingToast.remove();
-
     // 2. Tentukan Warna & Ikon
     const isSuccess = type === 'success';
     const themeColor = isSuccess ? 'blue-600' : 'red-600';
@@ -113,7 +112,7 @@ window.toggleMiniCart = function() {
 
 /**
  * ==========================================
- * 3. UPDATE UI LOGIC (Penyebab Tombol Rusak Disini)
+ * 3. UPDATE UI LOGIC (DIPERBAIKI)
  * ==========================================
  */
 window.updateMiniCartUI = function(data) {
@@ -124,45 +123,55 @@ window.updateMiniCartUI = function(data) {
     if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
     if(subtotalEl) subtotalEl.innerText = data.subtotal;
 
-    // B. Update Tombol Checkout (Logic Kunci)
+    // Hitung jumlah item
+    const count = typeof data.cartCount !== 'undefined' ? data.cartCount : 0;
+
+    // ==========================================
+    // [BARU] C. UPDATE BADGE NAVBAR (TITIK MERAH / ANGKA)
+    // ==========================================
+    const cartCountEl = document.getElementById('cart-count'); // ID elemen angka di navbar
+    const cartBadge = document.getElementById('cart-badge');   // ID elemen titik merah (jika pakai dot)
+
+    // Update Angka
+    if (cartCountEl) {
+        cartCountEl.innerText = count;
+        // Sembunyikan angka jika 0 (opsional, sesuaikan selera)
+        cartCountEl.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    // Update Titik Merah (Badge)
+    if (cartBadge) {
+        if (count > 0) {
+            cartBadge.classList.remove('hidden');
+        } else {
+            cartBadge.classList.add('hidden');
+        }
+    }
+
+    // ==========================================
+    // B. Update Tombol Checkout
+    // ==========================================
     const checkoutBtn = document.getElementById('miniCartCheckoutBtn');
     const btnText = document.getElementById('checkoutBtnText');
     const btnIcon = document.getElementById('checkoutBtnIcon');
 
     if (checkoutBtn) {
-        // Cek jumlah item dari data yang dikirim controller
-        // Jika undefined, kita anggap kosong untuk safety
-        const count = typeof data.cartCount !== 'undefined' ? data.cartCount : 0;
-
         if (count === 0) {
             // MODE KOSONG (LOCK)
-            // Hapus style aktif
             checkoutBtn.classList.remove('bg-primary', 'hover:bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(59,130,246,0.4)]');
-            
-            // Tambah style mati
             checkoutBtn.classList.add('bg-white/10', 'text-gray-600', 'cursor-not-allowed', 'pointer-events-none');
             
-            // Ubah Teks & Ikon
             if(btnText) btnText.innerText = 'Empty';
             if(btnIcon) btnIcon.innerText = 'lock';
-            
-            // Ubah Link jadi # agar tidak bisa diklik (double safety)
             checkoutBtn.setAttribute('href', '#');
             
         } else {
             // MODE ISI (ACTIVE)
-            // Hapus style mati
             checkoutBtn.classList.remove('bg-white/10', 'text-gray-600', 'cursor-not-allowed', 'pointer-events-none');
-            
-            // Tambah style aktif
             checkoutBtn.classList.add('bg-primary', 'hover:bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(59,130,246,0.4)]');
             
-            // Ubah Teks & Ikon
             if(btnText) btnText.innerText = 'Checkout';
             if(btnIcon) btnIcon.innerText = 'arrow_forward';
-
-            // Balikin Link ke route checkout yang benar
-            // Pastikan URL checkout ini sesuai dengan route kamu
             checkoutBtn.setAttribute('href', '/checkout'); 
         }
     }
@@ -290,15 +299,29 @@ window.updateCartQuantity = function(id, change) {
 
 /**
  * ==========================================
- * 6. MAIN CART PAGE LOGIC (Realtime Update)
+ * 6. MAIN CART PAGE LOGIC
  * ==========================================
  */
-window.updateMainCartItem = function(id, change) {
-    // 1. Visual Feedback (Loading state pada angka)
-    const qtySpan = document.getElementById(`qty-display-${id}`);
-    if(qtySpan) qtySpan.style.opacity = '0.5';
 
-    // 2. Kirim Request
+// A. UPDATE QUANTITY (Minus & Plus)
+window.updateMainCartItem = function(id, change) {
+    const qtySpan = document.getElementById(`qty-display-${id}`);
+    const btnMinus = document.querySelector(`button[onclick="updateMainCartItem('${id}', -1)"]`);
+    
+    // 1. Cek Batas Minimum (Mencegah request jika quantity sudah 1 dan mau dikurangi)
+    let currentQty = parseInt(qtySpan.innerText);
+    if (change === -1 && currentQty <= 1) {
+        // Opsional: Goyangkan angka atau beri visual feedback "mentok"
+        return; 
+    }
+
+    // 2. Visual Loading
+    if(qtySpan) qtySpan.style.opacity = '0.5';
+    
+    // Disable tombol sementara agar tidak spam klik
+    if(btnMinus) btnMinus.disabled = true;
+
+    // 3. Kirim Request
     fetch('/cart/update', {
         method: 'PATCH',
         headers: {
@@ -311,41 +334,52 @@ window.updateMainCartItem = function(id, change) {
     .then(res => res.json())
     .then(data => {
         if(data.success) {
-            // A. Update Angka di Item Tersebut
+            // Update Angka di Item
             if(qtySpan) {
                 qtySpan.innerText = data.item_quantity;
                 qtySpan.style.opacity = '1';
             }
 
-            // B. Update Sidebar Summary (Subtotal, Tax, Total)
-            const summarySubtotal = document.getElementById('summary-subtotal');
-            const summaryTax = document.getElementById('summary-tax');
-            const summaryGrandTotal = document.getElementById('summary-grand-total');
+            // Update Summary (Subtotal, Tax, Total)
+            const ids = ['summary-subtotal', 'summary-tax', 'summary-grand-total'];
+            const keys = ['subtotal', 'tax', 'grand_total'];
+            
+            ids.forEach((id, index) => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = data[keys[index]];
+            });
 
-            if(summarySubtotal) summarySubtotal.innerText = data.subtotal;
-            if(summaryTax) summaryTax.innerText = data.tax;
-            if(summaryGrandTotal) summaryGrandTotal.innerText = data.grand_total;
+            // Update status tombol minus (disable jika quantity jadi 1)
+            const minusBtn = document.querySelector(`button[onclick="updateMainCartItem('${id}', -1)"]`);
+            if(minusBtn) {
+                if (data.item_quantity <= 1) {
+                    minusBtn.classList.add('opacity-30', 'pointer-events-none');
+                } else {
+                    minusBtn.classList.remove('opacity-30', 'pointer-events-none');
+                }
+            }
 
-            // C. Sinkronisasi dengan Mini Cart (Penting!)
-            // Agar kalau user buka mini cart, isinya sudah sama
+            // Sync Mini Cart
             window.updateMiniCartUI(data);
-
-            window.showToast('Cart updated');
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error(err))
+    .finally(() => {
+        if(btnMinus) btnMinus.disabled = false;
+    });
 };
 
-// Fungsi Remove khusus halaman Cart Utama
-window.removeMainCartItem = function(id) {
-    if(!confirm('Remove this build from your setup?')) return;
-
+// B. REMOVE ITEM (Dipanggil oleh Modal di blade)
+// Ganti nama dari 'removeMainCartItem' menjadi 'executeRemoveCartItem'
+// Agar tidak konflik dengan logika modal
+window.executeRemoveCartItem = function(id) {
+    
     // Efek visual menghapus baris
     const row = document.getElementById(`cart-row-${id}`);
     if(row) {
-        row.style.transition = "all 0.5s";
+        row.style.transition = "all 0.5s ease-out";
         row.style.opacity = "0";
-        row.style.transform = "translateX(50px)";
+        row.style.transform = "translateX(50px) scale(0.95)";
     }
 
     fetch(`/cart/${id}`, {
@@ -358,20 +392,37 @@ window.removeMainCartItem = function(id) {
     .then(res => res.json())
     .then(data => {
         if(data.success) {
-            // Hapus elemen dari DOM
+            // Hapus elemen dari DOM setelah animasi selesai
             setTimeout(() => { if(row) row.remove(); }, 500);
 
             // Update Summary
-            document.getElementById('summary-subtotal').innerText = data.subtotal;
-            document.getElementById('summary-tax').innerText = data.tax;
-            document.getElementById('summary-grand-total').innerText = data.grand_total;
+            const ids = ['summary-subtotal', 'summary-tax', 'summary-grand-total'];
+            const keys = ['subtotal', 'tax', 'grand_total'];
+            ids.forEach((id, index) => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = data[keys[index]];
+            });
             
             // Sync Mini Cart
             window.updateMiniCartUI(data);
             
+            // Tampilkan Toast
+            window.showToast('Item removed from build', 'success');
+
             // Cek jika cart kosong, reload halaman agar tampil Empty State
-            if(data.cartCount === 0) location.reload();
+            if(data.cartCount === 0) {
+                setTimeout(() => location.reload(), 600);
+            }
         }
+    })
+    .catch(err => {
+        console.error(err);
+        if(row) {
+            // Kembalikan row jika gagal
+            row.style.opacity = "1";
+            row.style.transform = "none";
+        }
+        window.showToast('Failed to remove item', 'error');
     });
 };
 
@@ -531,6 +582,8 @@ document.addEventListener('click', (e) => {
 
 // Global Listener untuk animasi scroll (tetap dipertahankan)
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. SCROLL ANIMATION (Kode Lama Kamu)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -540,4 +593,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, { threshold: 0.1 });
     document.querySelectorAll('.scroll-trigger').forEach((el) => observer.observe(el));
+
+    // 2. FLASH MESSAGE HANDLER (Best Practice)
+    // Ini akan membaca data dari layout dan memunculkan Toast
+    const flashEl = document.getElementById('flash-messages');
+    if (flashEl) {
+        const successMsg = flashEl.dataset.success;
+        const errorMsg = flashEl.dataset.error;
+        const validationMsg = flashEl.dataset.validation;
+
+        if (successMsg) window.showToast(successMsg, 'success');
+        if (errorMsg) window.showToast(errorMsg, 'error');
+        if (validationMsg) window.showToast(validationMsg, 'error');
+    }
+
 });

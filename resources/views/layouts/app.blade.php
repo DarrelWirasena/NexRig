@@ -90,29 +90,13 @@
     </div>
 
     {{-- 3. Toast Notification --}}
-    {{-- Kita asumsikan logic JS toast sudah ada di app.js --}}
-    @if(session('success') || session('error'))
-        @php 
-            $isSuccess = session('success');
-            $message = $isSuccess ?: session('error');
-            $themeColor = $isSuccess ? 'blue-600' : 'red-600';
-            $icon = $isSuccess ? 'check' : 'priority_high';
-        @endphp
-
-        <div id="toast-notification" class="fixed bottom-5 right-5 z-[100] flex items-center gap-4 bg-[#0a0a0a] border border-{{ $themeColor }}/50 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-500 translate-y-0 opacity-100">
-            <div class="flex items-center justify-center w-8 h-8 bg-{{ $themeColor }}/20 rounded-full text-{{ $themeColor }}">
-                <span class="material-symbols-outlined text-xl">{{ $icon }}</span>
-            </div>
-            <div>
-                <h4 class="font-bold text-sm text-{{ $themeColor }} uppercase tracking-wider">{{ $isSuccess ? 'Success' : 'Error' }}</h4>
-                <p class="text-gray-300 text-xs mt-0.5">{{ $message }}</p>
-            </div>
-            <button onclick="closeToast()" class="ml-4 text-gray-500 hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-lg">close</span>
-            </button>
-            <div class="absolute bottom-0 left-0 h-[2px] bg-{{ $themeColor }} transition-all duration-[3000ms] ease-linear w-full" id="toast-progress"></div>
-        </div>
-    @endif
+    {{-- 3. Flash Message Data (Hidden Bridge to JS) --}}
+    <div id="flash-messages" 
+         data-success="{{ session('success') }}" 
+         data-error="{{ session('error') }}" 
+         data-validation="{{ $errors->any() ? $errors->first() : '' }}"
+         class="hidden">
+    </div>
     
     {{-- 
     =========================================================

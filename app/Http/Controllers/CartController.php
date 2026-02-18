@@ -2,53 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
     // =================================================================
-    // HELPER: Ambil & Format Data Cart (DB atau Session)
+    // HELPER: Ambil & Format Data Cart (Standardized Object)
     // =================================================================
     private function getCartData()
     {
-        $cart = [];
+        $cartItems = [];
 
         if (Auth::check()) {
             // A. LOGGED IN USER (Ambil dari Database)
-            $items = CartItem::where('user_id', Auth::id())
-                             ->with('product.images')
+            // Load relasi product, images, dan category agar tidak N+1 Query
+            $dbItems = CartItem::where('user_id', Auth::id())
+                             ->with(['product.images', 'product.series.category'])
                              ->get();
 
-            foreach ($items as $item) {
+            foreach ($dbItems as $item) {
                 // Self-Healing: Hapus item jika produknya sudah dihapus dari DB toko
                 if (!$item->product) {
                     $item->delete();
                     continue; 
                 }
 
-                $image = $item->product->images->where('is_primary', true)->first();
-                $imageUrl = $image ? $image->image_url : 'https://placehold.co/100';
-
-                $cart[$item->product_id] = [
-                    "name" => $item->product->name,
-                    "quantity" => $item->quantity,
-                    "price" => $item->product->price,
-                    "image" => $imageUrl,
-                    "id" => $item->product_id
+                // Standardisasi ke Object
+                $cartItems[] = (object) [
+                    'row_id' => $item->product_id, // Gunakan Product ID sebagai key unik
+                    'name' => $item->product->name,
+                    'price' => $item->product->price,
+                    // Gunakan accessor src jika ada, atau fallback manual
+                    'image' => $item->product->images->first()->src ?? 'https://placehold.co/100',
+                    'quantity' => $item->quantity,
+                    'category' => $item->product->series->category->name ?? 'Component'
                 ];
             }
         } else {
             // B. GUEST (Ambil dari Session)
-            $cart = session()->get('cart', []);
+            $sessionCart = session()->get('cart', []);
+            
+            foreach ($sessionCart as $productId => $details) {
+                // Standardisasi ke Object (agar sama dengan DB logic)
+                $cartItems[] = (object) [
+                    'row_id' => $productId,
+                    'name' => $details['name'],
+                    'price' => $details['price'],
+                    'image' => $details['image'], // Session sudah simpan URL string
+                    'quantity' => $details['quantity'],
+                    'category' => $details['category'] ?? 'Component'
+                ];
+            }
         }
 
-        return $cart;
+        return $cartItems;
     }
 
     // =================================================================
@@ -56,19 +66,18 @@ class CartController extends Controller
     // =================================================================
     public function index()
     {
-        $cart = $this->getCartData();
+        $cartItems = $this->getCartData();
         
         $total = 0;
-        foreach($cart as $details) {
-            $total += $details['price'] * $details['quantity'];
+        foreach($cartItems as $item) {
+            $total += $item->price * $item->quantity;
         }
 
-        // Sinkronisasi Session (Penting untuk View Blade)
-        if (Auth::check()) {
-            session()->put('cart', $cart); 
-        }
-
-        return view('cart.index', compact('cart', 'total'));
+        // Kirim data sebagai 'cart' agar view tidak bingung, tapi isinya sudah Object standar
+        return view('cart.index', [
+            'cart' => $cartItems, 
+            'total' => $total
+        ]);
     }
 
     // =================================================================
@@ -76,7 +85,9 @@ class CartController extends Controller
     // =================================================================
     public function store(Request $request, $id)
     {
-        $product = Product::with('images')->findOrFail($id);
+        // Load relasi lengkap untuk persiapan simpan session
+        $product = Product::with(['images', 'series.category'])->findOrFail($id);
+        
         $qty = (int) $request->input('quantity', 1);
 
         if (Auth::check()) {
@@ -99,38 +110,44 @@ class CartController extends Controller
             // --- SESSION LOGIC ---
             $cart = session()->get('cart', []);
             
-            // Siapkan data jika item belum ada
+            // Siapkan URL Gambar (String)
+            $imgSrc = 'https://placehold.co/100';
+            if ($product->images->count() > 0) {
+                $imgSrc = $product->images->first()->src; 
+            }
+
+            // Jika item belum ada, buat baru
             if(!isset($cart[$id])) {
-                $image = $product->images->where('is_primary', true)->first();
-                $imageUrl = $image ? $image->image_url : 'https://placehold.co/100';
-                
                 $cart[$id] = [
                     "name" => $product->name,
-                    "quantity" => 0, // Mulai dari 0, nanti ditambah di bawah
+                    "quantity" => 0,
                     "price" => $product->price,
-                    "image" => $imageUrl,
-                    "id" => $id
+                    "image" => $imgSrc,
+                    "id" => $id,
+                    // PENTING: Category wajib ada untuk session
+                    "category" => $product->series->category->name ?? 'Component'
                 ];
             }
             
+            // Tambah quantity
             $cart[$id]['quantity'] += $qty;
             session()->put('cart', $cart);
         }
 
-        // Response
+        // Response AJAX
         if ($request->wantsJson() || $request->ajax()) {
-            return $this->sendCartResponse('Product added successfully!');
+            return $this->sendCartResponse('Product added successfully!', $id);
         }
 
         return redirect()->back()->with('success', 'Product added successfully!');
     }
 
     // =================================================================
-    // 3. UPDATE (Change Quantity) - DIPERBAIKI
+    // 3. UPDATE (Change Quantity)
     // =================================================================
     public function update(Request $request)
     {
-        // 1. VALIDASI UTAMA: Cek ID saja dulu
+        // Validasi
         if(!$request->id) {
              if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Product ID required'], 400);
@@ -138,55 +155,47 @@ class CartController extends Controller
              return redirect()->back()->with('error', 'Invalid Request');
         }
 
-        // 2. CEK INPUT: Harus ada 'change' ATAU 'quantity'
-        // Jika dua-duanya tidak ada, return error
         if (!isset($request->change) && !isset($request->quantity)) {
-             return redirect()->back(); // Atau return JSON error
+             return redirect()->back();
         }
 
         $id = $request->id;
+        $targetQty = 1;
 
-        // Ambil Current Quantity (Logic Database vs Session)
-        $currentQty = 0;
-        
+        // --- UPDATE LOGIC ---
         if (Auth::check()) {
             $cartItem = CartItem::where('user_id', Auth::id())->where('product_id', $id)->first();
-            if ($cartItem) $currentQty = $cartItem->quantity;
-        } else {
-            $cart = session()->get('cart', []);
-            if (isset($cart[$id])) $currentQty = $cart[$id]['quantity'];
-        }
-
-        // Tentukan Target Quantity
-        $targetQty = $currentQty; 
-
-        if (isset($request->quantity)) {
-            // Case A: Input Manual (Set langsung jadi angka tersebut)
-            // Code ini sekarang BISA JALAN karena validasi di atas sudah dilonggarkan
-            $targetQty = (int) $request->quantity;
-        } elseif (isset($request->change)) {
-            // Case B: Tombol +/- (Relative)
-            $targetQty = $currentQty + (int) $request->change;
-        }
-
-        // Pastikan minimal 1
-        $targetQty = max(1, $targetQty);
-
-        // Simpan Perubahan
-        if (Auth::check()) {
-            if (isset($cartItem)) {
+            if ($cartItem) {
+                // Hitung Target Quantity
+                if (isset($request->quantity)) {
+                    $targetQty = (int) $request->quantity;
+                } elseif (isset($request->change)) {
+                    $targetQty = $cartItem->quantity + (int) $request->change;
+                }
+                
+                // Simpan (Min 1)
+                $targetQty = max(1, $targetQty);
                 $cartItem->quantity = $targetQty;
                 $cartItem->save();
             }
         } else {
             $cart = session()->get('cart', []);
             if (isset($cart[$id])) {
+                // Hitung Target Quantity
+                if (isset($request->quantity)) {
+                    $targetQty = (int) $request->quantity;
+                } elseif (isset($request->change)) {
+                    $targetQty = $cart[$id]['quantity'] + (int) $request->change;
+                }
+
+                // Simpan (Min 1)
+                $targetQty = max(1, $targetQty);
                 $cart[$id]['quantity'] = $targetQty;
                 session()->put('cart', $cart);
             }
         }
 
-        // Response AJAX / Redirect
+        // Response
         if ($request->wantsJson() || $request->ajax()) {
             return $this->sendCartResponse('Cart updated', $id);
         }
@@ -221,29 +230,38 @@ class CartController extends Controller
     // =================================================================
     private function sendCartResponse($message, $updatedItemId = null)
     {
-        // Ambil data terbaru (DB atau Session)
-        $cart = $this->getCartData();
+        // 1. Ambil data terbaru yang SUDAH STANDARD (Array of Objects)
+        $cartItems = $this->getCartData();
         
-        // Hitung Total
+        // 2. Hitung Total & Qty Item Terkait
         $total = 0;
-        foreach($cart as $details) {
-            $total += $details['price'] * $details['quantity'];
+        $totalQty = 0;
+        $updatedItemQty = 0;
+
+        foreach($cartItems as $item) {
+            $total += $item->price * $item->quantity;
+            $totalQty += $item->quantity;
+
+            if ($updatedItemId && $item->row_id == $updatedItemId) {
+                $updatedItemQty = $item->quantity;
+            }
         }
-        $tax = $total * 0.11;
+        
+        $tax = $total * 0.11; // PPN 11% (Contoh)
         $grandTotal = $total + $tax;
 
-        // Render HTML Mini Cart
-        $cartHtml = view('components.mini-cart-items', ['cart' => $cart])->render();
+        // 3. Render View dengan data 'items' (Sesuai perbaikan view sebelumnya)
+        $cartHtml = view('components.mini-cart-items', ['items' => $cartItems])->render();
 
         return response()->json([
             'success' => true,
             'message' => $message,
             'cartHtml' => $cartHtml,
-            'cartCount' => count($cart),
+            'cartCount' => $totalQty, // Jumlah total item (bukan jumlah jenis produk)
             'subtotal' => 'Rp ' . number_format($total, 0, ',', '.'),
             'tax' => 'Rp ' . number_format($tax, 0, ',', '.'),
             'grand_total' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
-            'item_quantity' => ($updatedItemId && isset($cart[$updatedItemId])) ? $cart[$updatedItemId]['quantity'] : 0
+            'item_quantity' => $updatedItemQty
         ]);
     }
 }
