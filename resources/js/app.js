@@ -381,37 +381,78 @@ window.removeMainCartItem = function(id) {
  * ==========================================
  */
 let chatHistoryLoaded = false;
+let isChatAnimating = false;
 
 window.toggleChat = function() {
     const chatWindow = document.getElementById('chat-window');
-    const chatBtn    = document.getElementById('chat-toggle-btn');
-    const isClosed   = chatWindow.classList.contains('chat-hide') ||
-                       chatWindow.classList.contains('chat-closed');
-
-    if (isClosed) {
-        chatWindow.classList.remove('chat-closed', 'chat-hide');
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                chatWindow.classList.add('chat-show');
-            });
-        });
-        chatBtn.classList.add('chat-active');    // ← orbit cepat saat buka
-
-        if (!chatHistoryLoaded) {
-            loadChatHistory();
-            chatHistoryLoaded = true;
-        }
-        document.getElementById('chat-input').focus();
-
+    
+    // Cek apakah chat sedang terbuka (memiliki class chat-show)
+    if (chatWindow.classList.contains('chat-show')) {
+        closeChat();
     } else {
-        chatWindow.classList.remove('chat-show');
-        chatWindow.classList.add('chat-hide');
-        chatBtn.classList.remove('chat-active'); // ← orbit lambat saat tutup
-        setTimeout(() => {
-            chatWindow.classList.add('chat-closed');
-        }, 400);
+        openChat();
     }
 }
+
+/**
+ * FUNGSI BUKA (OPEN)
+ */
+function openChat() {
+    if (isChatAnimating) return;
+    const chatWindow = document.getElementById('chat-window');
+    const chatBtn = document.getElementById('chat-toggle-btn');
+
+    // 1. Hapus class 'closed' dan 'hide' (agar elemen dirender dan siap animasi)
+    chatWindow.classList.remove('chat-closed', 'chat-hide');
+
+    // 2. Load History
+    if (!chatHistoryLoaded) {
+        loadChatHistory();
+        chatHistoryLoaded = true;
+        if (getChatHistory().length === 0) window.clearChatHistory(); 
+    }
+
+    // 3. Trigger animasi masuk
+    // requestAnimationFrame memastikan browser merender state sebelum menambah class baru
+    requestAnimationFrame(() => {
+        chatWindow.classList.add('chat-show');
+    });
+
+    // 4. Efek tombol (Optional: putar icon)
+    chatBtn.classList.add('rotate-180');
+
+    // 5. Focus ke input
+    setTimeout(() => document.getElementById('chat-input').focus(), 100);
+}
+
+/**
+ * FUNGSI TUTUP (CLOSE)
+ */
+window.closeChat = function() {
+    const chatWindow = document.getElementById('chat-window');
+    const chatBtn = document.getElementById('chat-toggle-btn');
+
+    // Jika sudah tertutup, abaikan
+    if (chatWindow.classList.contains('chat-closed')) return;
+
+    isChatAnimating = true;
+
+    // 1. Hapus class 'show' (Trigger transisi opacity/scale)
+    chatWindow.classList.remove('chat-show');
+    
+    // 2. Tambah class 'hide' (Memastikan posisi turun ke bawah)
+    chatWindow.classList.add('chat-hide');
+
+    // 3. Reset tombol
+    chatBtn.classList.remove('rotate-180');
+
+    // 4. Tunggu animasi CSS selesai (0.4s = 400ms), baru set visibility: hidden
+    setTimeout(() => {
+        chatWindow.classList.add('chat-closed');
+        isChatAnimating = false;
+    }, 400); // Sesuaikan angka ini dengan CSS transition duration
+}
+
 window.sendMessage = async function() {
     const input    = document.getElementById('chat-input');
     const messages = document.getElementById('chat-messages');
@@ -583,13 +624,16 @@ function loadChatHistory() {
 // Tutup chat saat klik di luar
 document.addEventListener('click', (e) => {
     const chatWindow = document.getElementById('chat-window');
-    const chatBtn    = document.getElementById('chat-toggle-btn');
+    const chatBtn = document.getElementById('chat-toggle-btn');
+
     if (!chatWindow || !chatBtn) return;
 
-    if (!chatWindow.classList.contains('hidden') &&
-        !chatWindow.contains(e.target) &&
+    // Logika: Jika chat SEDANG BUKA (chat-show) dan klik BUKAN di window/tombol
+    if (chatWindow.classList.contains('chat-show') && 
+        !chatWindow.contains(e.target) && 
         !chatBtn.contains(e.target)) {
-        chatWindow.classList.add('hidden');
+        
+        closeChat();
     }
 });
 

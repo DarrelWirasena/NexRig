@@ -108,7 +108,7 @@
     {{-- Floating Button --}}
     <button id="chat-toggle-btn" 
             onclick="toggleChat()" 
-            class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
         <span class="material-symbols-outlined text-white">chat</span>
     </button>
 
