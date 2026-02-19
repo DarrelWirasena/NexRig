@@ -34,9 +34,11 @@
             </div>
         </div>
 
-        <button class="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-bold text-white transition-all flex items-center gap-2">
+        <a href="{{ route('orders.invoice', $order->id) }}"
+      target="_blank"
+        class="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-bold text-white transition-all flex items-center gap-2">
             <span class="material-symbols-outlined text-sm">download</span> Invoice
-        </button>
+        </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
