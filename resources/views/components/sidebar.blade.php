@@ -30,18 +30,18 @@
     <nav class="flex-1 p-6 space-y-2 overflow-y-auto no-bounce custom-sidebar-scroll">
         <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest px-4 mb-4">Account Navigation</p>
         
-        <a href="{{ route('profile.app') }}" class="nav-item {{ request()->routeIs('profile.app') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all uppercase tracking-wide">
+        <a href="{{ route('profile.app') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">person</span> Profile Settings
         </a>
-        <a href="{{ route('address.index') }}" class="nav-item {{ request()->routeIs('profile.address') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
+        <a href="{{ route('address.index') }}" class="nav-item {{ request()->routeIs('address.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">location_on</span> Address Book
         </a>
-        <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders.index') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
+        <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">receipt_long</span> My Orders
         </a>
 
         {{-- MENU BARU: SUPPORT HISTORY --}}
-        <a href="{{ route('support.history') }}" class="nav-item {{ request()->routeIs('support.history') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
+        <a href="{{ route('support.history') }}" class="nav-item {{ request()->routeIs('support.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">history</span> Support History
         </a>
     </nav>

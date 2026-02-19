@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\QuickFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -13,47 +15,47 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Ambil data kategori untuk Sidebar Filter
+        // Ambil data kategori untuk Sidebar Filter
         $categories = Category::with('series')->get();
 
-        // 2. Query dasar: Siapkan query, tapi jangan di-get() dulu
-        // Kita gunakan eager loading 'series.category' sesuai struktur baru
+        // Query dasar
         $query = Product::with(['series.category', 'images' => function($q) {
             $q->where('is_primary', true);
         }])->where('is_active', true);
 
-        // 3. FILTER CATEGORY: Jika ada request kategori di URL (?category=entry-level)
-        if ($request->has('category')) {
+        $categoryName = null;
+        $searchKeyword = $request->search;
+
+        // ==========================================
+        // 1. FILTER CATEGORY
+        // ==========================================
+        if ($request->filled('category')) {
             $query->whereHas('series.category', function($q) use ($request) {
                 $q->where('slug', $request->category);
             });
+            $categoryName = ucwords(str_replace('-', ' ', $request->category));
         }
 
-        // 4. FILTER SEARCH (SMART SEARCH)
+        // ==========================================
+        // 2. FILTER SEARCH (SMART SEARCH)
+        // ==========================================
         if ($request->filled('search')) {
-            // Pecah kalimat menjadi array kata-kata
-            // Contoh: "Intel i3" menjadi ['Intel', 'i3']
-            $keywords = explode(' ', $request->search);
+            $keywords = explode(' ', $searchKeyword);
 
             $query->where(function($q) use ($keywords) {
-                
-                // A. Cari di Nama Produk (Harus mengandung semua kata kunci)
-                // Misal: Cari "NexRig White", akan ketemu "NexRig Ultra White"
+                // A. Cari di Nama Produk
                 $q->where(function($subQ) use ($keywords) {
                     foreach ($keywords as $word) {
                         $subQ->where('name', 'like', "%{$word}%");
                     }
                 })
-
                 // B. ATAU Cari di Deskripsi
                 ->orWhere(function($subQ) use ($keywords) {
                     foreach ($keywords as $word) {
                         $subQ->where('description', 'like', "%{$word}%");
                     }
                 })
-
-                // C. ATAU Cari di Komponen (Ini solusi masalahmu!)
-                // Logic: Cari produk yang punya komponen, dimana komponen itu mengandung "Intel" DAN "i3"
+                // C. ATAU Cari di Komponen
                 ->orWhereHas('components', function($qComp) use ($keywords) {
                     $qComp->where(function($deepQ) use ($keywords) {
                         foreach ($keywords as $word) {
@@ -61,25 +63,89 @@ class ProductController extends Controller
                         }
                     });
                 })
-
-             // D. ATAU Cari di Series
-->orWhereHas('series', function($qSeries) use ($keywords) {
-    $qSeries->where(function($deepQ) use ($keywords) {
-        foreach ($keywords as $word) {
-            $deepQ->where('name', 'like', "%{$word}%");
-        }
-    });
-});
+                // D. ATAU Cari di Series
+                ->orWhereHas('series', function($qSeries) use ($keywords) {
+                    $qSeries->where(function($deepQ) use ($keywords) {
+                        foreach ($keywords as $word) {
+                            $deepQ->where('name', 'like', "%{$word}%");
+                        }
+                    });
+                });
             });
         }
 
-        // 5. Eksekusi Query dengan Pagination
-        $products = $query->latest()->paginate(9);
+        // ==========================================
+        // 3. FILTER PRICE RANGE (BARU!)
+        // ==========================================
+        if ($request->filled('price')) {
+            switch ($request->price) {
+                case 'under-20':
+                    $query->where('price', '<', 20000000); // Di bawah 20 Juta
+                    break;
+                case '20-50':
+                    $query->whereBetween('price', [20000000, 50000000]); // 20 - 50 Juta
+                    break;
+                case 'over-50':
+                    $query->where('price', '>', 50000000); // Di atas 50 Juta
+                    break;
+            }
+        }
 
-        // PENTING: Tambahkan ini agar saat pindah halaman 2, filter search/category tidak hilang
+        // ==========================================
+        // 4. SORTING (BARU!)
+        // ==========================================
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'price_asc':
+                    $query->orderBy('price', 'asc'); // Harga Termurah
+                    break;
+                case 'price_desc':
+                    $query->orderBy('price', 'desc'); // Harga Termahal
+                    break;
+                case 'newest':
+                default:
+                    $query->latest(); // Terbaru
+                    break;
+            }
+        } else {
+            // Default sorting jika user belum memilih apapun
+            $query->latest();
+        }
+
+        // ==========================================
+        // 5. LOGIKA TITLE DINAMIS
+        // ==========================================
+        if ($categoryName && $searchKeyword) {
+            $title = 'Search: "' . $searchKeyword . '" in ' . $categoryName;
+        } elseif ($categoryName) {
+            $title = $categoryName;
+        } elseif ($searchKeyword) {
+            $title = 'Search: "' . $searchKeyword . '"';
+        } else {
+            $title = 'Product Catalog';
+        }
+
+        // ==========================================
+        // 6. EKSEKUSI QUERY
+        // ==========================================
+        // PERHATIKAN: Saya menghapus ->latest() dari sini karena sudah ditangani di logika Sort di atas
+        $products = $query->paginate(9);
+
+        // Bawa semua parameter URL (termasuk price dan sort) ke halaman pagination selanjutnya
         $products->appends($request->all());
 
-        return view('products.index', compact('products', 'categories'));
+        // ==========================================
+        // 7. DATA CHIPS (DARI DATABASE + CACHE)
+        // ==========================================
+        // Ingat 'quick_filters_cache' selama 24 jam (1440 menit)
+        $chips = Cache::remember('quick_filters_cache', 1440, function () {
+            return QuickFilter::where('is_active', true)
+                ->orderBy('order', 'asc')
+                ->pluck('keyword');
+        });
+
+        // Pastikan variabel $chips ikut dikirim ke view
+        return view('products.index', compact('products', 'categories', 'title', 'chips'));
     }
 
     
@@ -102,7 +168,7 @@ class ProductController extends Controller
         ->where('slug', $slug)
         ->where('is_active', true)
         ->firstOrFail();
-
-        return view('products.show', compact('product'));
+        $title = $product->name ;
+        return view('products.show', compact('product', 'title'));
     }
 }

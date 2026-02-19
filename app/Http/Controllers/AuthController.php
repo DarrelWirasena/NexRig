@@ -12,7 +12,8 @@ class AuthController extends Controller
     // --- REGISTER ---
     public function showRegisterForm()
     {
-        return view('auth.register');
+        $title = 'Register';
+        return view('auth.register', compact('title'));
     }
 
     public function register(Request $request)
@@ -41,7 +42,8 @@ class AuthController extends Controller
     // --- LOGIN ---
     public function showLoginForm()
     {
-        return view('auth.login');
+        $title = 'Login';
+        return view('auth.login', compact('title'));
     }
 
     public function login(Request $request)

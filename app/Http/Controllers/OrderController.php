@@ -10,7 +10,8 @@ class OrderController extends Controller
 {
     // Halaman Daftar Riwayat Belanja
     public function index(Request $request)
-    {
+    {   
+        $title = 'My Orders';
         // 1. Ambil parameter tab dari URL (default 'active')
         $tab = $request->query('tab', 'active');
 
@@ -31,12 +32,13 @@ class OrderController extends Controller
         $orders = $query->latest()->get();
 
         // 5. Return ke view dengan variabel tab
-        return view('orders.index', compact('orders', 'tab'));
+        return view('orders.index', compact('orders', 'tab', 'title'));
     }
 
     // Halaman Detail Satu Pesanan
     public function show($id)
-    {
+    {   
+        $title = 'Order Details';
         // Ambil order beserta item dan produknya
         $order = Order::with(['items.product.images'])
                     ->where('id', $id)
@@ -77,10 +79,11 @@ class OrderController extends Controller
             ],
         ];
 
-        return view('orders.show', compact('order', 'trackingEvents'));
+        return view('orders.show', compact('order', 'trackingEvents', 'title'));
     }
      public function invoice(Order $order)
-    {
+    {   
+        $title = 'Invoice';
         // Security: hanya pemilik order atau admin
         abort_if($order->user_id !== auth()->id(), 403);
 
@@ -92,7 +95,7 @@ class OrderController extends Controller
         ]);
 
         // Return view invoice (layout khusus, bukan dashboard)
-        return view('orders.invoice', compact('order'));
+        return view('orders.invoice', compact('order', 'title'));
     }
 
 }

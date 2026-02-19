@@ -13,11 +13,12 @@ class ContactController extends Controller
 
 public function index()
 {
+    $title = 'Contact Support History';
     $history = ContactMessage::where('user_id', Auth::id()) // Menggunakan A besar
                              ->latest()
                              ->get();
 
-    return view('support-history', compact('history'));
+    return view('support-history', compact('history', 'title'));
 }
     public function store(Request $request)
     {

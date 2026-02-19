@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'NexRig') }}</title>
+    {{-- LOGIKA: Jika ada variabel $title, pakai itu. Jika tidak, pakai default 'NexRig' --}}
+    <title>{{ $title ?? config('app.name', 'NexRig') }}</title>
 
     {{-- Fonts & Icons --}}
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>

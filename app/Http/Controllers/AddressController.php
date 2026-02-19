@@ -13,6 +13,7 @@ class AddressController extends Controller
      */
     public function index()
     {
+        $title = 'My Addresses';
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -20,7 +21,7 @@ class AddressController extends Controller
         $addresses = $user->addresses()->orderBy('is_default', 'desc')->get();
 
         // Path view: resources/views/profile/address.blade.php
-        return view('profile.address', compact('addresses'));
+        return view('profile.address', compact('addresses', 'title'));
     }
 
     /**
@@ -28,8 +29,9 @@ class AddressController extends Controller
      */
     public function create()
     {
+        $title = 'Add New Address';
         // Path view: resources/views/profile/address-form.blade.php
-        return view('profile.address-form');
+        return view('profile.address-form', compact('title'));
     }
 
     /**
@@ -82,6 +84,7 @@ class AddressController extends Controller
      */
     public function edit($id)
     {
+        $title = 'Edit Address';
         /** @var \App\Models\User $user */
         $user = Auth::user();
 

@@ -4,8 +4,17 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ $title ?? 'NexRig - High Performance Gaming PCs' }}</title>
+   
+    <title>
+    {{-- Cek apakah ini halaman Home (URL '/') --}}
+    @if(request()->is('/'))
+        {{ config('app.name', 'NexRig') }} - {{ $title ?? 'The Ultimate Gaming Experience' }}
+    
+    {{-- Jika bukan Home, pakai format standar (Nama Halaman di depan) --}}
+    @else
+        {{ $title ?? 'Page' }} - {{ config('app.name', 'NexRig') }}
+    @endif
+</title>
     
     {{-- 1. FONTS & ICONS --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>

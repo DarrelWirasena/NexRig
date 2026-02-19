@@ -66,6 +66,7 @@ class CartController extends Controller
     // =================================================================
     public function index()
     {
+        $title = 'Your Cart';
         $cartItems = $this->getCartData();
         
         $total = 0;
@@ -76,7 +77,8 @@ class CartController extends Controller
         // Kirim data sebagai 'cart' agar view tidak bingung, tapi isinya sudah Object standar
         return view('cart.index', [
             'cart' => $cartItems, 
-            'total' => $total
+            'total' => $total,
+            'title' => $title
         ]);
     }
 

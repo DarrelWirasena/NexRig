@@ -59,6 +59,7 @@ class CheckoutController extends Controller
      */
     public function index()
     {
+        $title = 'Checkout';
         // 1. Ambil data cart terbaru
         $cartItems = $this->getCartData();
 
@@ -85,7 +86,7 @@ class CheckoutController extends Controller
         $user = Auth::user();
         $address = $user->addresses()->where('is_default', true)->first() ?? $user->addresses()->first();
 
-        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address'));
+        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title'));
     }
 
     /**
@@ -185,9 +186,10 @@ class CheckoutController extends Controller
      */
     public function success($id)
     {
+        $title = 'Order Success';
         // Cari order, pastikan milik user yang sedang login
         $order = Order::with('items.product')->where('user_id', Auth::id())->findOrFail($id);
         
-        return view('checkout.success', compact('order'));
+        return view('checkout.success', compact('order', 'title'));
     }
 }

@@ -11,44 +11,14 @@ class ProfileController extends Controller
 {
     // Tampilkan Halaman Profil
     public function edit()
-    {
+    {   
+        $title = 'My Profile';
         return view('profile.app', [
-            'user' => Auth::user()
+            'user' => Auth::user(),
+            'title' => $title
         ]);
     }
     
-    // Tambahkan method ini di dalam class ProfileController
-    public function address()
-    {
-        // Karena belum ada tabel address, kita langsung return view saja.
-        // Nanti di sini kita akan ambil data: $addresses = auth()->user()->addresses;
-        return view('profile.address');
-    }
-
-    public function createAddress()
-    {
-        // Kita tidak mengirim variable $address, jadi view akan mendeteksi ini sebagai "Create New"
-        return view('profile.address-form');
-    }
-
-    public function editAddress($id)
-    {
-        // Nanti: $address = Address::findOrFail($id);
-        
-        // SEMENTARA (Static Dummy Data untuk testing tampilan Edit)
-        $address = (object) [
-            'id' => 1,
-            'label' => 'Office',
-            'recipient_name' => 'Alex Rivers',
-            'phone' => '+62 812 3456 7890',
-            'city' => 'Jakarta Selatan',
-            'postal_code' => '12190',
-            'full_address' => 'Gedung Cyber 2, Lt. 15, Kuningan',
-            'is_default' => true
-        ];
-
-        return view('profile.address-form', compact('address'));
-    }
     // Proses Update Profil (Nama & Password)
     public function update(Request $request)
     {

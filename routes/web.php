@@ -116,15 +116,15 @@ Route::middleware('auth')->group(function () {
      ->name('orders.invoice');
 
     // 2. TAMBAHKAN ROUTE INI (INI YANG HILANG)
-Route::post('/support/send', [ContactController::class, 'store'])
+    Route::post('/support/send', [ContactController::class, 'store'])
     ->name('contact.store')
     ->middleware('auth');
 
     Route::get('/support-history', [ContactController::class, 'index'])->name('support.history');
     
     // Mengirim pesan baru
-    Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');
-Route::get('/address-book', [AddressController::class, 'index'])->name('address.index');
+    Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');   
+    Route::get('/address-book', [AddressController::class, 'index'])->name('address.index');
 
     // 2. Route untuk Simpan Data (Metode POST)
     // Pastikan URL ini yang digunakan di <form action="...">
