@@ -112,7 +112,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
 
-    
+    Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])
+     ->name('orders.invoice');
 
     // 2. TAMBAHKAN ROUTE INI (INI YANG HILANG)
 Route::post('/support/send', [ContactController::class, 'store'])

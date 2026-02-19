@@ -79,5 +79,20 @@ class OrderController extends Controller
 
         return view('orders.show', compact('order', 'trackingEvents'));
     }
+     public function invoice(Order $order)
+    {
+        // Security: hanya pemilik order atau admin
+        abort_if($order->user_id !== auth()->id(), 403);
+
+        // Eager load semua relasi yang dibutuhkan invoice
+        $order->load([
+            'items.product.series',
+            'items.product.images',
+            'user',
+        ]);
+
+        // Return view invoice (layout khusus, bukan dashboard)
+        return view('orders.invoice', compact('order'));
+    }
 
 }
