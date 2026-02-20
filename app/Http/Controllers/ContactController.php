@@ -50,7 +50,7 @@ public function index()
 
         // Kirim ke email Admin (Ganti dengan email tujuan Anda)
       // Kirim ke email Anda sendiri untuk testing
-        Mail::to('pettyfervinn@gmail.com')->send(new ContactFormMail($emailData));
+        Mail::to(env('ADMIN_EMAIL'))->send(new ContactFormMail($emailData));
 
         // 4. Kembali dengan Sukses
         return redirect()->back()->with('success', 'Pesan tersimpan & Notifikasi email telah dikirim!');

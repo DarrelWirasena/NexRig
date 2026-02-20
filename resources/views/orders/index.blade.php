@@ -14,22 +14,15 @@
         </div>
         
         {{-- SEARCH BAR FIX (FLEX WRAPPER METHOD) --}}
-        <div class="relative w-full md:w-64">
-            {{-- 
-                1. absolute inset-y-0: Memaksa tinggi wrapper icon SAMA PERSIS dengan tinggi input.
-                2. flex items-center: Menjamin icon di tengah secara vertikal (sumbu Y).
-                3. pointer-events-none: Agar klik tembus ke input.
-            --}}
+        <form action="{{ route('orders.index') }}" method="GET" class="relative w-full md:w-64">
+            <input type="hidden" name="tab" value="{{ $tab }}">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <span class="material-symbols-outlined text-gray-500 text-[20px]">
-                    search
-                </span>
+                <span class="material-symbols-outlined text-gray-500 text-[20px]">search</span>
             </div>
-            
-            <input type="text" 
-                   placeholder="Search Order ID..." 
-                   class="w-full pl-10 pr-4 py-2 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 transition-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-        </div>
+            <input type="text" name="search" value="{{ request('search') }}"
+                placeholder="Search Order ID..." 
+                class="w-full pl-10 pr-4 py-2 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 transition-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+        </form>
     </div>
 
     {{-- FILTER TABS (LOGIC) --}}

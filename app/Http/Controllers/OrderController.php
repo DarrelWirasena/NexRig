@@ -17,7 +17,7 @@ class OrderController extends Controller
 
         // 2. Query dasar (User yang sedang login)
         $query = Order::where('user_id', auth()->id())
-                      ->with('items.product.images'); // Eager load biar cepat
+                      ->with(['items.product.images', 'items.product.series']); // Eager load biar cepat
 
         // 3. Filter berdasarkan Tab
         if ($tab === 'past') {
@@ -30,9 +30,11 @@ class OrderController extends Controller
 
         // 4. Ambil data
         $orders = $query->latest()->get();
-
+        if ($request->filled('search')) {
+            $query->where('id', 'like', '%' . $request->search . '%');
+        }
         // 5. Return ke view dengan variabel tab
-        return view('orders.index', compact('orders', 'tab', 'title'));
+        return view('orders.index', compact('orders', 'tab', 'title', 'search'));
     }
 
     // Halaman Detail Satu Pesanan

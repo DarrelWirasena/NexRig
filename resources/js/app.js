@@ -166,6 +166,16 @@ window.updateMiniCartUI = function(data) {
             checkoutBtn.setAttribute('href', '/checkout'); 
         }
     }
+    const cartBadge = document.getElementById('cart-badge');
+    const cartCount = document.getElementById('cart-count');
+    const count = typeof data.cartCount !== 'undefined' ? data.cartCount : 0;
+
+    if (cartBadge) cartBadge.classList.toggle('hidden', count === 0);
+    if (cartCount) {
+        cartCount.classList.toggle('hidden', count === 0);
+        cartCount.classList.toggle('flex', count > 0);
+        cartCount.innerText = count;
+    }
 }
 
 
@@ -278,6 +288,18 @@ window.updateCartQuantity = function(id, change) {
         if(data.success) {
             // Update UI Mini Cart dengan HTML baru dari server
             window.updateMiniCartUI(data);
+            const qtyDisplay = document.getElementById(`qty-display-${id}`);
+            if (qtyDisplay) {
+                qtyDisplay.innerText = data.item_quantity;
+            }
+            // Also sync the summary totals if on cart page
+            const summarySubtotal = document.getElementById('summary-subtotal');
+            const summaryTax = document.getElementById('summary-tax');
+            const summaryGrandTotal = document.getElementById('summary-grand-total');
+            if (summarySubtotal) summarySubtotal.innerText = data.subtotal;
+            if (summaryTax) summaryTax.innerText = data.tax;
+            if (summaryGrandTotal) summaryGrandTotal.innerText = data.grand_total;
+
         } else {
             window.showToast(data.message || 'Error updating cart', 'error');
         }
@@ -371,6 +393,34 @@ window.removeMainCartItem = function(id) {
             
             // Cek jika cart kosong, reload halaman agar tampil Empty State
             if(data.cartCount === 0) location.reload();
+        }
+    });
+};
+
+window.executeRemoveCartItem = function(id) {
+    const row = document.getElementById(`cart-row-${id}`);
+    if (row) {
+        row.style.transition = "all 0.5s";
+        row.style.opacity = "0";
+        row.style.transform = "translateX(50px)";
+    }
+
+    fetch(`/cart/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            setTimeout(() => { if (row) row.remove(); }, 500);
+            document.getElementById('summary-subtotal').innerText = data.subtotal;
+            document.getElementById('summary-tax').innerText = data.tax;
+            document.getElementById('summary-grand-total').innerText = data.grand_total;
+            window.updateMiniCartUI(data);
+            if (data.cartCount === 0) location.reload();
         }
     });
 };

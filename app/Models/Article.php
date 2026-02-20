@@ -18,4 +18,9 @@ class Article extends Model
     protected $casts = [
         'published_at' => 'datetime',
     ];
+
+    public function getSrcAttribute(): string
+    {
+        return $this->image_url ?? 'https://placehold.co/800x400';
+    }
 }

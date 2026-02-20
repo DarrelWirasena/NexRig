@@ -184,14 +184,11 @@
     });
     </script>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     {{-- 2. ASSETS (Vite) --}}
     {{-- Memanggil app.css dan app.js yang sudah kita bersihkan --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Stack Scripts (Untuk script halaman spesifik) --}}
     @stack('scripts')
-</script>
 </body>
 </html>

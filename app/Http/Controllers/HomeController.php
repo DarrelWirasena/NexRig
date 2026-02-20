@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $title =
+        
         // 1. DATA PRODUK (Logika Lama + Optimasi)
         // Kita gunakan 'take(8)' agar query tidak mengambil ribuan produk jika database sudah besar.
         // Cukup ambil secukupnya untuk Slider & Bento Grid.

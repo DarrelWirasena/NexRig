@@ -739,7 +739,7 @@
 
     {{-- BARCODE + TOTALS --}}
     @php
-        $taxAmount  = $order->total_price * 0.11;
+        $taxAmount  = $order->total_price / 1.11;
         $subtotal   = $order->total_price - $taxAmount;
         $barcodeVal = 'INV' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
     @endphp

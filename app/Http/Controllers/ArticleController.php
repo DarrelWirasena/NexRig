@@ -7,14 +7,24 @@ use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $title = 'Articles';
-        // Gunakan paginate() agar tombol "Next/Prev" di bawah berfungsi
-        // Nama variabel disamakan dengan yang ada di Blade: $articles
-        $articles = Article::where('status', 'published')
-                            ->latest()
-                            ->paginate(10); // Ambil 10 artikel per halaman
+
+        $query = Article::where('status', 'published')->latest();
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('excerpt', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        $articles = $query->paginate(10);
 
         return view('articles.index', compact('articles', 'title'));
     }

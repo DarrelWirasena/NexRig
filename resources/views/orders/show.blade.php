@@ -224,10 +224,15 @@
             <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6">
                 <h3 class="font-bold text-white mb-6">Order Summary</h3>
                 
+                @php
+                    $subtotal  = $order->total_price / 1.11;
+                    $taxAmount = $order->total_price - $subtotal;
+                @endphp
+
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-400">Subtotal</span>
-                        <span class="text-white">Rp {{ number_format($order->total_price - ($order->total_price * 0.11), 0, ',', '.') }}</span>
+                        <span class="text-white">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-400">Shipping</span>
@@ -235,7 +240,7 @@
                     </div>
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-400">Tax (11%)</span>
-                        <span class="text-white">Rp {{ number_format($order->total_price * 0.11, 0, ',', '.') }}</span>
+                        <span class="text-white">Rp {{ number_format($taxAmount, 0, ',', '.') }}</span>
                     </div>
                 </div>
 

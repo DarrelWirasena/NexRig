@@ -51,14 +51,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 // Route untuk detail artikel (Show)
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
-// Jika section Intel ada di halaman Home, pastikan route home Anda memanggil controller yang tepat
-Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Halaman Katalog & Detail Produk
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
-
-Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 
 // Fitur Keranjang (Cart)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -113,11 +109,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])
      ->name('orders.invoice');
-
-    // 2. TAMBAHKAN ROUTE INI (INI YANG HILANG)
-    Route::post('/support/send', [ContactController::class, 'store'])
-    ->name('contact.store')
-    ->middleware('auth');
 
     Route::get('/support-history', [ContactController::class, 'index'])->name('support.history');
     

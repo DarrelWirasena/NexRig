@@ -62,7 +62,7 @@
                 <span class="hidden md:block text-gray-500 dark:text-[#929bc9] text-xs">Starting at</span>
                 {{-- Harga di mobile sedikit diperkecil --}}
                 <span class="text-gray-900 dark:text-white text-sm md:text-lg font-bold">
-                    ${{ number_format($price) }}
+                    Rp {{ number_format($price, 0, ',', '.') }}
                 </span>
             </div>
 

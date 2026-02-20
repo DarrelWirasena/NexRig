@@ -249,7 +249,7 @@ class CartController extends Controller
             }
         }
         
-        $tax = $total * 0.11; // PPN 11% (Contoh)
+        $tax = $total * config('shop.tax_rate'); // PPN 11% (Contoh)
         $grandTotal = $total + $tax;
 
         // 3. Render View dengan data 'items' (Sesuai perbaikan view sebelumnya)

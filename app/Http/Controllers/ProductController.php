@@ -19,9 +19,13 @@ class ProductController extends Controller
         $categories = Category::with('series')->get();
 
         // Query dasar
-        $query = Product::with(['series.category', 'images' => function($q) {
-            $q->where('is_primary', true);
-        }])->where('is_active', true);
+        $query = Product::with([
+            'series.category',
+            'components',
+            'images' => function($q) {
+                $q->where('is_primary', true);
+            }
+        ])->where('is_active', true);
 
         $categoryName = null;
         $searchKeyword = $request->search;
@@ -158,10 +162,12 @@ class ProductController extends Controller
         // Tidak ada perubahan di sini, kode lama kamu sudah benar
         $product = Product::with([
             'series.category', 
-            'series.products',
+            'series.products' => function($q) {
+                $q->where('is_active', true)->orderBy('price');
+            },
             'images', 
             'attributes', 
-            'benchmarks', 
+            'benchmarks.game', 
             'components',
             'intendedUses'
         ])

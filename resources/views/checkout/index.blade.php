@@ -91,11 +91,6 @@
                                 </div>
                             </div>
 
-                            <input type="hidden" name="recipient_name" value="{{ $address->recipient_name }}">
-                            <input type="hidden" name="phone" value="{{ $address->phone }}">
-                            <input type="hidden" name="full_address" value="{{ $address->full_address }}">
-                            <input type="hidden" name="city" value="{{ $address->city }}">
-                            <input type="hidden" name="postal_code" value="{{ $address->postal_code }}">
                         </div>
 
                     @else
@@ -108,6 +103,15 @@
                                     <p class="text-[11px] opacity-80 leading-relaxed">System requires valid delivery coordinates to initialize deployment logic.</p>
                                 </div>
                             </div>
+                            @if($errors->any())
+                                <div class="flex items-start gap-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+                                    <span class="material-symbols-outlined text-2xl">error</span>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-widest mb-1">Validation Error</h4>
+                                        <p class="text-[11px] opacity-80 leading-relaxed">{{ $errors->first() }}</p>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="space-y-4">
                                 <x-address-form-fields />
                             </div>

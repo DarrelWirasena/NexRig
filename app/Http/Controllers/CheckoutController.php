@@ -22,7 +22,7 @@ class CheckoutController extends Controller
         if (Auth::check()) {
             // A. LOGGED IN: Ambil dari DB
             $dbItems = CartItem::where('user_id', Auth::id())
-                             ->with(['product']) // Load product untuk ambil harga/nama real-time
+                             ->with(['product.images']) // Load product untuk ambil harga/nama real-time
                              ->get();
 
             foreach ($dbItems as $item) {
@@ -73,7 +73,7 @@ class CheckoutController extends Controller
         foreach ($cartItems as $item) {
             $subtotal += $item->price * $item->quantity;
         }
-        $tax = $subtotal * 0.11;
+        $tax = $subtotal * config('shop.tax_rate');
         $grandTotal = $subtotal + $tax;
 
         // 4. Data User & Alamat
@@ -123,7 +123,7 @@ class CheckoutController extends Controller
         foreach ($cartItems as $item) {
             $subtotal += $item->price * $item->quantity;
         }
-        $grandTotal = $subtotal + ($subtotal * 0.11); // Tax 11%
+        $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate')); // Tax 11%
 
         // 4. Mulai Transaksi Database
         DB::beginTransaction();
@@ -141,18 +141,31 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // B. Simpan Order (Snapshot)
-            $order = Order::create([
-                'user_id'              => $user->id,
-                'order_date'           => now(),
-                'total_price'          => $grandTotal,
-                'status'               => 'pending',
-                // Snapshot Alamat Pengiriman
+            // B. Ambil alamat dari DB jika ada, fallback ke request (kasus form baru)
+            $savedAddress = $user->addresses()->where('is_default', true)->first()
+                            ?? $user->addresses()->first();
+
+            $snap = $savedAddress ? [
+                'shipping_name'        => $savedAddress->recipient_name,
+                'shipping_phone'       => $savedAddress->phone,
+                'shipping_address'     => $savedAddress->full_address,
+                'shipping_city'        => $savedAddress->city,
+                'shipping_postal_code' => $savedAddress->postal_code,
+            ] : [
                 'shipping_name'        => $request->recipient_name,
                 'shipping_phone'       => $request->phone,
                 'shipping_address'     => $request->full_address,
                 'shipping_city'        => $request->city,
                 'shipping_postal_code' => $request->postal_code,
+            ];
+
+            // B. Simpan Order (Snapshot)
+            $order = Order::create([
+                'user_id'    => $user->id,
+                'order_date' => now(),
+                'total_price'=> $grandTotal,
+                'status'     => 'pending',
+                ...$snap,
             ]);
 
             // C. Simpan Item Pesanan
