@@ -12,9 +12,9 @@
     
     {{-- Jika bukan Home, pakai format standar (Nama Halaman di depan) --}}
     @else
-        {{ $title ?? 'Page' }} - {{ config('app.name', 'NexRig') }}
+        {{ $title ?? ucwords(str_replace(['-', '.'], ' ', Route::currentRouteName())) }} - {{ config('app.name', 'NexRig') }}
     @endif
-</title>
+    </title>
     
     {{-- 1. FONTS & ICONS --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>

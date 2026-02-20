@@ -20,26 +20,12 @@ use App\Http\Controllers\AddressController;
 |--------------------------------------------------------------------------
 */
 
-// Halaman Home
-Route::get('/', [HomeController::class, 'index'])->name('home');
-
 // Halaman About Us (Tanpa Controller)
 Route::view('/about', 'about')->name('about');
 
 Route::get('/support', function () {
     return view('support'); // pastikan nama file view-nya support.blade.php
 })->name('support');
-
-// Route untuk halaman daftar artikel (Index)
-Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
-// Route untuk detail artikel (Show)
-Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
-// Jika section Intel ada di halaman Home, pastikan route home Anda memanggil controller yang tepat
-Route::get('/', [HomeController::class, 'index'])->name('home');
-
-Route::get('/warranty', function () {
-    return view('warranty');
-})->name('warranty');
 
 // Route untuk Setup Guide
 // Pastikan nama file Anda adalah: resources/views/setup-guide.blade.php
@@ -54,6 +40,19 @@ Route::get('/returns', function () {
 Route::get('/privacy-policy', function () {
     return view('privacy');
 })->name('privacy');
+
+Route::get('/warranty', function () {
+    return view('warranty');
+})->name('warranty');
+
+// Halaman Home
+Route::get('/', [HomeController::class, 'index'])->name('home');
+// Route untuk halaman daftar artikel (Index)
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+// Route untuk detail artikel (Show)
+Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+// Jika section Intel ada di halaman Home, pastikan route home Anda memanggil controller yang tepat
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Halaman Katalog & Detail Produk
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
