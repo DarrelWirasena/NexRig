@@ -90,9 +90,12 @@
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">badge</span>
                         <input type="text" name="name" value="{{ old('name') }}" required autofocus
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none" 
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none @error('name') border-red-500/60 @enderror" 
                                placeholder="OPERATIVE NAME">
                     </div>
+                    @error('name')
+                        <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Email Input --}}
@@ -101,9 +104,12 @@
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">alternate_email</span>
                         <input type="email" name="email" value="{{ old('email') }}" required
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none" 
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none @error('email') border-red-500/60 @enderror" 
                                placeholder="you@nexrig.net">
                     </div>
+                    @error('email')
+                        <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Password Input --}}
@@ -112,9 +118,12 @@
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">terminal</span>
                         <input type="password" name="password" required 
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest" 
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest @error('password') border-red-500/60 @enderror" 
                                placeholder="••••••••">
                     </div>
+                    @error('password')
+                        <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Confirm Password --}}

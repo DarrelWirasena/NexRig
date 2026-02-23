@@ -84,15 +84,17 @@
               {{-- Input Email --}}
 <div class="space-y-1.5">
     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Email Command</label>
-    <div class="relative flex items-center group"> {{-- Ditambah flex items-center --}}
+    <div class="relative flex items-center group">
         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-blue-500 transition-colors pointer-events-none">
             alternate_email
         </span>
-        <input type="email" name="email" required autofocus
-               {{-- pl-12 (48px) memberikan ruang yang pas untuk icon yang berada di left-4 (16px) --}}
-               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none relative z-20" 
+        <input type="email" name="email" value="{{ old('email') }}" required autofocus
+               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none relative z-20 @error('email') border-red-500/60 @enderror" 
                placeholder="user@nexrig.net">
     </div>
+    @error('email')
+        <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
+    @enderror
 </div>
 
 {{-- Input Password --}}
@@ -103,9 +105,12 @@
             terminal
         </span>
         <input type="password" name="password" required 
-               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none tracking-widest relative z-20" 
+               class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none tracking-widest relative z-20 @error('password') border-red-500/60 @enderror" 
                placeholder="••••••••">
     </div>
+    @error('password')
+        <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
+    @enderror
 </div>
                 <div class="pt-2">
                     <button type="submit" 

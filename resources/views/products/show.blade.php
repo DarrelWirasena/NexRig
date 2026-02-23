@@ -133,12 +133,6 @@
                                 <span class="material-symbols-outlined">shopping_cart</span>
                                 Add to Cart
                             </button>
-                            
-                            @if(session('success'))
-                                <div class="mt-3 text-green-400 text-xs text-center font-bold">
-                                    {{ session('success') }}
-                                </div>
-                            @endif
                         </form>
 
                         {{-- 6. ATTRIBUTES --}}

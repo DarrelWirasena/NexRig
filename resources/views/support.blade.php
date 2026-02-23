@@ -385,54 +385,5 @@
                 pesanKosong.classList.add("force-hide");
             }
         }
-
-        // --- BARU: Logika Simulasi Kirim Pesan ---
-        function kirimPesan() {
-            const btn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnIcon = document.getElementById('btnIcon');
-            const btnLoader = document.getElementById('btnLoader');
-            const successMsg = document.getElementById('successMessage');
-
-            // 1. Ubah tombol jadi Loading
-            btnText.innerText = "Mengirim...";
-            btnIcon.classList.add('hidden');
-            btnLoader.classList.remove('hidden');
-            btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            // 2. Simulasi delay 2 detik (pura-pura kirim ke server)
-            setTimeout(() => {
-                // 3. Tampilkan Pesan Sukses
-                successMsg.classList.remove('hidden');
-                // Trik kecil agar animasi CSS opacity berjalan mulus
-                setTimeout(() => {
-                    successMsg.classList.remove('opacity-0', 'scale-95');
-                    successMsg.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
-                }, 50);
-                
-                // Reset tombol (di balik layar)
-                btnText.innerText = "Kirim Pesan";
-                btnIcon.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
-                btn.disabled = false;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                
-            }, 2000);
-        }
-
-        function resetForm() {
-            const form = document.getElementById('contactForm');
-            const successMsg = document.getElementById('successMessage');
-
-            // Sembunyikan pesan sukses
-            successMsg.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
-            successMsg.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-            
-            setTimeout(() => {
-                successMsg.classList.add('hidden');
-                form.reset(); // Kosongkan input
-            }, 300);
-        }
     </script>
 @endsection

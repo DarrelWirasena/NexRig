@@ -16,6 +16,9 @@
                 </label>
             @endforeach
         </div>
+        @error('label')
+            <p class="text-red-500 text-xs mt-2 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- 2. RECIPIENT NAME --}}
@@ -25,8 +28,11 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                 <span class="text-gray-500 material-symbols-outlined text-lg">person</span>
             </div>
-            <input type="text" name="recipient_name" value="{{ old('recipient_name', $address->recipient_name ?? '') }}" placeholder="e.g. Alex Rivers" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            <input type="text" name="recipient_name" value="{{ old('recipient_name', $address->recipient_name ?? '') }}" placeholder="e.g. Alex Rivers" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all @error('recipient_name') border-red-500/60 @enderror">
         </div>
+        @error('recipient_name')
+            <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- 3. PHONE NUMBER --}}
@@ -36,8 +42,11 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                 <span class="text-gray-500 material-symbols-outlined text-lg">call</span>
             </div>
-            <input type="text" name="phone" value="{{ old('phone', $address->phone ?? '') }}" placeholder="+62 ..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            <input type="text" name="phone" value="{{ old('phone', $address->phone ?? '') }}" placeholder="+62 ..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all @error('phone') border-red-500/60 @enderror">
         </div>
+        @error('phone')
+            <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- 4. CITY --}}
@@ -47,8 +56,11 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                 <span class="text-gray-500 material-symbols-outlined text-lg">location_city</span>
             </div>
-            <input type="text" name="city" value="{{ old('city', $address->city ?? '') }}" placeholder="e.g. Jakarta Selatan" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            <input type="text" name="city" value="{{ old('city', $address->city ?? '') }}" placeholder="e.g. Jakarta Selatan" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all @error('city') border-red-500/60 @enderror">
         </div>
+        @error('city')
+            <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- 5. POSTAL CODE --}}
@@ -58,8 +70,11 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                 <span class="text-gray-500 material-symbols-outlined text-lg">markunread_mailbox</span>
             </div>
-            <input type="text" name="postal_code" value="{{ old('postal_code', $address->postal_code ?? '') }}" placeholder="e.g. 12xxx" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            <input type="text" name="postal_code" value="{{ old('postal_code', $address->postal_code ?? '') }}" placeholder="e.g. 12xxx" class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all @error('postal_code') border-red-500/60 @enderror">
         </div>
+        @error('postal_code')
+            <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- 6. FULL ADDRESS --}}
@@ -69,7 +84,10 @@
             <div class="absolute top-3 left-0 flex items-start pl-4 pointer-events-none">
                 <span class="text-gray-500 material-symbols-outlined text-lg">home_pin</span>
             </div>
-            <textarea name="full_address" rows="3" placeholder="Street name, Building, Floor, Unit no..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">{{ old('full_address', $address->full_address ?? '') }}</textarea>
+            <textarea name="full_address" rows="3" placeholder="Street name, Building, Floor, Unit no..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all @error('full_address') border-red-500/60 @enderror">{{ old('full_address', $address->full_address ?? '') }}</textarea>
         </div>
+        @error('full_address')
+            <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+        @enderror
     </div>
 </div>

@@ -55,7 +55,10 @@
                                     <span class="text-gray-400 material-symbols-outlined text-lg">badge</span>
                                 </div>
                                 <input type="text" name="name" value="{{ old('name', $user->name) }}" 
-                                       class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600">
+                                       class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 @error('name') border-red-500/60 @enderror">
+                                @error('name')
+                                    <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>

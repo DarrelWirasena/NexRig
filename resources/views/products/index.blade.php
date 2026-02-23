@@ -20,7 +20,7 @@
             },
             clearSearch() {
                 this.searchQuery = '';
-                $refs.searchInput.focus();
+                this.$nextTick(() => this.$refs.searchForm.submit());
             }
          }"
          x-init="window.addEventListener('scroll', () => checkScroll())"
@@ -37,7 +37,7 @@
                     
                     {{-- Row 1: Search, Sort, Filter --}}
                     <div class="flex items-center h-10 bg-white/5 border border-white/10 rounded-xl overflow-hidden relative">
-                        <form action="{{ route('products.index') }}" method="GET" class="flex-1 flex items-center h-full px-3 relative">
+                        <form x-ref="searchForm" action="{{ route('products.index') }}" method="GET" class="flex-1 flex items-center h-full px-3 relative">
                             @foreach(request()->except(['search', 'page']) as $key => $value)
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endforeach
