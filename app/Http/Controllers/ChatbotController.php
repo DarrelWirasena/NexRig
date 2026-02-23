@@ -64,7 +64,7 @@ PRODUK: {$p['name']}
         })->join("\n---");
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('OPENROUTER_API_KEY'),
+            'Authorization' => 'Bearer ' . config('services.openrouter.key'),
             'Content-Type'  => 'application/json',
         ])->post('https://openrouter.ai/api/v1/chat/completions', [
             'model'    => 'stepfun/step-3.5-flash:free',

@@ -55,7 +55,7 @@
                             <span class="material-symbols-outlined text-white">account_balance</span>
                             <div class="text-left">
                                 <p class="text-xs text-gray-500 uppercase font-bold">BCA (NexRig Corp)</p>
-                                <p class="text-white font-mono text-lg font-bold tracking-wide" id="rekNumber">{{ env('BANK_ACCOUNT_NUMBER')}}</p>
+                                <p class="text-white font-mono text-lg font-bold tracking-wide" id="rekNumber">{{config('shop.bank_account_number')}}</p>
                             </div>
                         </div>
                         <button onclick="copyToClipboard()" class="text-gray-400 hover:text-white transition-colors p-2" title="Copy Number">

@@ -24,7 +24,7 @@ class ArticleController extends Controller
             $query->where('category', $request->category);
         }
 
-        $articles = $query->paginate(10);
+        $articles = $query->paginate(10)->withQueryString();
 
         $categories = Article::where('status', 'published')
                               ->distinct()
