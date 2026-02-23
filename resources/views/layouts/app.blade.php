@@ -109,17 +109,21 @@
     
     {{-- 
     =========================================================
-    CHATBOT (SAKA Assistant)
+    CHATBOT (NexRig Assistant)
     Taruh sebelum @vite di bagian bawah app.blade.php
     =========================================================
     --}}
 
     {{-- Floating Button --}}
-    <button id="chat-toggle-btn" 
-            onclick="toggleChat()" 
-            class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
-        <span class="material-symbols-outlined text-white">chat</span>
-    </button>
+    {{-- FOOTER --}}
+    @if(!Route::is('login') && !Route::is('register'))
+        <button id="chat-toggle-btn" 
+                onclick="toggleChat()" 
+                class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-white">chat</span>
+        </button>
+    @endif
+    
 
     {{-- Chat Window --}}
     <div id="chat-window" 
