@@ -30,7 +30,7 @@
         <div class="h-[120px] md:h-[130px] w-full relative">
             
             {{-- Elemen Bar --}}
-            <div :class="isSticky ? 'fixed top-[75px] left-4 right-4 md:left-10 md:right-10 rounded-2xl shadow-2xl animate-soft-landing' : 'relative w-full'"
+            <div :class="isSticky ? 'fixed top-[75px] left-4 right-4 md:left-10 md:right-10 rounded-2xl shadow-2xl' : 'relative w-full'"
                  class="z-40 bg-[#101322]/95 backdrop-blur-md border border-white/10 py-3 px-4 transition-all duration-500 ease-in-out">
                 
                 <div class="max-w-[1440px] mx-auto flex flex-col gap-4">

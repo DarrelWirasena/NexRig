@@ -23,11 +23,6 @@
             100% { bottom: -100%; }
         }
 
-        .bg-grid-pattern {
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-        }
     </style>
 
     <div class="bg-[#050505] min-h-screen text-white overflow-hidden font-sans selection:bg-blue-500 selection:text-white">
@@ -38,7 +33,7 @@
                 {{-- Background Image --}}
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?q=80&w=2070')] bg-cover bg-center opacity-20 grayscale mix-blend-luminosity"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent"></div>
-                <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
+                <div class="absolute inset-0 bg-grid-pattern opacity-20" style="background-size:60px 60px"></div>
                 <div class="scanline"></div>
             </div>
 

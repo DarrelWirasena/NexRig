@@ -26,18 +26,24 @@ class ArticleController extends Controller
 
         $articles = $query->paginate(10);
 
-        return view('articles.index', compact('articles', 'title'));
+        $categories = Article::where('status', 'published')
+                              ->distinct()
+                              ->pluck('category')
+                              ->filter()
+                              ->sort()
+                              ->values();
+
+        return view('articles.index', compact('articles', 'title', 'categories'));
     }
 
-    public function show($slug)
+    public function show(Article $article)
     {
+        $title = $article->title;
         
-        $article = Article::where('slug', $slug)->firstOrFail();
-        $title = $article->title ;
-        
-        // Ambil artikel terkait, pastikan hanya yang sudah dipublikasikan
         $relatedArticles = Article::where('id', '!=', $article->id)
                                     ->where('status', 'published')
+                                    ->where('category', $article->category)
+                                    ->latest()
                                     ->limit(3)
                                     ->get();
 

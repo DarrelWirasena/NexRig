@@ -19,6 +19,11 @@ class Article extends Model
         'published_at' => 'datetime',
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function getSrcAttribute(): string
     {
         return $this->image_url ?? 'https://placehold.co/800x400';

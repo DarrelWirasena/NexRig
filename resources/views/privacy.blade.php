@@ -19,11 +19,6 @@
         .policy-content strong { color: white; font-weight: 700; }
 
         /* Background Pattern */
-        .bg-grid-pattern {
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
 
         /* Navigasi Samping */
         .nav-link.active {

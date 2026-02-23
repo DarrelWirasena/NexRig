@@ -43,7 +43,7 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <span class="meta-pill">
                             <span class="material-symbols-outlined" style="font-size:12px; color:#1337ec;">calendar_today</span>
-                            {{ $article->created_at->format('M d, Y') }}
+                            {{ ($article->published_at ?? $article->created_at)->format('M d, Y') }}
                         </span>
                         <span class="meta-pill">
                             <span class="material-symbols-outlined" style="font-size:12px; color:#1337ec;">schedule</span>
@@ -76,7 +76,7 @@
                     <p style="font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:0.3em; color:#4b5563; margin-bottom:1rem;">Tagged:</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach(explode(',', $article->tags) as $tag)
-                            <a href="#"
+                            <a href="{{ route('articles.index', ['search' => trim($tag)]) }}"
                                class="article-tag px-4 py-2 rounded-lg text-gray-400 hover:text-white transition-all duration-200"
                                style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">
                                 #{{ trim($tag) }}
@@ -153,7 +153,7 @@
                                         </h4>
                                         <span class="font-mono uppercase"
                                               style="font-size:9px; color:#4b5563; letter-spacing:0.05em;">
-                                            {{ $related->created_at->format('d M Y') }}
+                                            {{ ($related->published_at ?? $related->created_at)->format('d M Y') }}
                                         </span>
                                     </div>
                                 </a>

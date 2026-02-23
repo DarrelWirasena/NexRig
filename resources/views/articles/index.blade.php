@@ -49,7 +49,7 @@
                     All
                 </a>
                 
-                @foreach(['Engineering', 'Hardware', 'Reviews', 'Community'] as $filter)
+                @foreach($categories as $filter)
                     @php
                         $isActive = request('category') == strtolower($filter);
                         $url = $isActive 

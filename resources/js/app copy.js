@@ -12,6 +12,7 @@ window.showToast = function(message, type = 'success') {
 
     // 2. Tentukan Warna & Ikon
     const isSuccess = type === 'success';
+    const themeColor = isSuccess ? 'blue-600' : 'red-600';
     const icon = isSuccess ? 'check' : 'priority_high';
     const title = isSuccess ? 'SUCCESS' : 'ERROR';
 
@@ -37,22 +38,15 @@ window.showToast = function(message, type = 'success') {
     }
 
     // 4. Buat HTML Toast Baru dengan Smart Position
-    const successClasses = 'border-blue-600/50';
-    const errorClasses   = 'border-red-600/50';
-    const borderClass    = isSuccess ? successClasses : errorClasses;
-    const iconBgClass    = isSuccess ? 'bg-blue-600/20 text-blue-600' : 'bg-red-600/20 text-red-600';
-    const titleClass     = isSuccess ? 'text-blue-600' : 'text-red-600';
-    const progressClass  = isSuccess ? 'bg-blue-600' : 'bg-red-600';
-
     const toastHTML = `
-        <div id="toast-notification" class="fixed ${positionClass} z-[200] flex items-center gap-4 bg-[#0a0a0a] border ${borderClass} text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-500 ${animateEnter} opacity-0 overflow-hidden">
+        <div id="toast-notification" class="fixed ${positionClass} z-[200] flex items-center gap-4 bg-[#0a0a0a] border border-${themeColor}/50 text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-500 ${animateEnter} opacity-0 overflow-hidden">
             
-            <div class="flex items-center justify-center w-8 h-8 ${iconBgClass} rounded-full">
+            <div class="flex items-center justify-center w-8 h-8 bg-${themeColor}/20 rounded-full text-${themeColor}">
                 <span class="material-symbols-outlined text-xl">${icon}</span>
             </div>
             
             <div>
-                <h4 class="font-bold text-sm ${titleClass} uppercase tracking-wider">${title}</h4>
+                <h4 class="font-bold text-sm text-${themeColor} uppercase tracking-wider">${title}</h4>
                 <p class="text-gray-300 text-xs mt-0.5 whitespace-nowrap">${message}</p>
             </div>
             
@@ -60,7 +54,7 @@ window.showToast = function(message, type = 'success') {
                 <span class="material-symbols-outlined text-lg">close</span>
             </button>
 
-            <div id="toast-progress" class="absolute bottom-0 left-0 h-[3px] ${progressClass} w-full transition-all duration-[3000ms] ease-linear"></div>
+            <div id="toast-progress" class="absolute bottom-0 left-0 h-[3px] bg-${themeColor} w-full transition-all duration-[3000ms] ease-linear"></div>
         </div>
     `;
 
@@ -84,10 +78,10 @@ window.showToast = function(message, type = 'success') {
 
     // 7. Auto Close
     setTimeout(() => {
-        const currentToast = document.getElementById('toast-notification');
-        if (currentToast) {
-            currentToast.classList.add(animateEnter, 'opacity-0');
-            setTimeout(() => currentToast.remove(), 500);
+        if (toastEl) {
+            // Animasi Keluar (Sesuai posisi masuk tadi)
+            toastEl.classList.add(animateEnter, 'opacity-0');
+            setTimeout(() => toastEl.remove(), 500);
         }
     }, 3000);
 };
@@ -659,7 +653,7 @@ window.clearChatHistory = function() {
     messages.innerHTML = `
         <div class="flex justify-start">
             <div class="bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%]">
-                Halo! Saya <strong>NexRig</strong>, asisten virtual toko ini. Ada yang bisa saya bantu? 👋
+                Halo! Saya <strong>SAKA</strong>, asisten virtual toko ini. Ada yang bisa saya bantu? 👋
             </div>
         </div>`;
 }

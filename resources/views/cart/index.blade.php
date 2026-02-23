@@ -102,12 +102,7 @@
                             <span class="w-1 h-6 bg-primary block"></span> Order Summary
                         </h2>
                         
-                        @php
-                            // $total sudah dikirim dari Controller
-                            $tax = $total * 0.11; 
-                            $grandTotal = $total + $tax;
-                        @endphp
-
+                        
                         <div class="space-y-4 mb-8 font-mono text-sm">
                             <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
                                 <span>Subtotal</span>

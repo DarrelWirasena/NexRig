@@ -74,11 +74,15 @@ class CartController extends Controller
             $total += $item->price * $item->quantity;
         }
 
-        // Kirim data sebagai 'cart' agar view tidak bingung, tapi isinya sudah Object standar
+        $tax = $total * config('shop.tax_rate');
+        $grandTotal = $total + $tax;
+
         return view('cart.index', [
-            'cart' => $cartItems, 
-            'total' => $total,
-            'title' => $title
+            'cart'       => $cartItems,
+            'total'      => $total,
+            'tax'        => $tax,
+            'grandTotal' => $grandTotal,
+            'title'      => $title
         ]);
     }
 
