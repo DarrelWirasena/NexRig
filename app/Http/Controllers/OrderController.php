@@ -11,6 +11,7 @@ class OrderController extends Controller
     // Halaman Daftar Riwayat Belanja
     public function index(Request $request)
     {   
+        $search = $request->input('search');
         $title = 'My Orders';
         // 1. Ambil parameter tab dari URL (default 'active')
         $tab = $request->query('tab', 'active');
