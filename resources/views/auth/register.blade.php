@@ -51,7 +51,7 @@
 </div>
 
 {{-- TOMBOL KEMBALI MINIMALIS --}}
-<a href="/" class="fixed top-6 left-6 z-50 flex items-center gap-2 text-slate-500 hover:text-white transition-all group">
+<a href="/" class="fixed top-4 left-4 z-50 flex items-center gap-2 text-slate-500 hover:text-white transition-all group sm:top-6 sm:left-6">
     <span class="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
     <span class="text-[9px] font-black uppercase tracking-[0.2em] italic">Home</span>
 </a>
@@ -89,8 +89,8 @@
                     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Codename</label>
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">badge</span>
-                        <input type="text" name="name" value="{{ old('name') }}" required autofocus
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none @error('name') border-red-500/60 @enderror" 
+                        <input type="text" name="name" value="{{ old('name') }}" autofocus
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none {{ $errors->has('name') ? '!border-red-500' : '' }}"
                                placeholder="OPERATIVE NAME">
                     </div>
                     @error('name')
@@ -103,8 +103,8 @@
                     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Email Terminal</label>
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">alternate_email</span>
-                        <input type="email" name="email" value="{{ old('email') }}" required
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none @error('email') border-red-500/60 @enderror" 
+                        <input type="text" name="email" value="{{ old('email') }}"
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none {{ $errors->has('email') ? '!border-red-500' : '' }}" 
                                placeholder="you@nexrig.net">
                     </div>
                     @error('email')
@@ -117,8 +117,8 @@
                     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Access Code</label>
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">terminal</span>
-                        <input type="password" name="password" required 
-                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest @error('password') border-red-500/60 @enderror" 
+                        <input type="password" name="password" 
+                               class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest {{ $errors->has('password') ? '!border-red-500' : '' }}"
                                placeholder="••••••••">
                     </div>
                     @error('password')
@@ -131,7 +131,7 @@
                     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Confirm Code</label>
                     <div class="relative flex items-center group">
                         <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">lock_reset</span>
-                        <input type="password" name="password_confirmation" required 
+                       <input type="password" name="password_confirmation"
                                class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest" 
                                placeholder="••••••••">
                     </div>

@@ -21,7 +21,13 @@ class AuthController extends Controller
         // 1. Validasi Input
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users', // Email gak boleh kembar
+            'email' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:users',
+                'regex:/^[a-zA-Z0-9._%+\-]+@(gmail\.com|yahoo\.com|outlook\.com|icloud\.com|hotmail\.com)$/'
+            ], // Email gak boleh kembar
             'password' => 'required|string|min:8|confirmed', // Harus ada input name="password_confirmation" di form
         ]);
 
@@ -50,8 +56,18 @@ class AuthController extends Controller
     {
         // 1. Validasi
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:users',
+                'regex:/^[a-zA-Z0-9._%+\-]+@(gmail\.com|yahoo\.com|outlook\.com|icloud\.com|hotmail\.com)$/'
+            ],
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'email.regex' => 'Email harus menggunakan domain yang valid: gmail.com, yahoo.com, outlook.com, icloud.com, atau hotmail.com.',
+            'email.unique' => 'Email ini sudah terdaftar.',
         ]);
 
         // 2. Coba Login
@@ -59,7 +75,7 @@ class AuthController extends Controller
             $request->session()->regenerate(); // Security fix (Session Fixation)
             
             // Redirect ke halaman yang tadi mau diakses, atau ke home
-            return redirect()->route('home')->with('success', 'You are logged in!');
+           return redirect()->intended(route('home'))->with('success', 'You are logged in!');
         }
 
         // 3. Gagal Login

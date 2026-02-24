@@ -44,9 +44,10 @@ class OrderController extends Controller
         $title = 'Order Details';
         // Ambil order beserta item dan produknya
         $order = Order::with(['items.product.images'])
-                    ->where('id', $id)
-                    ->where('user_id', Auth::id()) // PENTING: User A gak boleh liat order User B
-                    ->firstOrFail();
+            ->where('id', $id)
+            ->firstOrFail(); // Kalau order tidak ada → 404
+
+abort_if($order->user_id !== Auth::id(), 403); // Kalau bukan pemilik → 403
                     
         // --- MOCK DATA TRACKING (Nanti bisa diganti ambil dari database) ---
         $trackingEvents = [

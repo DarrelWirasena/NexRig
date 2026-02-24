@@ -47,15 +47,17 @@
                         </div>
 
                         {{-- Name --}}
-                        <div>
-                            <label class="block text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">Display Name</label>
-                            <div class="relative">
-                                {{-- PERBAIKAN ICON --}}
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                    <span class="text-gray-400 material-symbols-outlined text-lg">badge</span>
+                       {{-- Name --}}
+                            <div>
+                                <label class="block text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">Display Name</label>
+                                <div class="relative"> {{-- div relative hanya wrap input + icon --}}
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                        <span class="text-gray-400 material-symbols-outlined text-lg">badge</span>
+                                    </div>
+                                    <input type="text" name="name" value="{{ old('name', $user->name) }}" 
+                                        class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 @error('name') border-red-500/60 @enderror">
                                 </div>
-                                <input type="text" name="name" value="{{ old('name', $user->name) }}" 
-                                       class="w-full pl-12 pr-4 py-3 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 @error('name') border-red-500/60 @enderror">
+                                {{-- Error di LUAR div relative --}}
                                 @error('name')
                                     <p class="text-red-500 text-xs mt-1 ml-1">{{ $message }}</p>
                                 @enderror

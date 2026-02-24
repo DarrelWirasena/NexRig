@@ -48,7 +48,7 @@
 </div>
 
 {{-- TOMBOL KEMBALI (Dikecilkan) --}}
-<a href="/" class="fixed top-6 left-6 z-50 flex items-center gap-2 text-slate-500 hover:text-white transition-all group">
+<a href="/" class="fixed top-4 left-4 z-50 flex items-center gap-2 text-slate-500 hover:text-white transition-all group sm:top-6 sm:left-6">
     <span class="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
     <span class="text-[9px] font-black uppercase tracking-[0.2em] italic">Home</span>
 </a>
