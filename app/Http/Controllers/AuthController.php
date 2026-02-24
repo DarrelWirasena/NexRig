@@ -52,37 +52,29 @@ class AuthController extends Controller
         return view('auth.login', compact('title'));
     }
 
-    public function login(Request $request)
-    {
-        // 1. Validasi
-        $credentials = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:users',
-                'regex:/^[a-zA-Z0-9._%+\-]+@(gmail\.com|yahoo\.com|outlook\.com|icloud\.com|hotmail\.com)$/'
-            ],
-            'password' => 'required|string|min:8|confirmed',
-        ], [
-            'email.regex' => 'Email harus menggunakan domain yang valid: gmail.com, yahoo.com, outlook.com, icloud.com, atau hotmail.com.',
-            'email.unique' => 'Email ini sudah terdaftar.',
-        ]);
+   public function login(Request $request)
+{
+    // 1. Validasi - HANYA email dan password
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ], [
+        'email.required' => 'Email wajib diisi.',
+        'email.email' => 'Format email tidak valid.',
+        'password.required' => 'Password wajib diisi.',
+    ]);
 
-        // 2. Coba Login
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // Security fix (Session Fixation)
-            
-            // Redirect ke halaman yang tadi mau diakses, atau ke home
-           return redirect()->intended(route('home'))->with('success', 'You are logged in!');
-        }
-
-        // 3. Gagal Login
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+    // 2. Coba Login
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended(route('home'))->with('success', 'You are logged in!');
     }
+
+    // 3. Gagal Login
+    return back()->withErrors([
+        'email' => 'Email atau password salah.',
+    ])->onlyInput('email');
+}
 
     // --- LOGOUT ---
     public function logout(Request $request)
