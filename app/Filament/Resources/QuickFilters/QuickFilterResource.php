@@ -29,7 +29,7 @@ class QuickFilterResource extends Resource
     // Jika Products ada di urutan 1, Categories 2, dsb, kasih angka lebih besar agar dia ada di bawah.
     protected static ?int $navigationSort = 5;
     
-    protected static ?string $recordTitleAttribute = 'keywoard';
+    protected static ?string $recordTitleAttribute = 'keyword';
 
     public static function form(Schema $schema): Schema
     {
