@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class OrdersTable
@@ -14,36 +15,56 @@ class OrdersTable
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
+                TextColumn::make('id')
+                    ->label('Order ID')
+                    ->prefix('#')
                     ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('Customer')
+                    ->searchable(),
                 TextColumn::make('order_date')
-                    ->dateTime()
+                    ->dateTime('d M Y, H:i')
                     ->sortable(),
                 TextColumn::make('total_price')
-                    ->money()
+                    ->label('Total')
+                    ->money('IDR')
                     ->sortable(),
+
+                // Status dengan badge warna
                 TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending'    => 'warning',
+                        'processing' => 'info',
+                        'shipped'    => 'primary',
+                        'completed'  => 'success',
+                        'cancelled'  => 'danger',
+                        default      => 'gray',
+                    })
                     ->searchable(),
+
                 TextColumn::make('shipping_name')
-                    ->searchable(),
-                TextColumn::make('shipping_phone')
+                    ->label('Penerima')
                     ->searchable(),
                 TextColumn::make('shipping_city')
-                    ->searchable(),
-                TextColumn::make('shipping_postal_code')
+                    ->label('Kota')
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                // Filter by status
+                SelectFilter::make('status')
+                    ->options([
+                        'pending'    => 'Pending',
+                        'processing' => 'Processing',
+                        'shipped'    => 'Shipped',
+                        'completed'  => 'Completed',
+                        'cancelled'  => 'Cancelled',
+                    ])
+                    ->label('Filter Status'),
             ])
             ->recordActions([
                 EditAction::make(),
