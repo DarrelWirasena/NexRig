@@ -44,7 +44,7 @@
 
                 {{-- KOLOM KIRI: GALERI GAMBAR --}}
                 <div class="lg:col-span-7">
-                    <div class="relative w-full aspect-[4/3] bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 mb-4 group">
+                    <div class="relative w-full aspect-[16/9] bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 mb-4 group">
                         <img id="mainImage" 
                              src="{{ $product->images->where('is_primary', true)->first()->src ?? 'https://via.placeholder.com/800' }}" 
                              alt="{{ $product->name }}" 
@@ -58,7 +58,7 @@
                     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                         @foreach($product->images as $img)
                             <button onclick="changeImage('{{ $img->src }}')" 
-                                    class="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-primary transition-all focus:ring-2 focus:ring-primary">
+                                    class="relative w-40 h-24 shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-primary transition-all focus:ring-2 focus:ring-primary">
                                 <img src="{{ $img->src }}" class="w-full h-full object-cover">
                             </button>
                         @endforeach

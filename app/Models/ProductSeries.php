@@ -8,15 +8,23 @@ class ProductSeries extends Model
 {
     protected $guarded = ['id'];
 
-    // Ke Atas (Category)
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    // Ke Bawah (Products/Variants)
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    // Disable semua produk dalam series ini
+    public function disableAllProducts(): void
+    {
+        $this->products()->update(['is_active' => false]);
     }
 }

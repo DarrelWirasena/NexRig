@@ -28,10 +28,9 @@
                                     <div class="grid grid-cols-4 gap-8">
                                         @foreach($category->series as $series)
                                             <div class="flex flex-col items-center text-center group/item">
-                                                @php
-                                                    $firstProduct = $series->products->first();
-                                                    $imgUrl = $firstProduct && $firstProduct->images->first() 
-                                                        ? $firstProduct->images->first()->src 
+                                               @php
+                                                    $imgUrl = $series->banner_image 
+                                                        ? $series->banner_image 
                                                         : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
                                                 @endphp
                                                 <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
@@ -158,12 +157,11 @@
                                 <div x-data="{ seriesOpen: false }" class="border border-white/5 rounded-xl bg-white/5 overflow-hidden">
                                     {{-- Header Series --}}
                                     <button @click="seriesOpen = !seriesOpen" class="w-full flex items-center p-3 gap-4 text-left">
-                                        @php
-                                            $firstProduct = $series->products->first();
-                                            $imgUrl = $firstProduct && $firstProduct->images->first() 
-                                                ? $firstProduct->images->first()->src 
-                                                : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
-                                        @endphp
+                                       @php
+                                                    $imgUrl = $series->banner_image 
+                                                        ? $series->banner_image 
+                                                        : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
+                                                @endphp
                                         <div class="w-12 h-12 bg-[#111] rounded-lg flex items-center justify-center p-1 border border-white/10 shrink-0">
                                             <img src="{{ $imgUrl }}" class="w-full h-full object-contain drop-shadow-md">
                                         </div>
