@@ -17,7 +17,9 @@ class GamesTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                ImageColumn::make('image_url'),
+                ImageColumn::make('image_url')
+                    ->label('Image')
+                    ->defaultImageUrl('https://placehold.co/100x100?text=No+Image'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
