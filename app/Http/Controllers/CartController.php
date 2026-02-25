@@ -215,7 +215,18 @@ class CartController extends Controller
     public function destroy(Request $request, $id)
     {
         if (Auth::check()) {
-            CartItem::where('user_id', Auth::id())->where('product_id', $id)->delete();
+            // CartItem::where('user_id', Auth::id())->where('product_id', $id)->delete();
+            $deleted = CartItem::where('user_id', Auth::id())
+                   ->where('product_id', $id)
+                   ->delete();
+
+            if (!$deleted) {
+                $response = $this->sendCartResponse('Item not found');
+                $data = $response->getData(true);
+                $data['success'] = false;
+                $data['removedId'] = $id;
+                return response()->json($data, 404);
+            }
         } else {
             $cart = session()->get('cart', []);
             if(isset($cart[$id])) {
@@ -225,7 +236,10 @@ class CartController extends Controller
         }
 
         if ($request->wantsJson() || $request->ajax()) {
-            return $this->sendCartResponse('Item removed from cart');
+             $response = $this->sendCartResponse('Item removed from cart');
+            $data = $response->getData(true);
+            $data['removedId'] = $id;
+            return response()->json($data);
         }
 
         return redirect()->back()->with('success', 'Item removed');

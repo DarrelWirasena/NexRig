@@ -123,12 +123,23 @@ window.toggleMiniCart = function() {
  * ==========================================
  */
 window.updateMiniCartUI = function(data) {
+    console.trace('updateMiniCartUI called');
     // A. Update List Item & Subtotal
     const itemsContainer = document.getElementById('miniCartItems');
     const subtotalEl = document.getElementById('miniCartSubtotal');
+    // Elemen di halaman Cart Utama (jika ada)
+    const cartPageCount = document.getElementById('cart-page-count');
+    const cartPageSubtotal = document.getElementById('summary-subtotal');
+    const cartPageTax = document.getElementById('summary-tax');
+    const cartPageGrandTotal = document.getElementById('summary-grand-total');
     
     if(itemsContainer) itemsContainer.innerHTML = data.cartHtml;
     if(subtotalEl) subtotalEl.innerText = data.subtotal;
+    // Update juga di halaman Cart Utama jika elemen tersebut ada (sinkronisasi penting)
+    if (cartPageCount) cartPageCount.innerText = data.cartCount;
+    if (cartPageSubtotal) cartPageSubtotal.innerText = data.subtotal;
+    if (cartPageTax) cartPageTax.innerText = data.tax;
+    if (cartPageGrandTotal) cartPageGrandTotal.innerText = data.grand_total;
 
     // B. Update Tombol Checkout (Logic Kunci)
     const checkoutBtn = document.getElementById('miniCartCheckoutBtn');
@@ -181,6 +192,13 @@ window.updateMiniCartUI = function(data) {
         cartCount.classList.toggle('hidden', count === 0);
         cartCount.classList.toggle('flex', count > 0);
         cartCount.innerText = count;
+    }
+    if (data.removedId) {
+        const cartRow = document.getElementById(`cart-row-${data.removedId}`);
+        if (cartRow) cartRow.remove();
+    }
+    if (data.cartCount === 0 && document.getElementById('cart-page-count')) {
+        location.reload();
     }
 }
 
@@ -235,10 +253,11 @@ window.addToCartAjax = function(e, form) {
 
 window.removeCartItem = function(id) {
     const itemElement = document.getElementById(`cart-item-${id}`);
+    // window.executeRemoveCartItem(itemIdToDelete);
     if(itemElement) {
         itemElement.style.opacity = '0.3';
         itemElement.style.pointerEvents = 'none';
-    }
+    } 
 
     fetch(`/cart/${id}`, {
         method: 'DELETE',
@@ -248,14 +267,31 @@ window.removeCartItem = function(id) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res =>  {
+        return res.json().then(data => ({ httpStatus: res.status, data }));
+    })
+
+    .then( ({httpStatus , data}) => {
+        console.log('removedId:', data.removedId);
+        console.log('looking for:', `cart-row-${data.removedId}`);
+        console.log('found:', document.getElementById(`cart-row-${data.removedId}`));
         if(data.success) {
+            if(itemElement) itemElement.remove();
             window.updateMiniCartUI(data);
             window.showToast('Item removed from cart');
         } else {
-            window.showToast(data.message || 'Failed to remove', 'error');
-            if(itemElement) itemElement.style.opacity = '1';
+           
+            /// 404 = item not found, re-sync cart to reflect actual server state
+            if (httpStatus === 404 && data.cartHtml !== undefined) {
+                window.updateMiniCartUI(data);
+                window.showToast('Failed to remove, Try again', 'error');
+            } else {
+                if (itemElement) {
+                    itemElement.style.opacity = '1';
+                    itemElement.style.pointerEvents = 'auto';
+                }
+                window.showToast(data.message || 'Failed to remove', 'error');
+            }
         }
     })
     .catch(err => {
