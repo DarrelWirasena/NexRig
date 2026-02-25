@@ -22,7 +22,9 @@ class ProductSeriesTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                ImageColumn::make('banner_image'),
+                ImageColumn::make('banner_image')
+                    ->label('Banner Image')
+                    ->defaultImageUrl('https://placehold.co/100x100?text=No+Image'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

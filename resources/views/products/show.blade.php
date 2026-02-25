@@ -221,7 +221,7 @@
                                         {{-- CARD GAME --}}
                                         <div class="relative h-40 rounded-xl overflow-hidden border border-white/10 group hover:border-primary/50 transition-all">
                                             
-                                            <img src="{{ $benchmark->game->src ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
+                                           <img src="{{ $benchmark->game->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}" 
                                                  alt="{{ $benchmark->game->name ?? 'Game' }}" 
                                                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                                             

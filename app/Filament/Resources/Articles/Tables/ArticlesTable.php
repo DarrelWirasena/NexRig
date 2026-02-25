@@ -21,18 +21,14 @@ class ArticlesTable
                     ->searchable(),
                 TextColumn::make('category')
                     ->searchable(),
-                ImageColumn::make('image_url'),
+                ImageColumn::make('image_url')
+                    ->label('Image')
+                    ->defaultImageUrl('https://placehold.co/100x100?text=No+Image'),
                 TextColumn::make('author')
                     ->searchable(),
                 TextColumn::make('reading_time')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('tags')
-                    ->searchable(),
-                TextColumn::make('meta_title')
-                    ->searchable(),
-                TextColumn::make('meta_description')
-                    ->searchable(),
                 TextColumn::make('status')
                     ->badge(),
                 TextColumn::make('published_at')
