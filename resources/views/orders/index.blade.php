@@ -19,9 +19,18 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <span class="material-symbols-outlined text-gray-500 text-[20px]">search</span>
             </div>
-            <input type="text" name="search" value="{{ request('search') }}"
-                placeholder="Search Order ID..." 
-                class="w-full pl-10 pr-4 py-2 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 transition-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+            <input type="text" name="search" id="order-search" value="{{ request('search') }}"
+                placeholder="Search by order ID or product name..." 
+                class="w-full pl-10 pr-8 py-2 input-tech rounded-lg text-sm focus:text-blue-500 placeholder-gray-600 transition-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+
+                @if(request('search'))
+                    <button type="button" id="order-search-clear"
+                        
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                @endif
+                
         </form>
     </div>
 
@@ -30,7 +39,7 @@
         <div class="flex bg-[#0a0a0a] p-1 rounded-xl border border-white/10 w-full sm:w-auto">
             
             {{-- TAB: ACTIVE ORDERS --}}
-            <a href="{{ route('orders.index', ['tab' => 'active']) }}" 
+            <a href="{{ route('orders.index', ['tab' => 'active', 'search' => $search]) }}" 
                class="flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all text-center
                {{ $tab == 'active' 
                     ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
@@ -40,7 +49,7 @@
             </a>
 
             {{-- TAB: PAST ORDERS --}}
-            <a href="{{ route('orders.index', ['tab' => 'past']) }}" 
+            <a href="{{ route('orders.index', ['tab' => 'past', 'search' => $search]) }}" 
                class="flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all text-center
                {{ $tab == 'past' 
                     ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
@@ -80,3 +89,29 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const orderSearch = document.getElementById('order-search');
+        const clearBtn = document.getElementById('order-search-clear');
+
+        console.log('orderSearch:', orderSearch);
+        console.log('clearBtn:', clearBtn);
+
+        if (orderSearch) {
+            orderSearch.addEventListener('input', function() {
+                clearTimeout(this._timer);
+                this._timer = setTimeout(() => this.closest('form').submit(), 500);
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                orderSearch.value = '';
+                orderSearch.closest('form').submit();
+            });
+        }
+    });
+</script>
+@endpush

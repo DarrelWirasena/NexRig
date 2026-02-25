@@ -14,8 +14,8 @@
     <article class="bg-[#050505] min-h-screen pb-20 overflow-hidden">
 
         {{-- ── HERO ── --}}
-        <div class="relative w-full h-[70vh] flex items-end">
-            <div class="absolute inset-0 z-0">
+        <div class="relative w-full h-[70vh] flex items-end overflow-hidden">
+            <div class="absolute inset-0 z-0 pointer-events-none">
                 <img src="{{ $article->src }}"
                      id="heroImage"
                      class="w-full h-full object-cover scale-110"

@@ -29,12 +29,21 @@ class OrderController extends Controller
             $query->whereIn('status', ['pending', 'processing', 'shipped']);
         }
 
-        // 4. Ambil data
-        $orders = $query->latest()->get();
+        // 4. Filter berdasarkan Search (ID Pesanan)
         if ($request->filled('search')) {
-            $query->where('id', 'like', '%' . $request->search . '%');
+            $query->where(function($q) use ($request) {
+                // Search by order ID
+                $q->where('id', 'like', '%' . $request->search . '%')
+                // OR by product name inside order items
+                ->orWhereHas('items.product', function($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%');
+                });
+            });
         }
-        // 5. Return ke view dengan variabel tab
+
+        // 5. Ambil data
+        $orders = $query->latest()->get();
+        // 6. Return ke view dengan variabel tab
         return view('orders.index', compact('orders', 'tab', 'title', 'search'));
     }
 
