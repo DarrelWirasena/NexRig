@@ -21,7 +21,13 @@ class AuthController extends Controller
         // 1. Validasi Input
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users', // Email gak boleh kembar
+            'email' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:users',
+                'regex:/^[a-zA-Z0-9._%+\-]+@(gmail\.com|yahoo\.com|outlook\.com|icloud\.com|hotmail\.com)$/'
+            ], // Email gak boleh kembar
             'password' => 'required|string|min:8|confirmed', // Harus ada input name="password_confirmation" di form
         ]);
 
@@ -46,27 +52,29 @@ class AuthController extends Controller
         return view('auth.login', compact('title'));
     }
 
-    public function login(Request $request)
-    {
-        // 1. Validasi
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+   public function login(Request $request)
+{
+    // 1. Validasi - HANYA email dan password
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ], [
+        'email.required' => 'Email wajib diisi.',
+        'email.email' => 'Format email tidak valid.',
+        'password.required' => 'Password wajib diisi.',
+    ]);
 
-        // 2. Coba Login
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // Security fix (Session Fixation)
-            
-            // Redirect ke halaman yang tadi mau diakses, atau ke home
-            return redirect()->route('home')->with('success', 'You are logged in!');
-        }
-
-        // 3. Gagal Login
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+    // 2. Coba Login
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended(route('home'))->with('success', 'You are logged in!');
     }
+
+    // 3. Gagal Login
+    return back()->withErrors([
+        'email' => 'Email atau password salah.',
+    ])->onlyInput('email');
+}
 
     // --- LOGOUT ---
     public function logout(Request $request)

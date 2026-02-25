@@ -25,8 +25,8 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'name';
-
+    protected static ?string $recordTitleAttribute = 'id';
+    
     public static function form(Schema $schema): Schema
     {
         return OrderForm::configure($schema);

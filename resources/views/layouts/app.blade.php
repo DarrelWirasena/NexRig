@@ -42,7 +42,8 @@
     @stack('styles')
 </head>
 {{-- GANTI overflow-x-hidden MENJADI overflow-x-clip --}}
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen pt-20 flex flex-col">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen flex flex-col
+    {{ Route::is('login') || Route::is('register') ? '' : 'pt-20' }}">
     
     {{-- NAVIGATION --}}
     @if(!Route::is('login') && !Route::is('register'))

@@ -47,9 +47,13 @@
                             {{-- Input Search dengan Alpine.js (x-model) --}}
                             <input x-ref="searchInput" x-model="searchQuery" type="text" name="search" placeholder="Search model..." 
                                    class="w-full bg-transparent border-none p-0 text-white text-sm focus:ring-0 outline-none placeholder-gray-500 pr-8">
-                            
-                            {{-- Tombol Clear (Silang) - Muncul jika searchQuery tidak kosong --}}
-                            <button type="button" x-show="searchQuery.length > 0" @click="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors flex items-center justify-center">
+                                                        
+                            <button 
+                                type="button" 
+                                x-show="searchQuery.length > 0"
+                                x-cloak
+                                @click="clearSearch()" 
+                                class="absolute right-2 inset-y-0 my-auto text-gray-500 hover:text-white transition-colors flex items-center justify-center z-10 h-fit">
                                 <span class="material-symbols-outlined text-[18px]">close</span>
                             </button>
                         </form>
