@@ -39,7 +39,7 @@
             <div class="lg:col-span-8 space-y-6">
                 <div class="flex items-baseline justify-between mb-8">
                     <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white font-display uppercase italic">Your Rig Setup</h1>
-                    <p class="text-slate-500 dark:text-[#929bc9] font-mono">{{ count($cart) }} Item(s)</p>
+                    <p class="text-slate-500 dark:text-[#929bc9] font-mono"> <span id="cart-page-count">{{ count($cart) }}</span> Item(s)</p>
                 </div>
 
                 @foreach($cart as $item)

@@ -34,7 +34,7 @@
                 </a>
                 {{-- Tambahkan x-data dan x-on di sekitar atau pada container hero jika belum ada --}}
                 <a href="javascript:void(0)" 
-                    @click="console.log('tombol dikil'); $dispatch('open-video', { url: 'https://www.youtube.com/embed/Gf4j-x-WfGM?autoplay=1' })"
+                    @click="$dispatch('open-video', { url: 'https://www.youtube.com/embed/Gf4j-x-WfGM?autoplay=1' })"
                     class="flex items-center gap-2 text-white hover:text-primary transition-colors font-medium uppercase tracking-wider text-sm">
                         <span class="material-symbols-outlined">play_circle</span> Watch Showcase
                 </a>

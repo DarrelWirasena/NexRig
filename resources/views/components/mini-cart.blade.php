@@ -11,7 +11,7 @@
 
         foreach($dbCart as $item) {
             $cartItems[] = (object) [
-                'row_id' => $item->id, // ID untuk hapus (Cart ID)
+                'row_id' => $item->product_id, // ID untuk hapus (Cart ID)
                 'name' => $item->product->name,
                 'price' => $item->product->price,
                 // Pakai Accessor 'src' yang sudah kita buat sebelumnya
