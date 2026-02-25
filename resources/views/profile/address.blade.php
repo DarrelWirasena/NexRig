@@ -13,10 +13,20 @@
             <p class="text-gray-400 text-sm mt-2">Manage your shipping destinations for faster checkout.</p>
         </div>
         
-        <a href="{{ route('address.create') }}" class="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] shrink-0">
-            <span class="material-symbols-outlined">add</span>
-            <span>ADD NEW ADDRESS</span>
-        </a>
+       <div class="flex items-center gap-3 shrink-0">
+            @if(request('origin') === 'checkout')
+                <a href="{{ route('checkout.index') }}" 
+                class="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-bold transition-all border border-white/10">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span>BACK TO CHECKOUT</span>
+                </a>
+            @endif
+
+            <a href="{{ route('address.create', request('origin') ? ['origin' => request('origin')] : []) }}" class="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] shrink-0">
+                <span class="material-symbols-outlined">add</span>
+                <span>ADD NEW ADDRESS</span>
+            </a>
+        </div>
     </div>
 
     {{-- ALERT (Tetap ada sebagai cadangan jika JS gagal) --}}
@@ -35,7 +45,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         {{-- CARD ADD NEW --}}
-        <a href="{{ route('address.create') }}" class="group relative flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-600/50 transition-all min-h-[280px] cursor-pointer">
+        <a href="{{ route('address.create', request('origin') ? ['origin' => request('origin')] : []) }}" class="group relative flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-600/50 transition-all min-h-[280px] cursor-pointer">
             <div class="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform group-hover:bg-blue-600 group-hover:text-white">
                 <span class="material-symbols-outlined text-blue-500 group-hover:text-white text-3xl transition-colors">add_location_alt</span>
             </div>
@@ -54,8 +64,16 @@
                     :address="$address->full_address . '&#10;' . $address->city . ', ' . $address->postal_code"
                     :phone="$address->phone"
                     :isDefault="$address->is_default" 
-                    :isActive="true" 
+                    :showUseButton="request('origin') === 'checkout'"
                 />
+
+                @if(request('origin') === 'checkout')
+                    <form action="{{ route('address.set_default', $address->id) }}" method="POST" class="mt-2">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="redirect_to" value="checkout">
+                    </form>
+                @endif
 
                 {{-- FORM HIDDEN UNTUK DELETE --}}
                 <form id="delete-form-{{ $address->id }}" 

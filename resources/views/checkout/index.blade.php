@@ -60,6 +60,13 @@
                     </div>
 
                     @if($address)
+                        {{-- Hidden inputs so saved address passes validation --}}
+                        <input type="hidden" name="recipient_name" value="{{ $address->recipient_name }}">
+                        <input type="hidden" name="phone" value="{{ $address->phone }}">
+                        <input type="hidden" name="full_address" value="{{ $address->full_address }}">
+                        <input type="hidden" name="city" value="{{ $address->city }}">
+                        <input type="hidden" name="postal_code" value="{{ $address->postal_code }}">
+                        
                         {{-- VIEW: ADDRESS CARD --}}
                         <div class="relative bg-slate-50 dark:bg-[#111422] border border-slate-200 dark:border-white/5 rounded-xl p-6 transition-all hover:border-primary/50 group/card">
                             

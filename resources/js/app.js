@@ -107,6 +107,19 @@ window.showToast = function(message, type = 'success') {
     // }, 3000);
 };
 
+// Read Laravel flash messages and show toast on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const flashDiv = document.getElementById('flash-messages');
+    if (!flashDiv) return;
+
+    const success = flashDiv.dataset.success;
+    const error = flashDiv.dataset.error;
+    const validation = flashDiv.dataset.validation;
+
+    if (success) window.showToast(success, 'success');
+    else if (error) window.showToast(error, 'error');
+    else if (validation) window.showToast(validation, 'error');
+});
 
 /**
  * ==========================================
@@ -484,7 +497,7 @@ window.executeRemoveCartItem = function(id) {
 
 /**
  * ==========================================
- * 7. CHATBOT (SAKA Assistant)
+ * 7. CHATBOT (NexRig Assistant)
  * ==========================================
  */
 let chatHistoryLoaded = false;
@@ -750,17 +763,17 @@ document.addEventListener('click', (e) => {
 });
 
 // Global Listener untuk animasi scroll (tetap dipertahankan)
-document.addEventListener('DOMContentLoaded', () => {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-reveal');
-                entry.target.classList.remove('opacity-0');
-            }
-        });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.scroll-trigger').forEach((el) => observer.observe(el));
-});
+    document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-reveal');
+                    entry.target.classList.remove('opacity-0');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.scroll-trigger').forEach((el) => observer.observe(el));
+    });
 
 /**
  * ==========================================

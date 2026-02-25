@@ -6,7 +6,7 @@
     {{-- HEADER --}}
     <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-6 gap-4">
         <div class="flex items-center gap-4">
-            <a href="{{ route('address.index') }}" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all group">
+            <a href="{{ route('address.index', request('origin') ? ['origin' => request('origin')] : []) }}" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all group">
                 <span class="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
             </a>
             <div>
@@ -36,6 +36,9 @@
         
         <form action="{{ isset($address) ? route('address.update', $address->id) : route('address.store') }}" method="POST">
             @csrf
+            @if(request('origin'))
+                <input type="hidden" name="origin" value="{{ request('origin') }}">
+            @endif
             @if(isset($address)) @method('PUT') @endif
 
             {{-- 1. MEMANGGIL KOMPONEN FIELD (Nama, HP, Alamat, dll) --}}
@@ -66,7 +69,7 @@
 
             {{-- 3. ACTION BUTTONS (Save & Cancel) --}}
             <div class="flex justify-end gap-4 pt-6 border-t border-white/10">
-                <a href="{{ route('address.index') }}" class="px-6 py-3 rounded-lg text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest">
+                <a href="{{ route('address.index', request('origin') ? ['origin' => request('origin')] : []) }}" class="px-6 py-3 rounded-lg text-sm font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest">
                     CANCEL
                 </a>
                 <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest transition-all rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex items-center gap-2">

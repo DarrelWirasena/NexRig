@@ -75,8 +75,9 @@ class AddressController extends Controller
             'full_address' => $request->full_address,
             'is_default' => $shouldBeDefault,
         ]);
-
-        return redirect()->route('address.index')->with('success', 'Alamat berhasil ditambahkan!');
+        $origin = $request->input('origin');
+        return redirect(route('address.index', $origin ? ['origin' => $origin] : []))
+            ->with('success', 'Alamat berhasil ditambahkan!');
     }
 
     /**
@@ -137,8 +138,9 @@ class AddressController extends Controller
             'full_address' => $request->full_address,
             'is_default' => $shouldBeDefault,
         ]);
-
-        return redirect()->route('address.index')->with('success', 'Alamat berhasil diperbarui!');
+        $origin = $request->input('origin');
+        return redirect(route('address.index', $origin ? ['origin' => $origin] : []))
+            ->with('success', 'Alamat berhasil diperbarui!');
     }
 
     /**

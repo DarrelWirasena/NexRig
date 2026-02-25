@@ -89,6 +89,9 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+
+    Route::patch('/address/{id}/default', [AddressController::class, 'setDefault'])->name('address.set_default');
+
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
