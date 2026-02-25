@@ -552,6 +552,7 @@
             .invoice-card { border-radius: 0; box-shadow: none; animation: none; }
             .items-mobile { display: none !important; }
             .items-table  { display: table !important; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>

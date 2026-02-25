@@ -129,13 +129,14 @@
     {{-- Chat Window --}}
     <div id="chat-window" 
         class="chat-closed chat-hide fixed bottom-24 right-6 z-50 w-80 border border-white/10 rounded-2xl shadow-2xl flex flex-col bg-[#121212]" 
-        style="height: 420px">
+        style="display:none; height: 420px"
+        aria-hidden="true">
         
         {{-- Header --}}
         <div class="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
            <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <p class="text-white font-bold text-sm">SAKA Assistant</p>
+                <p class="text-white font-bold text-sm">NexRig Assistant</p>
             </div>
             <div class="flex items-center gap-2">
                 {{-- Tombol clear --}}

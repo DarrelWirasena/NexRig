@@ -6,8 +6,11 @@ import './bootstrap';
  * ==========================================
  */
 window.showToast = function(message, type = 'success') {
+    // Generate ID unik untuk setiap toast agar bisa di-manage (hapus sebelum buat baru)
+    const toastId = `toast-${Date.now()}`;
+    const progressId = `${toastId}-progress`;
     // 1. Hapus toast lama
-    const existingToast = document.getElementById('toast-notification');
+    const existingToast = document.getElementById('${toastId}');
     if (existingToast) existingToast.remove();
 
     // 2. Tentukan Warna & Ikon
@@ -45,7 +48,7 @@ window.showToast = function(message, type = 'success') {
     const progressClass  = isSuccess ? 'bg-blue-600' : 'bg-red-600';
 
     const toastHTML = `
-        <div id="toast-notification" class="fixed ${positionClass} z-[200] flex items-center gap-4 bg-[#0a0a0a] border ${borderClass} text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-500 ${animateEnter} opacity-0 overflow-hidden">
+        <div id="${toastId}" class="fixed ${positionClass} z-[200] flex items-center gap-4 bg-[#0a0a0a] border ${borderClass} text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-500 ${animateEnter} opacity-0 overflow-hidden">
             
             <div class="flex items-center justify-center w-8 h-8 ${iconBgClass} rounded-full">
                 <span class="material-symbols-outlined text-xl">${icon}</span>
@@ -56,11 +59,11 @@ window.showToast = function(message, type = 'success') {
                 <p class="text-gray-300 text-xs mt-0.5 whitespace-nowrap">${message}</p>
             </div>
             
-            <button onclick="this.parentElement.remove()" class="ml-4 text-gray-500 hover:text-white transition-colors">
+            <button type="button" class="ml-4 text-gray-500 hover:text-white transition-colors">
                 <span class="material-symbols-outlined text-lg">close</span>
             </button>
 
-            <div id="toast-progress" class="absolute bottom-0 left-0 h-[3px] ${progressClass} w-full transition-all duration-[3000ms] ease-linear"></div>
+            <div id="${progressId}" class="absolute bottom-0 left-0 h-[3px] ${progressClass} w-full transition-all duration-[3000ms] ease-linear"></div>
         </div>
     `;
 
@@ -68,8 +71,14 @@ window.showToast = function(message, type = 'success') {
     document.body.insertAdjacentHTML('beforeend', toastHTML);
 
     // 6. Trigger Animasi
-    const toastEl = document.getElementById('toast-notification');
-    const progressEl = document.getElementById('toast-progress');
+    const toastEl = document.getElementById(toastId);
+    const progressEl = document.getElementById(progressId);
+
+    const closeToast = () => {
+        if (!toastEl) return;
+        toastEl.classList.add(animateEnter, 'opacity-0');
+        setTimeout(() => toastEl.remove(), 500);
+    };
 
     requestAnimationFrame(() => {
         // Hapus class animasi masuk agar elemen muncul ke posisi aslinya
@@ -83,13 +92,19 @@ window.showToast = function(message, type = 'success') {
     });
 
     // 7. Auto Close
-    setTimeout(() => {
-        const currentToast = document.getElementById('toast-notification');
-        if (currentToast) {
-            currentToast.classList.add(animateEnter, 'opacity-0');
-            setTimeout(() => currentToast.remove(), 500);
-        }
-    }, 3000);
+    const timer = setTimeout(closeToast, 3000);
+
+    toastEl.querySelector('button')?.addEventListener('click', () => {
+        clearTimeout(timer);
+        closeToast();
+    });
+    // setTimeout(() => {
+    //     const currentToast = document.getElementById('toastId');
+    //     if (currentToast) {
+    //         currentToast.classList.add(animateEnter, 'opacity-0');
+    //         setTimeout(() => currentToast.remove(), 500);
+    //     }
+    // }, 3000);
 };
 
 
@@ -494,7 +509,10 @@ function openChat() {
     const chatWindow = document.getElementById('chat-window');
     const chatBtn = document.getElementById('chat-toggle-btn');
 
+    // Make it renderable first (prevents flash issue + keeps animation working)
     // 1. Hapus class 'closed' dan 'hide' (agar elemen dirender dan siap animasi)
+    chatWindow.style.display= 'flex';
+    chatWindow.setAttribute('aria-hidden', 'false');
     chatWindow.classList.remove('chat-closed', 'chat-hide');
 
     // 2. Load History
@@ -541,6 +559,8 @@ window.closeChat = function() {
     // 4. Tunggu animasi CSS selesai (0.4s = 400ms), baru set visibility: hidden
     setTimeout(() => {
         chatWindow.classList.add('chat-closed');
+        chatWindow.style.display = 'none';
+        chatWindow.setAttribute('aria-hidden', 'true');
         isChatAnimating = false;
     }, 400); // Sesuaikan angka ini dengan CSS transition duration
 }

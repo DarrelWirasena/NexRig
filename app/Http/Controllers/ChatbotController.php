@@ -71,7 +71,7 @@ PRODUK: {$p['name']}
             'messages' => [
                 [
                     'role'    => 'system',
-                    'content' => "Kamu adalah asisten toko gaming PC bernama SAKA.
+                    'content' => "Kamu adalah asisten toko gaming PC bernama NexRig.
 Jawab dengan ramah dan singkat dalam Bahasa Indonesia.
 Gunakan data produk di bawah untuk memberikan rekomendasi yang tepat.
 
