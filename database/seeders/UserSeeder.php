@@ -10,20 +10,22 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin Account
-        User::create([
-            'name' => 'Admin NexRig',
-            'email' => 'admin@nexrig.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['email' => env('ADMIN_EMAIL', 'admin@nexrig.com')],
+            [
+                'name' => 'Admin NexRig',
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'password')),
+                'role' => 'admin',
+            ]
+        );
 
-        // Customer Account
-        User::create([
-            'name' => 'Customer Demo',
-            'email' => 'user@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-        ]);
+        User::firstOrCreate(
+            ['email' => env('DEMO_USER_EMAIL', 'user@gmail.com')],
+            [
+                'name' => 'Customer Demo',
+                'password' => Hash::make(env('DEMO_USER_PASSWORD', 'password')),
+                'role' => 'user',
+            ]
+        );
     }
 }
