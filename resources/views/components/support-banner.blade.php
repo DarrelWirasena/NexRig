@@ -4,7 +4,7 @@
         <h4 class="text-xl font-bold uppercase tracking-tight italic text-white">Need assistance?</h4>
         <p class="text-blue-200 text-sm">Our support squad is available 24/7 for order inquiries.</p>
     </div>
-    <button class="relative z-10 px-8 py-3 bg-white text-blue-900 font-bold rounded-lg text-sm hover:scale-105 transition-all shadow-xl whitespace-nowrap">
+    <a href="{{ route('support') }}#contact" class="relative z-10 px-8 py-3 bg-white text-blue-900 font-bold rounded-lg text-sm hover:scale-105 transition-all shadow-xl whitespace-nowrap">
         CONTACT SUPPORT
-    </button>
+    </a>
 </div>

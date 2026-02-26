@@ -289,12 +289,82 @@
             </div>
 
             {{-- 4. NEED HELP? --}}
-            <div class="p-6 rounded-xl bg-gradient-to-br from-blue-900/50 to-transparent border border-blue-500/20 text-center">
-                <p class="text-sm text-blue-200 mb-4">Having trouble with this order?</p>
-                <button class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-all">
-                    Contact Support
-                </button>
-            </div>
+                        {{-- 4. ORDER ACTION --}}
+                <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6">
+                    <h3 class="font-bold text-white mb-4">Order Action</h3>
+
+                    @if($order->status === 'pending')
+                        {{-- BISA CANCEL --}}
+                        <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                            class="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-sm">cancel</span>
+                            Batalkan Pesanan
+                        </button>
+                        <p class="text-[11px] text-gray-600 text-center mt-2">Pembatalan hanya bisa dilakukan saat status Pending</p>
+
+                    @elseif($order->status === 'cancelled')
+                        {{-- SUDAH DIBATALKAN --}}
+                        <div class="w-full py-2.5 border border-red-500/20 text-red-500/60 text-sm font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
+                            <span class="material-symbols-outlined text-sm">cancel</span>
+                            Pesanan Dibatalkan
+                        </div>
+                        <p class="text-[11px] text-gray-600 text-center mt-2">Pesanan ini telah dibatalkan</p>
+
+                    @else
+                        {{-- TIDAK BISA CANCEL (processing/shipped/completed) --}}
+                        <div class="w-full py-2.5 bg-white/[0.03] border border-white/10 text-gray-600 text-sm font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed select-none">
+                            <span class="material-symbols-outlined text-sm">block</span>
+                            Batalkan Pesanan
+                        </div>
+                        <p class="text-[11px] text-gray-600 text-center mt-2">
+                            Tidak dapat dibatalkan — pesanan sudah 
+                            <span class="text-amber-500/70 capitalize">{{ $order->status }}</span>
+                        </p>
+                    @endif
+                </div>
+
+                {{-- 5. NEED HELP? --}}
+                <div class="p-6 rounded-xl bg-gradient-to-br from-blue-900/50 to-transparent border border-blue-500/20 text-center">
+                    <p class="text-sm text-blue-200 mb-4">Having trouble with this order?</p>
+                    <button class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-all">
+                        Contact Support
+                    </button>
+                </div>
+
+                {{-- MODAL KONFIRMASI CANCEL --}}
+                @if($order->status === 'pending')
+                <div id="cancelModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        onclick="document.getElementById('cancelModal').classList.add('hidden')"></div>
+
+                    <div class="relative bg-[#0f0f0f] border border-red-500/30 rounded-2xl p-8 w-full max-w-md shadow-2xl">
+                        <div class="flex flex-col items-center text-center mb-6">
+                            <div class="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                                <span class="material-symbols-outlined text-red-400 text-2xl">error</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white uppercase tracking-tight">Batalkan Pesanan?</h3>
+                            <p class="text-gray-400 text-sm mt-2">
+                                Order <span class="text-white font-bold">#{{ $order->id }}</span> akan dibatalkan dan <span class="text-red-400 font-bold">tidak dapat dikembalikan</span>.
+                            </p>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="document.getElementById('cancelModal').classList.add('hidden')"
+                                class="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold rounded-lg transition-all">
+                                Kembali
+                            </button>
+                            <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="flex-1">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg transition-all">
+                                    Ya, Batalkan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
         </div>
 

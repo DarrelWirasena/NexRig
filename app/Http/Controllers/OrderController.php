@@ -110,5 +110,23 @@ abort_if($order->user_id !== Auth::id(), 403); // Kalau bukan pemilik → 403
         // Return view invoice (layout khusus, bukan dashboard)
         return view('orders.invoice', compact('order', 'title'));
     }
+            public function cancel(Order $order)
+        {
+            // Pastikan order milik user yang login
+            if ($order->user_id !== auth()->id()) {
+                abort(403);
+            }
+
+            // Hanya bisa cancel jika masih pending
+            if ($order->status !== 'pending') {
+                return redirect()->route('orders.show', $order->id)
+                    ->with('error', 'Pesanan hanya dapat dibatalkan saat status masih Pending.');
+            }
+
+            $order->update(['status' => 'cancelled']);
+
+            return redirect()->route('orders.show', $order->id)
+                ->with('success', 'Pesanan berhasil dibatalkan.');
+        }
 
 }

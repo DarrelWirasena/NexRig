@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
     // Riwayat Pesanan (History)
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
        // PROFILE ROUTES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.app');
