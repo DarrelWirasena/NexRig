@@ -124,7 +124,8 @@
             <div class="mt-6 pt-5 border-t border-white/5 text-center relative z-30">
                 <p class="text-slate-600 text-[9px] font-bold uppercase tracking-[0.1em]">
                     New Pilot? 
-                    <a href="{{ route('register') }}" class="text-white hover:text-blue-500 transition-colors ml-1 border-b border-white/20 pb-0.5">Deploy New Identity</a>
+                    <a href="{{ route('register', request('redirect') ? ['redirect' => request('redirect')] : (session()->has('url.intended') ? ['redirect' => session('url.intended')] : [])) }}"
+                        class="text-white hover:text-blue-500 transition-colors ml-1 border-b border-white/20 pb-0.5">Deploy New Identity</a>
                 </p>
             </div>
         </div>

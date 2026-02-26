@@ -41,8 +41,8 @@ class AuthController extends Controller
 
         // 3. Langsung Login setelah daftar
         Auth::login($user);
-
-        return redirect()->route('home')->with('success', 'Registration successful! Welcome to NexRig.');
+        $redirect = $request->input('redirect');
+        return redirect($redirect ?: route('home'))->with('success', 'Registration successful! Welcome to NexRig.');
     }
 
     // --- LOGIN ---
@@ -53,28 +53,28 @@ class AuthController extends Controller
     }
 
    public function login(Request $request)
-{
-    // 1. Validasi - HANYA email dan password
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ], [
-        'email.required' => 'Email wajib diisi.',
-        'email.email' => 'Format email tidak valid.',
-        'password.required' => 'Password wajib diisi.',
-    ]);
+    {
+        // 1. Validasi - HANYA email dan password
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+        ]);
 
-    // 2. Coba Login
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        return redirect()->intended(route('home'))->with('success', 'You are logged in!');
+        // 2. Coba Login
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('home'))->with('success', 'You are logged in!');
+        }
+
+        // 3. Gagal Login
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
     }
-
-    // 3. Gagal Login
-    return back()->withErrors([
-        'email' => 'Email atau password salah.',
-    ])->onlyInput('email');
-}
 
     // --- LOGOUT ---
     public function logout(Request $request)

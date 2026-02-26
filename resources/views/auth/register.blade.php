@@ -83,7 +83,9 @@
             
             <form method="POST" action="{{ route('register') }}" class="space-y-3 relative z-30">
                 @csrf
-
+                @if(request('redirect'))
+                    <input type="hidden" name="redirect" value="{{ request('redirect') }}">
+                @endif
                 {{-- Name Input --}}
                 <div class="space-y-1">
                     <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Codename</label>
