@@ -24,8 +24,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     
-    {{-- 3. RUNTIME CONFIG (Wajib ada di head untuk Tailwind CDN/Plugins) --}}
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         window.tailwind.config = {
             darkMode: "class",
