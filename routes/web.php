@@ -20,6 +20,15 @@ use App\Http\Controllers\AddressController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/debug-headers', function () {
+    return response()->json([
+        'https' => request()->isSecure(),
+        'scheme' => request()->getScheme(),
+        'forwarded_proto' => request()->header('X-Forwarded-Proto'),
+        'all_headers' => request()->headers->all(),
+    ]);
+});
+
 // Halaman About Us (Tanpa Controller)
 Route::view('/about', 'about')->name('about');
 
