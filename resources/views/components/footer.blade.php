@@ -92,14 +92,16 @@
         </div>
     </div>
 
-    <div class="bg-black py-8">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:row justify-between items-center space-y-4 md:space-y-0 text-[10px] uppercase tracking-[0.2em]">
-            <p>&copy; {{ date('Y') }} NEXRIG SYSTEMS INC. ALL RIGHTS RESERVED.</p>
-            <div class="flex space-x-6">
-                <a href="#" class="hover:text-white">Instagram</a>
-                <a href="#" class="hover:text-white">Twitter</a>
-                <a href="#" class="hover:text-white">Youtube</a>
+        <div class="bg-black py-8">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:row justify-between items-center space-y-4 md:space-y-0 text-[10px] uppercase tracking-[0.2em]">
+                <p>&copy; {{ date('Y') }} NEXRIG SYSTEMS INC. ALL RIGHTS RESERVED.</p>
+                <div class="flex space-x-6">
+                    @foreach(\App\Models\SocialLink::getActive() as $link)
+                        <a href="{{ $link->url }}" class="hover:text-white" target="_blank">
+                            {{ $link->platform }}
+                        </a>
+                    @endforeach
+                </div>
             </div>
         </div>
-    </div>
 </footer>
