@@ -19,23 +19,6 @@
     {{-- 1. FONTS & ICONS --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
-    <script>
-        window.tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1337ec",
-                        "background-dark": "#101322",
-                        "border-dark": "#232948",
-                    },
-                    fontFamily: { "display": ["Space Grotesk", "sans-serif"] }
-                },
-            },
-        }
-    </script>
-    
     @stack('styles')
 </head>
 {{-- GANTI overflow-x-hidden MENJADI overflow-x-clip --}}
@@ -195,3 +178,5 @@
     @stack('scripts')
 </body>
 </html>
+
+
