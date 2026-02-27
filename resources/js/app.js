@@ -1,5 +1,6 @@
 import './bootstrap';
-import Collapse from '@alpinejs/collapse'
+import Alpine from 'alpinejs'
+import collapse from '@alpinejs/collapse'
 Alpine.plugin(Collapse)
 
 /**
