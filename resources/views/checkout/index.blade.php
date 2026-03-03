@@ -7,7 +7,11 @@
     <div class="relative w-24 h-24 mb-4">
         <div class="absolute inset-0 border-4 border-white/10 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
-        <span class="material-symbols-outlined absolute inset-0 flex items-center justify-center text-primary text-3xl animate-pulse">rocket_launch</span>
+        <span
+            class="material-symbols-outlined absolute inset-0 m-auto flex h-11 w-11 items-center justify-center text-[36px] leading-none text-primary animate-pulse"
+            style="font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;"
+            aria-hidden="true"
+        >rocket_launch</span>
     </div>
     <h3 class="text-white font-black text-2xl uppercase italic tracking-widest mb-1">Deploying Order</h3>
     <p class="text-slate-400 font-mono text-xs uppercase tracking-[0.3em]">Securing payment channel...</p>
