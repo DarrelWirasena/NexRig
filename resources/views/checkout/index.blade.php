@@ -8,8 +8,8 @@
         <div class="absolute inset-0 border-4 border-white/10 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
         <span
-            class="material-symbols-outlined absolute inset-0 m-auto flex h-11 w-11 items-center justify-center text-[36px] leading-none text-primary animate-pulse"
-            style="font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;"
+            class="material-symbols-outlined absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center text-primary animate-pulse"
+            style="font-size: 44px; line-height: 44px; font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;"
             aria-hidden="true"
         >rocket_launch</span>
     </div>
