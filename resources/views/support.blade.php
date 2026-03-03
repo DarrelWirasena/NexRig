@@ -194,67 +194,80 @@
             SECTION 4: CONTACT US (ID="contact")
             PENTING: ID ini yang membuat link footer berfungsi!
         --}}
-        <div id="contact" class="py-24 px-6 bg-[#050014] relative overflow-hidden">
-            <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-            
-            <div class="max-w-7xl mx-auto relative z-10">
-                <div class="text-center mb-16">
-                    <span class="text-blue-500 font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Hubungi Kami</span>
-                    <h2 class="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white">Contact Us</h2>
-                </div>
+                    @php
+                $contacts = \App\Models\ContactInfo::getActive();
+                $email    = $contacts->where('type', 'email')->first();
+                $whatsapp = $contacts->where('type', 'whatsapp')->first();
+                $address  = $contacts->where('type', 'address')->first();
+            @endphp
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    
-                    {{-- LEFT COLUMN: Contact Info --}}
-                    <div class="space-y-6">
-                        <div class="bg-[#0a0a0a] border border-white/10 p-8 rounded-2xl">
-                            <h3 class="text-xl font-bold text-white mb-6 uppercase italic">Saluran Langsung</h3>
-                            
-                            {{-- Email --}}
-                            <a href="mailto:support@nexrig.com" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors mb-4 border border-transparent hover:border-white/10">
-                                <div class="w-12 h-12 bg-blue-600/10 rounded-lg flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <span class="material-symbols-outlined">mail</span>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Email Support</p>
-                                    <p class="text-white font-medium">nexrigsupp0rt@gmail.com</p>
-                                </div>
-                            </a>
+            <div id="contact" class="py-24 px-6 bg-[#050014] relative overflow-hidden">
+                <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                
+                <div class="max-w-7xl mx-auto relative z-10">
+                    <div class="text-center mb-16">
+                        <span class="text-blue-500 font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Hubungi Kami</span>
+                        <h2 class="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white">Contact Us</h2>
+                    </div>
 
-                            {{-- WhatsApp --}}
-                            <a href="https://wa.me/6289507094710" target="_blank" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
-                                <div class="w-12 h-12 bg-[#25D366]/10 rounded-lg flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-colors">
-                                    <span class="material-symbols-outlined">chat</span>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">WhatsApp Chat</p>
-                                    <p class="text-white font-medium">+62 895-0709-4710</p>
-                                </div>
-                            </a>
-                        </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        
+                        {{-- LEFT COLUMN: Contact Info --}}
+                        <div class="space-y-6">
+                            <div class="bg-[#0a0a0a] border border-white/10 p-8 rounded-2xl">
+                                <h3 class="text-xl font-bold text-white mb-6 uppercase italic">Saluran Langsung</h3>
+                                
+                                {{-- Email --}}
+                                @if($email)
+                                <a href="{{ $email->url }}" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors mb-4 border border-transparent hover:border-white/10">
+                                    <div class="w-12 h-12 bg-blue-600/10 rounded-lg flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        <span class="material-symbols-outlined">mail</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ $email->label }}</p>
+                                        <p class="text-white font-medium">{{ $email->value }}</p>
+                                    </div>
+                                </a>
+                                @endif
 
-                        {{-- Location Info with Maps Link --}}
-                        <div class="bg-[#0a0a0a] border border-white/10 p-8 rounded-2xl">
-                            <h3 class="text-xl font-bold text-white mb-6 uppercase italic">Headquarters</h3>
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-gray-400 mt-1">
-                                    <span class="material-symbols-outlined">location_on</span>
-                                </div>
-                                <div>
-                                    <p class="text-white font-bold mb-1">NexRig Experience Center</p>
-                                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
-                                        Jl. Kanal No. 5, Lamper Lor<br>
-                                        Semarang Selatan, 50132<br>
-                                        Jawa Tengah, Indonesia
-                                    </p>
-                                    {{-- Link Maps ke Koordinat --}}
-                                    <a href="https://www.google.com/maps/search/?api=1&query=-7.000663,110.437499" target="_blank" class="text-blue-500 text-sm font-bold uppercase tracking-wider hover:text-white transition-colors flex items-center gap-1">
-                                        Lihat di Peta <span class="material-symbols-outlined text-sm">open_in_new</span>
-                                    </a>
+                                {{-- WhatsApp --}}
+                                @if($whatsapp)
+                                <a href="{{ $whatsapp->url }}" target="_blank" class="group flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
+                                    <div class="w-12 h-12 bg-[#25D366]/10 rounded-lg flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                                        <span class="material-symbols-outlined">chat</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ $whatsapp->label }}</p>
+                                        <p class="text-white font-medium">{{ $whatsapp->value }}</p>
+                                    </div>
+                                </a>
+                                @endif
+                            </div>
+
+                            {{-- Address --}}
+                            @if($address)
+                            <div class="bg-[#0a0a0a] border border-white/10 p-8 rounded-2xl">
+                                <h3 class="text-xl font-bold text-white mb-6 uppercase italic">{{ $address->label }}</h3>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-gray-400 mt-1">
+                                        <span class="material-symbols-outlined">location_on</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-white font-bold mb-1">{{ $address->title }}</p>
+                                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                                            {!! nl2br(e($address->value)) !!}
+                                        </p>
+                                        <a href="{{ $address->url }}" target="_blank" class="text-blue-500 text-sm font-bold uppercase tracking-wider hover:text-white transition-colors flex items-center gap-1">
+                                            {{ $address->display_value ?? 'Lihat di Peta' }}
+                                            <span class="material-symbols-outlined text-sm">open_in_new</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
-                    </div>
+
+                
 
       {{-- RIGHT COLUMN: Contact Form (Visible to All, Submit Protected) --}}
 <div class="bg-[#0a0a0a] border border-white/10 p-8 md:p-10 rounded-2xl relative">
