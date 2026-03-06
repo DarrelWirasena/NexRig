@@ -11,14 +11,14 @@ class ProfileController extends Controller
 {
     // Tampilkan Halaman Profil
     public function edit()
-    {   
+    {
         $title = 'My Profile';
         return view('profile.app', [
             'user' => Auth::user(),
             'title' => $title
         ]);
     }
-    
+
     // Proses Update Profil (Nama & Password)
     public function update(Request $request)
     {

@@ -57,4 +57,20 @@ class Product extends Model
     // Ini menghubungkan Produk ke banyak ProductAttribute
     return $this->hasMany(ProductAttribute::class);
 }
+protected static function booted()
+    {
+        static::deleting(function ($product) {
+            // Hapus semua order_items yang mengandung produk ini
+            $product->orderItems()->delete();
+        });
+    }
+
+    /**
+     * Relasi ke order_items (pastikan relasi ini ada)
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
 }

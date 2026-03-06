@@ -548,7 +548,7 @@ function openChat() {
     });
 
     // 4. Efek tombol (Optional: putar icon)
-    chatBtn.classList.add('rotate-180');
+    chatBtn.classList.add('rotate-360');
 
     // 5. Focus ke input
     setTimeout(() => document.getElementById('chat-input').focus(), 100);
@@ -573,7 +573,7 @@ window.closeChat = function() {
     chatWindow.classList.add('chat-hide');
 
     // 3. Reset tombol
-    chatBtn.classList.remove('rotate-180');
+    chatBtn.classList.remove('rotate-360');
 
     // 4. Tunggu animasi CSS selesai (0.4s = 400ms), baru set visibility: hidden
     setTimeout(() => {

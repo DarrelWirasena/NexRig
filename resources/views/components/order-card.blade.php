@@ -5,15 +5,15 @@
     <div class="absolute top-0 right-0 w-20 h-20 bg-blue-600/5 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:bg-blue-600/10"></div>
 
     <div class="p-6 flex flex-col lg:flex-row lg:items-center gap-6 relative z-10">
-        
+
         {{-- GAMBAR PRODUK UTAMA --}}
         <div class="size-24 rounded-lg bg-[#050014] flex items-center justify-center shrink-0 overflow-hidden border border-white/10">
             @if($order->items->first() && $order->items->first()->product->images->first())
-                <img src="{{ $order->items->first()->product->images->where('is_primary', true)->first()->src }}" 
-                     alt="Product Image" 
-                     class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+            <img src="{{ $order->items->first()->product->images->where('is_primary', true)->first()->src }}"
+                alt="Product Image"
+                class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
             @else
-                <span class="material-symbols-outlined text-gray-600 text-4xl">deployed_code</span>
+            <span class="material-symbols-outlined text-gray-600 text-4xl">deployed_code</span>
             @endif
         </div>
 
@@ -23,17 +23,17 @@
                 <h3 class="text-lg font-bold text-white group-hover:text-blue-500 transition-colors">
                     Order #{{ $order->id }}
                 </h3>
-                
+
                 {{-- LOGIC WARNA STATUS DIPINDAH KE SINI --}}
                 @php
-                    $statusColor = match($order->status) {
-                        'pending' => 'text-amber-500 border-amber-500/30 bg-amber-500/10',
-                        'processing' => 'text-blue-400 border-blue-400/30 bg-blue-400/10',
-                        'shipped' => 'text-purple-400 border-purple-400/30 bg-purple-400/10',
-                        'completed' => 'text-green-400 border-green-400/30 bg-green-400/10',
-                        'cancelled' => 'text-red-400 border-red-400/30 bg-red-400/10',
-                        default => 'text-gray-400 border-gray-400/30 bg-gray-400/10',
-                    };
+                $statusColor = match($order->status) {
+                'pending' => 'text-amber-500 border-amber-500/30 bg-amber-500/10',
+                'processing' => 'text-blue-400 border-blue-400/30 bg-blue-400/10',
+                'shipped' => 'text-purple-400 border-purple-400/30 bg-purple-400/10',
+                'completed' => 'text-green-400 border-green-400/30 bg-green-400/10',
+                'cancelled' => 'text-red-400 border-red-400/30 bg-red-400/10',
+                default => 'text-gray-400 border-gray-400/30 bg-gray-400/10',
+                };
                 @endphp
                 <span class="px-2.5 py-0.5 text-[10px] font-black rounded border uppercase tracking-wider {{ $statusColor }}">
                     {{ $order->status }}
@@ -49,16 +49,16 @@
                     <span>Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
                 </div>
             </div>
-            
+
             {{-- LIST ITEM KECIL --}}
             <div class="pt-2 flex flex-wrap gap-2">
                 @foreach($order->items->take(3) as $item)
-                    <span class="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded text-gray-400">
-                        {{ $item->product->name }} x{{ $item->quantity }}
-                    </span>
+                <span class="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded text-gray-400">
+                    {{ $item->product->name }} x{{ $item->quantity }}
+                </span>
                 @endforeach
                 @if($order->items->count() > 3)
-                    <span class="text-[10px] text-gray-500 self-center">+{{ $order->items->count() - 3 }} more</span>
+                <span class="text-[10px] text-gray-500 self-center">+{{ $order->items->count() - 3 }} more</span>
                 @endif
             </div>
         </div>

@@ -19,38 +19,38 @@ class ChatbotController extends Controller
             'benchmarks',   // FPS di game tertentu
             'intendedUses', // cocok untuk apa (gaming, editing, dll)
         ])
-        ->where('is_active', true)
-        ->get()
-        ->map(function($p) {
-            // Komponen (CPU, GPU, RAM, dll)
-            $components = $p->components->map(fn($c) => $c->name)->join(', ');
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($p) {
+                // Komponen (CPU, GPU, RAM, dll)
+                $components = $p->components->map(fn($c) => $c->name)->join(', ');
 
-            // Attributes (Garansi, Warna, dll)
-            $attributes = $p->attributes->map(fn($a) => "{$a->name}: {$a->value}")->join(', ');
+                // Attributes (Garansi, Warna, dll)
+                $attributes = $p->attributes->map(fn($a) => "{$a->name}: {$a->value}")->join(', ');
 
-            // Benchmarks (FPS di game)
-            $benchmarks = $p->benchmarks->map(fn($b) => "{$b->game}: {$b->fps} FPS")->join(', ');
+                // Benchmarks (FPS di game)
+                $benchmarks = $p->benchmarks->map(fn($b) => "{$b->game}: {$b->fps} FPS")->join(', ');
 
-            // Intended Uses (Gaming, Editing, Programming, dll)
-            $uses = $p->intendedUses->map(fn($u) => $u->name)->join(', ');
+                // Intended Uses (Gaming, Editing, Programming, dll)
+                $uses = $p->intendedUses->map(fn($u) => $u->name)->join(', ');
 
-            return [
-                'name'        => $p->name,
-                'price'       => 'Rp ' . number_format($p->price, 0, ',', '.'),
-                'category'    => $p->series->category->name ?? '-',
-                'series'      => $p->series->name ?? '-',
-                'description' => $p->short_description ?? '-',
-                'slug'        => $p->slug,
-                'image'       => $p->images->first()?->full_url ?? null,
-                'components'  => $components ?: '-',
-                'attributes'  => $attributes ?: '-',
-                'benchmarks'  => $benchmarks ?: '-',
-                'uses'        => $uses ?: '-',
-            ];
-        });
+                return [
+                    'name'        => $p->name,
+                    'price'       => 'Rp ' . number_format($p->price, 0, ',', '.'),
+                    'category'    => $p->series->category->name ?? '-',
+                    'series'      => $p->series->name ?? '-',
+                    'description' => $p->short_description ?? '-',
+                    'slug'        => $p->slug,
+                    'image'       => $p->images->first()?->full_url ?? null,
+                    'components'  => $components ?: '-',
+                    'attributes'  => $attributes ?: '-',
+                    'benchmarks'  => $benchmarks ?: '-',
+                    'uses'        => $uses ?: '-',
+                ];
+            });
 
         // Format sebagai teks yang mudah dibaca AI
-        $productContext = $products->map(function($p) {
+        $productContext = $products->map(function ($p) {
             return "
 PRODUK: {$p['name']}
 - Harga: {$p['price']}

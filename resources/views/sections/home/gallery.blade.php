@@ -1,6 +1,6 @@
 <div>
     {{-- SECTION 5 ALTERNATIF: BATTLESTATION GALLERY --}}
-    <section class="scroll-trigger opacity-0 bg-[#080808] py-24 border-t border-white/5"> 
+    <section class="scroll-trigger opacity-0 bg-[#080808] py-24 border-t border-white/5">
         <div class="max-w-[1440px] mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-5xl font-black text-white uppercase italic">Deployed <span class="text-primary">&</span> Operational</h2>

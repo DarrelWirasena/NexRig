@@ -14,9 +14,9 @@ class ArticleController extends Controller
         $query = Article::where('status', 'published')->latest();
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('excerpt', 'like', '%' . $request->search . '%');
+                    ->orWhere('excerpt', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -27,11 +27,11 @@ class ArticleController extends Controller
         $articles = $query->paginate(10)->withQueryString();
 
         $categories = Article::where('status', 'published')
-                              ->distinct()
-                              ->pluck('category')
-                              ->filter()
-                              ->sort()
-                              ->values();
+            ->distinct()
+            ->pluck('category')
+            ->filter()
+            ->sort()
+            ->values();
 
         return view('articles.index', compact('articles', 'title', 'categories'));
     }
@@ -39,13 +39,13 @@ class ArticleController extends Controller
     public function show(Article $article)
     {
         $title = $article->title;
-        
+
         $relatedArticles = Article::where('id', '!=', $article->id)
-                                    ->where('status', 'published')
-                                    ->where('category', $article->category)
-                                    ->latest()
-                                    ->limit(3)
-                                    ->get();
+            ->where('status', 'published')
+            ->where('category', $article->category)
+            ->latest()
+            ->limit(3)
+            ->get();
 
         return view('articles.show', compact('article', 'relatedArticles', 'title'));
     }

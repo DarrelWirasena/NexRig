@@ -15,7 +15,7 @@
                     <p class="text-gray-400 text-lg mb-8 leading-relaxed">
                         Every NexRig isn't just assembled; it's crafted. We spend hours on cable management, thermal optimization, and 24-hour stress testing so you can just plug and play.
                     </p>
-                    
+
                     <ul class="space-y-6">
                         <li class="flex items-start gap-4">
                             <div class="bg-primary/20 p-2 rounded text-primary">
@@ -50,7 +50,7 @@
                 {{-- Image Side (Abstract Representation of Order) --}}
                 <div class="w-full md:w-1/2 relative">
                     <div class="relative z-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-[#0a0a0a]">
-                         {{-- Ganti URL ini dengan foto PC bagian dalam yang rapi --}}
+                        {{-- Ganti URL ini dengan foto PC bagian dalam yang rapi --}}
                         <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200" class="w-full h-auto object-cover opacity-80 hover:opacity-100 transition-opacity duration-500">
                     </div>
                     {{-- Decorative Elements --}}

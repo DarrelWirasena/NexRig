@@ -39,7 +39,7 @@ Route::get('/support', function () {
 // Route untuk Setup Guide
 // Pastikan nama file Anda adalah: resources/views/setup-guide.blade.php
 Route::get('/setup-guide', function () {
-    return view('setup-guide'); 
+    return view('setup-guide');
 })->name('setup-guide');
 
 Route::get('/returns', function () {
@@ -83,12 +83,22 @@ Route::middleware('guest')->group(function () {
     // Register Route
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register'); // Menampilkan form
     Route::post('/register', [AuthController::class, 'register']); // Memproses data form
-    
+
+    Route::get('/verify-otp', [AuthController::class, 'showOtpForm'])->name('otp.verify');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('otp.process');
+
     // Login Route
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); // Menampilkan form
     Route::post('/login', [AuthController::class, 'login']); // Memproses login
 
- 
+    // --- LUPA PASSWORD (FORGOT PASSWORD) ---
+    Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password/send-otp', [AuthController::class, 'sendResetOtp'])->name('password.email');
+    Route::post('/forgot-password/verify', [AuthController::class, 'verifyResetOtp'])->name('password.verify');
+
+    // --- GANTI PASSWORD (RESET PASSWORD) ---
+    Route::get('/reset-password', [AuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'updatePassword'])->name('password.update');
 });
 
 
@@ -115,24 +125,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders/{id}', [OrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
-       // PROFILE ROUTES
+    // PROFILE ROUTES
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.app');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
 
     Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])
-     ->name('orders.invoice');
+        ->name('orders.invoice');
 
     Route::get('/support-history', [ContactController::class, 'index'])->name('support.history');
-    
+
     // Mengirim pesan baru
-    Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');   
+    Route::post('/support/send', [ContactController::class, 'store'])->name('contact.store');
     Route::get('/address-book', [AddressController::class, 'index'])->name('address.index');
 
     // 2. Route untuk Simpan Data (Metode POST)
     // Pastikan URL ini yang digunakan di <form action="...">
     Route::post('/profile/address', [AddressController::class, 'store'])->name('address.store');
-    
+
     // Route lainnya...
     Route::get('/address/create', [AddressController::class, 'create'])->name('address.create');
     Route::get('/address/{id}/edit', [AddressController::class, 'edit'])->name('address.edit');

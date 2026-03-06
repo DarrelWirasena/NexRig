@@ -8,38 +8,32 @@ use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class CheckoutController extends Controller
 {
-    /**
-     * HELPER: Ambil data cart yang sudah distandarisasi (Object)
-     * Sama persis logikanya dengan CartController
-     */
     private function getCartData()
     {
         $cartItems = [];
 
         if (Auth::check()) {
-            // A. LOGGED IN: Ambil dari DB
             $dbItems = CartItem::where('user_id', Auth::id())
-                             ->with(['product.images']) // Load product untuk ambil harga/nama real-time
-                             ->get();
+                ->with(['product.images'])
+                ->get();
 
             foreach ($dbItems as $item) {
-                if (!$item->product) continue; // Skip jika produk terhapus
-
+                if (!$item->product) continue;
                 $cartItems[] = (object) [
                     'product_id' => $item->product_id,
                     'name'       => $item->product->name,
-                    'price'      => $item->product->price, // Ambil harga terbaru dari master product
+                    'price'      => $item->product->price,
                     'quantity'   => $item->quantity,
                     'image'      => $item->product->images->first()->src ?? 'https://placehold.co/100'
                 ];
             }
         } else {
-            // B. GUEST: Ambil dari Session
             $sessionCart = session()->get('cart', []);
-            
             foreach ($sessionCart as $productId => $details) {
                 $cartItems[] = (object) [
                     'product_id' => $productId,
@@ -54,155 +48,142 @@ class CheckoutController extends Controller
         return $cartItems;
     }
 
-    /**
-     * Menampilkan Halaman Checkout
-     */
     public function index()
     {
         $title = 'Checkout';
-        // 1. Ambil data cart terbaru
         $cartItems = $this->getCartData();
 
-        // 2. Cek apakah keranjang kosong
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        // 3. Hitung Total (Server Side Calculation)
         $subtotal = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item->price * $item->quantity;
         }
-        $tax = $subtotal * config('shop.tax_rate');
+        $tax        = $subtotal * config('shop.tax_rate');
         $grandTotal = $subtotal + $tax;
 
-        // 4. Data User & Alamat
-        // Kita asumsikan Checkout butuh Login. Jika Guest checkout diperbolehkan, logic ini harus di-if
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to checkout.');
         }
 
         /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $address = $user->addresses()->where('is_default', true)->first() ?? $user->addresses()->first();
+        $user    = Auth::user();
+        $address = $user->addresses()->where('is_default', true)->first()
+            ?? $user->addresses()->first();
 
         return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title'));
     }
 
-    /**
-     * Memproses Transaksi (Place Order)
-     */
     public function store(Request $request)
     {
-        // Pastikan User Login
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
+        if (!Auth::check()) return redirect()->route('login');
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 1. Validasi Input
         $request->validate([
-            'recipient_name' => 'required|string|max:255',
-            'phone'          => 'required|string|max:20',
-            'full_address'   => 'required|string',
-            'city'           => 'required|string|max:100',
-            'postal_code'    => 'required|string|max:20',
+            'recipient_name' => 'required',
+            'phone'          => 'required',
+            'full_address'   => 'required',
+            'city'           => 'required',
+            'postal_code'    => 'required',
+            'payment_type'   => 'required',
         ]);
 
-        // 2. Ambil Ulang Data Cart (PENTING: Jangan percaya data total dari request frontend)
         $cartItems = $this->getCartData();
-
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Cart is empty');
         }
 
-        // 3. Hitung Ulang Total Harga (Security Best Practice)
-        $subtotal = 0;
+        $subtotal   = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item->price * $item->quantity;
         }
-        $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate')); // Tax 11%
+        $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate', 0.11));
 
-        // 4. Mulai Transaksi Database
+        // ── Ambil alamat default yang dipilih user ──────────────
+        $address = $user->addresses()->where('is_default', true)->first()
+            ?? $user->addresses()->first();
+
         DB::beginTransaction();
         try {
-            // A. Simpan / Update Alamat Default jika belum punya
-            if ($user->addresses()->doesntExist()) {
-                $user->addresses()->create([
-                    'label'          => 'Home',
-                    'recipient_name' => $request->recipient_name,
-                    'phone'          => $request->phone,
-                    'city'           => $request->city,
-                    'postal_code'    => $request->postal_code,
-                    'full_address'   => $request->full_address,
-                    'is_default'     => true,
-                ]);
-            }
+            $order = Order::create([
+                'user_id'              => $user->id,
+                'order_date'           => now(),
+                'total_price'          => $grandTotal,
+                'status'               => 'pending',
 
-            // B. Ambil alamat dari DB jika ada, fallback ke request (kasus form baru)
-            $savedAddress = $user->addresses()->where('is_default', true)->first()
-                            ?? $user->addresses()->first();
+                // Relasi ke alamat
+                'user_address_id'      => $address?->id,
 
-            $snap = $savedAddress ? [
-                'shipping_name'        => $savedAddress->recipient_name,
-                'shipping_phone'       => $savedAddress->phone,
-                'shipping_address'     => $savedAddress->full_address,
-                'shipping_city'        => $savedAddress->city,
-                'shipping_postal_code' => $savedAddress->postal_code,
-            ] : [
+                // Snapshot data pengiriman
                 'shipping_name'        => $request->recipient_name,
                 'shipping_phone'       => $request->phone,
                 'shipping_address'     => $request->full_address,
                 'shipping_city'        => $request->city,
                 'shipping_postal_code' => $request->postal_code,
-            ];
 
-            // B. Simpan Order (Snapshot)
-            $order = Order::create([
-                'user_id'    => $user->id,
-                'order_date' => now(),
-                'total_price'=> $grandTotal,
-                'status'     => 'pending',
-                ...$snap,
+                // ── Koordinat dari alamat terpilih ──────────────
+                // Dipakai untuk live tracking map di order detail
+                'shipping_latitude'    => $address?->latitude,
+                'shipping_longitude'   => $address?->longitude,
             ]);
 
-            // C. Simpan Item Pesanan
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id'   => $order->id,
-                    'product_id' => $item->product_id, // Akses object property
+                    'product_id' => $item->product_id,
                     'quantity'   => $item->quantity,
-                    'price'      => $item->price,      // Harga saat transaksi terjadi
+                    'price'      => $item->price,
                 ]);
             }
 
-            // D. Hapus Keranjang
-            // Hapus dari Database
-            CartItem::where('user_id', $user->id)->delete();
-            // Hapus dari Session (jaga-jaga)
-            session()->forget('cart');
-
             DB::commit();
-            
-            return redirect()->route('checkout.success', $order->id);
 
+            // ── Midtrans ────────────────────────────────────────
+            Config::$serverKey    = config('midtrans.server_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized  = true;
+            Config::$is3ds        = true;
+
+            $enabled_payments = $request->payment_type == 'bank_transfer'
+                ? ['bca_va', 'bni_va', 'bri_va', 'mandiri_va']
+                : ['qris', 'gopay'];
+
+            $params = [
+                'transaction_details' => [
+                    'order_id'     => 'NX-' . $order->id . '-' . time(),
+                    'gross_amount' => (int) round($grandTotal),
+                ],
+                'customer_details' => [
+                    'first_name' => $request->recipient_name,
+                    'email'      => $user->email,
+                ],
+                'enabled_payments' => $enabled_payments,
+            ];
+
+            $snapToken = Snap::getSnapToken($params);
+
+            $title = 'Awaiting Payment';
+            return view('checkout.pay', compact('title', 'snapToken', 'order'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Transaction failed: ' . $e->getMessage());
+            return back()->with('error', 'Gateway Error: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Menampilkan Halaman Sukses
-     */
     public function success($id)
     {
         $title = 'Order Success';
-        // Cari order, pastikan milik user yang sedang login
-        $order = Order::with('items.product')->where('user_id', Auth::id())->findOrFail($id);
-        
+        $order = Order::with('items.product')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        CartItem::where('user_id', Auth::id())->delete();
+        session()->forget('cart');
+
         return view('checkout.success', compact('order', 'title'));
     }
 }

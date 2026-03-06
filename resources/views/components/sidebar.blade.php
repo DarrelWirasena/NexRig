@@ -1,15 +1,15 @@
 <aside id="sidebar" class="sidebar-transition fixed inset-y-0 left-0 z-40 w-72 bg-[#0a0a0a] border-r border-white/10 flex flex-col transform -translate-x-full lg:translate-x-0 lg:static lg:h-full lg:z-20 shadow-2xl lg:shadow-none no-bounce">
-            
+
     {{-- BAGIAN HEADER SIDEBAR (Gabungan Logo & Close Button) --}}
     <div class="px-6 pt-6 pb-4 border-b border-white/5">
-        
+
         {{-- Flex Container: Logo di Kiri, Tombol Close di Kanan --}}
         <div class="flex items-center justify-between mb-6">
-            
+
             {{-- 1. LOGO --}}
             <a class="flex items-center hover:opacity-80 transition-opacity" href="{{ route('home') }}">
                 {{-- Saya sesuaikan tinggi logo (h-10) agar pas di mobile, h-14 di desktop --}}
-                <img src="{{ asset('images/nexrig.png') }}" alt="NexRig Logo" class="h-14 md:h-14 w-auto object-contain"> 
+                <img src="{{ asset('images/nexrig.png') }}" alt="NexRig Logo" class="h-14 md:h-14 w-auto object-contain">
             </a>
 
             {{-- 2. TOMBOL CLOSE (Hanya Muncul di Mobile / lg:hidden) --}}
@@ -29,7 +29,7 @@
     {{-- BAGIAN 2: NAVIGASI --}}
     <nav class="flex-1 p-6 space-y-2 overflow-y-auto no-bounce custom-sidebar-scroll">
         <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest px-4 mb-4">Account Navigation</p>
-        
+
         <a href="{{ route('profile.app') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 transition-all uppercase tracking-wide">
             <span class="material-symbols-outlined">person</span> Profile Settings
         </a>

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Article;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -9,15 +10,15 @@ class HomeController extends Controller
 {
     public function index()
     {
-        
+
         // 1. DATA PRODUK (Logika Lama + Optimasi)
         // Kita gunakan 'take(8)' agar query tidak mengambil ribuan produk jika database sudah besar.
         // Cukup ambil secukupnya untuk Slider & Bento Grid.
         $products = Product::with(['series.category', 'images'])
-                    ->where('is_active', true)
-                    ->latest()
-                    ->take(8) 
-                    ->get();
+            ->where('is_active', true)
+            ->latest()
+            ->take(8)
+            ->get();
 
         // Ambil 4 pertama untuk Bento Grid
         $featured = $products->take(4);

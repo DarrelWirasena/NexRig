@@ -4,7 +4,7 @@
     <div class="flex flex-col gap-1 mb-4">
         <h3 class="text-gray-900 dark:text-white text-lg font-bold">{{ $title }}</h3>
         @if($subtitle)
-            <p class="text-gray-500 dark:text-[#929bc9] text-sm">{{ $subtitle }}</p>
+        <p class="text-gray-500 dark:text-[#929bc9] text-sm">{{ $subtitle }}</p>
         @endif
     </div>
     <div class="flex flex-col gap-2">

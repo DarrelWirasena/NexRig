@@ -13,6 +13,7 @@
         "filament/filament": "*",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "midtrans/midtrans-php": "^2.6",
         "worksome/envy": "^1.4"
     },
     "require-dev": {

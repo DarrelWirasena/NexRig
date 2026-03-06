@@ -22,7 +22,7 @@ class ProductController extends Controller
         $query = Product::with([
             'series.category',
             'components',
-            'images' => function($q) {
+            'images' => function ($q) {
                 $q->where('is_primary', true);
             }
         ])->where('is_active', true);
@@ -34,7 +34,7 @@ class ProductController extends Controller
         // 1. FILTER CATEGORY
         // ==========================================
         if ($request->filled('category')) {
-            $query->whereHas('series.category', function($q) use ($request) {
+            $query->whereHas('series.category', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
             $categoryName = ucwords(str_replace('-', ' ', $request->category));
@@ -46,35 +46,35 @@ class ProductController extends Controller
         if ($request->filled('search')) {
             $keywords = explode(' ', $searchKeyword);
 
-            $query->where(function($q) use ($keywords) {
+            $query->where(function ($q) use ($keywords) {
                 // A. Cari di Nama Produk
-                $q->where(function($subQ) use ($keywords) {
+                $q->where(function ($subQ) use ($keywords) {
                     foreach ($keywords as $word) {
                         $subQ->where('name', 'like', "%{$word}%");
                     }
                 })
-                // B. ATAU Cari di Deskripsi
-                ->orWhere(function($subQ) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $subQ->where('description', 'like', "%{$word}%");
-                    }
-                })
-                // C. ATAU Cari di Komponen
-                ->orWhereHas('components', function($qComp) use ($keywords) {
-                    $qComp->where(function($deepQ) use ($keywords) {
+                    // B. ATAU Cari di Deskripsi
+                    ->orWhere(function ($subQ) use ($keywords) {
                         foreach ($keywords as $word) {
-                            $deepQ->where('name', 'like', "%{$word}%");
+                            $subQ->where('description', 'like', "%{$word}%");
                         }
+                    })
+                    // C. ATAU Cari di Komponen
+                    ->orWhereHas('components', function ($qComp) use ($keywords) {
+                        $qComp->where(function ($deepQ) use ($keywords) {
+                            foreach ($keywords as $word) {
+                                $deepQ->where('name', 'like', "%{$word}%");
+                            }
+                        });
+                    })
+                    // D. ATAU Cari di Series
+                    ->orWhereHas('series', function ($qSeries) use ($keywords) {
+                        $qSeries->where(function ($deepQ) use ($keywords) {
+                            foreach ($keywords as $word) {
+                                $deepQ->where('name', 'like', "%{$word}%");
+                            }
+                        });
                     });
-                })
-                // D. ATAU Cari di Series
-                ->orWhereHas('series', function($qSeries) use ($keywords) {
-                    $qSeries->where(function($deepQ) use ($keywords) {
-                        foreach ($keywords as $word) {
-                            $deepQ->where('name', 'like', "%{$word}%");
-                        }
-                    });
-                });
             });
         }
 
@@ -152,7 +152,7 @@ class ProductController extends Controller
         return view('products.index', compact('products', 'categories', 'title', 'chips'));
     }
 
-    
+
 
     /**
      * Menampilkan halaman detail produk berdasarkan Slug
@@ -161,20 +161,20 @@ class ProductController extends Controller
     {
         // Tidak ada perubahan di sini, kode lama kamu sudah benar
         $product = Product::with([
-            'series.category', 
-            'series.products' => function($q) {
+            'series.category',
+            'series.products' => function ($q) {
                 $q->where('is_active', true)->orderBy('price');
             },
-            'images', 
-            'attributes', 
-            'benchmarks.game', 
+            'images',
+            'attributes',
+            'benchmarks.game',
             'components',
             'intendedUses'
         ])
-        ->where('slug', $slug)
-        ->where('is_active', true)
-        ->firstOrFail();
-        $title = $product->name ;
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+        $title = $product->name;
         return view('products.show', compact('product', 'title'));
     }
 }

@@ -1,11 +1,13 @@
 <footer class="bg-[#050505] text-gray-400 font-sans border-t border-white/10">
-    
+
     <div class="border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 py-12">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="flex items-start space-x-4">
                     <div class="text-blue-500 mt-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
                     </div>
                     <div>
                         <h4 class="text-white font-bold uppercase tracking-widest text-xs">Lifetime Support</h4>
@@ -14,7 +16,11 @@
                 </div>
                 <div class="flex items-start space-x-4">
                     <div class="text-purple-500 mt-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
                     </div>
                     <div>
                         <h4 class="text-white font-bold uppercase tracking-widest text-xs">Expert Assembly</h4>
@@ -23,7 +29,11 @@
                 </div>
                 <div class="flex items-start space-x-4">
                     <div class="text-green-500 mt-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
                     </div>
                     <div>
                         <h4 class="text-white font-bold uppercase tracking-widest text-xs">Safe Delivery</h4>
@@ -32,7 +42,10 @@
                 </div>
                 <div class="flex items-start space-x-4">
                     <div class="text-orange-500 mt-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m12 14 4-4" />
+                            <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+                        </svg>
                     </div>
                     <div>
                         <h4 class="text-white font-bold uppercase tracking-widest text-xs">Performance Tested</h4>
@@ -45,7 +58,7 @@
 
     <div class="max-w-7xl mx-auto px-6 py-16">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
-            
+
             <div class="md:col-span-5">
                 <a href="/" class="text-3xl font-black text-white tracking-tighter italic mb-6 block">
                     NEX<span class="text-blue-600">RIG</span>
@@ -92,16 +105,16 @@
         </div>
     </div>
 
-        <div class="bg-black py-8">
-            <div class="max-w-7xl mx-auto px-6 flex flex-col md:row justify-between items-center space-y-4 md:space-y-0 text-[10px] uppercase tracking-[0.2em]">
-                <p>&copy; {{ date('Y') }} NEXRIG SYSTEMS INC. ALL RIGHTS RESERVED.</p>
-                <div class="flex space-x-6">
-                    @foreach(\App\Models\SocialLink::getActive() as $link)
-                        <a href="{{ $link->url }}" class="hover:text-white" target="_blank">
-                            {{ $link->platform }}
-                        </a>
-                    @endforeach
-                </div>
+    <div class="bg-black py-8">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:row justify-between items-center space-y-4 md:space-y-0 text-[10px] uppercase tracking-[0.2em]">
+            <p>&copy; {{ date('Y') }} NEXRIG SYSTEMS INC. ALL RIGHTS RESERVED.</p>
+            <div class="flex space-x-6">
+                @foreach(\App\Models\SocialLink::getActive() as $link)
+                <a href="{{ $link->url }}" class="hover:text-white" target="_blank">
+                    {{ $link->platform }}
+                </a>
+                @endforeach
             </div>
         </div>
+    </div>
 </footer>

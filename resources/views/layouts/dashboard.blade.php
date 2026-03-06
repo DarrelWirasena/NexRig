@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,18 +11,23 @@
     {{-- Fonts & Icons --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { font-family: 'Space Grotesk', sans-serif; }
-        .clip-card { clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
-        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .clip-card {
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+
         /* NexRig Cyberpunk SweetAlert Style */
         .nexrig-swal-popup {
             background: #0a0a0a !important;
@@ -32,9 +38,21 @@
         }
 
         @media (max-width: 640px) {
-            .nexrig-swal-popup { width: 90% !important; padding: 1.25rem !important; }
-            .swal2-actions { flex-direction: column-reverse !important; gap: 12px; width: 100% !important; }
-            .swal2-actions button { width: 100% !important; margin: 0 !important; }
+            .nexrig-swal-popup {
+                width: 90% !important;
+                padding: 1.25rem !important;
+            }
+
+            .swal2-actions {
+                flex-direction: column-reverse !important;
+                gap: 12px;
+                width: 100% !important;
+            }
+
+            .swal2-actions button {
+                width: 100% !important;
+                margin: 0 !important;
+            }
         }
 
         .input-tech {
@@ -43,23 +61,40 @@
             color: white;
             transition: all 0.3s ease;
         }
+
         .input-tech:focus {
-            background: rgba(0, 0, 0, 0.5); border-color: #2563eb; outline: none;
+            background: rgba(0, 0, 0, 0.5);
+            border-color: #2563eb;
+            outline: none;
             box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
         }
 
         .nav-item.active {
-            background-color: #2563eb; color: white; font-weight: 700;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 700;
             box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
         }
-        
-        main::-webkit-scrollbar { width: 8px; }
-        main::-webkit-scrollbar-track { background: #050014; }
-        main::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 4px; }
-        
-        .no-bounce { overscroll-behavior: none; }
+
+        main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        main::-webkit-scrollbar-track {
+            background: #050014;
+        }
+
+        main::-webkit-scrollbar-thumb {
+            background: #1f1f1f;
+            border-radius: 4px;
+        }
+
+        .no-bounce {
+            overscroll-behavior: none;
+        }
     </style>
 </head>
+
 <body class="font-sans antialiased bg-[#050014] text-white">
 
     <div class="h-screen flex overflow-hidden relative no-bounce">
@@ -116,7 +151,9 @@
                 background: '#0a0a0a',
                 color: '#fff',
                 width: window.innerWidth < 640 ? '90%' : '30rem',
-                customClass: { popup: 'nexrig-swal-popup' }
+                customClass: {
+                    popup: 'nexrig-swal-popup'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     const form = document.getElementById('delete-form-' + id);
@@ -131,20 +168,33 @@
 
         if (msgSuccess) {
             Swal.fire({
-                icon: 'success', title: 'BERHASIL', text: msgSuccess,
-                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
-                customClass: { popup: 'nexrig-swal-popup' }
+                icon: 'success',
+                title: 'BERHASIL',
+                text: msgSuccess,
+                background: '#0a0a0a',
+                color: '#fff',
+                confirmButtonColor: '#2563eb',
+                customClass: {
+                    popup: 'nexrig-swal-popup'
+                }
             });
         }
 
         if (msgError) {
             Swal.fire({
-                icon: 'error', title: 'GAGAL', text: msgError,
-                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
-                customClass: { popup: 'nexrig-swal-popup' }
+                icon: 'error',
+                title: 'GAGAL',
+                text: msgError,
+                background: '#0a0a0a',
+                color: '#fff',
+                confirmButtonColor: '#2563eb',
+                customClass: {
+                    popup: 'nexrig-swal-popup'
+                }
             });
         }
     </script>
     @stack('scripts')
 </body>
+
 </html>

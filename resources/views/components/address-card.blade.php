@@ -1,106 +1,168 @@
 @props([
-    'id' => null,           // [BARU] ID Alamat untuk link edit/delete
-    'type' => 'Home',       
-    'icon' => 'home',       
-    'recipient',            
-    'address',              
-    'phone',                
-    'isDefault' => false,  
-    'showUseButton' => false,   
+'id' => null,
+'type' => 'Home',
+'icon' => 'home',
+'recipient',
+'address',
+'phone',
+'isDefault' => false,
+'showUseButton' => false,
+// Wilayah baru
+'village' => null,
+'district' => null,
+'city' => null,
+'province' => null,
+'postalCode' => null,
+// Koordinat
+'hasCoords' => false,
 ])
 
-<div {{ $attributes->merge(['class' => 'relative group bg-[#0a0a0a] border rounded-xl overflow-hidden transition-all flex flex-col h-full ' . ($isDefault ? 'border-blue-600/50 shadow-[0_0_20px_rgba(37,99,235,0.15)]' : 'border-white/10 hover:border-blue-600/30')]) }}>
-    
-    {{-- Garis Biru Kiri (Hanya jika Active) --}}
+<div {{ $attributes->merge(['class' => 
+    'relative group bg-[#0a0a0a] border rounded-xl overflow-hidden transition-all duration-300 flex flex-col h-full ' . 
+    ($isDefault 
+        ? 'border-blue-600/50 shadow-[0_0_25px_rgba(37,99,235,0.12)]' 
+        : 'border-white/10 hover:border-white/25')
+]) }}>
+
+    {{-- Top accent line --}}
+    <div class="absolute top-0 left-0 right-0 h-[2px] {{ $isDefault ? 'bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600' : 'bg-white/5 group-hover:bg-white/10' }} transition-all duration-300"></div>
+
+    {{-- Garis kiri biru jika default --}}
     @if($isDefault)
-        <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+    <div class="absolute top-0 left-0 w-[3px] h-full bg-gradient-to-b from-blue-500 to-blue-700 rounded-l-xl"></div>
     @endif
-    
-    <div class="p-6 pb-4 flex-1">
-        {{-- Header Kartu --}}
-        <div class="flex items-start justify-between mb-6">
-            <div class="flex items-center gap-2 {{ $isDefault ? 'text-white' : 'text-gray-400 group-hover:text-white' }} transition-colors">
-                <span class="material-symbols-outlined {{ $isDefault ? 'text-blue-600' : '' }}">{{ $icon }}</span>
-                <h3 class="font-bold text-lg">{{ $type }}</h3>
+
+    {{-- ── BODY ── --}}
+    <div class="p-6 flex-1 {{ $isDefault ? 'pl-7' : '' }}">
+
+        {{-- Header --}}
+        <div class="flex items-start justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center {{ $isDefault ? 'bg-blue-600/20 text-blue-400' : 'bg-white/5 text-gray-400 group-hover:bg-white/10 group-hover:text-white' }} transition-all">
+                    <span class="material-symbols-outlined text-lg">{{ $icon }}</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm {{ $isDefault ? 'text-white' : 'text-gray-300 group-hover:text-white' }} transition-colors uppercase tracking-wider">
+                        {{ $type }}
+                    </h3>
+                    {{-- Koordinat badge --}}
+                    @if($hasCoords)
+                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-green-400 uppercase tracking-wider">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
+                        GPS Ready
+                    </span>
+                    @else
+                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-600 uppercase tracking-wider">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gray-600 inline-block"></span>
+                        No GPS
+                    </span>
+                    @endif
+                </div>
             </div>
-            
+
             @if($isDefault)
-                <span class="px-2 py-0.5 bg-blue-600/20 text-blue-500 text-[10px] font-black uppercase rounded tracking-widest border border-blue-600/30">DEFAULT</span>
+            <span class="px-2.5 py-1 bg-blue-600/20 text-blue-400 text-[9px] font-black uppercase rounded-full tracking-widest border border-blue-600/30">
+                ✦ DEFAULT
+            </span>
             @endif
         </div>
 
-        {{-- Detail Alamat --}}
-        <div class="space-y-4">
-            <div class="flex flex-col">
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Recipient</span>
-                <p class="text-white font-medium">{{ $recipient }}</p>
+        {{-- Detail --}}
+        <div class="space-y-3.5">
+
+            {{-- Recipient --}}
+            <div>
+                <span class="text-[9px] text-gray-600 uppercase font-bold tracking-widest">Penerima</span>
+                <p class="text-white font-semibold text-sm mt-0.5">{{ $recipient }}</p>
+                <p class="text-gray-500 text-xs font-mono">{{ $phone }}</p>
             </div>
-            <div class="flex flex-col">
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Location</span>
-                <p class="text-gray-300 text-sm leading-relaxed">{!! nl2br(e($address)) !!}</p>
+
+            {{-- Alamat --}}
+            <div>
+                <span class="text-[9px] text-gray-600 uppercase font-bold tracking-widest">Alamat</span>
+                <p class="text-gray-300 text-xs leading-relaxed mt-0.5">{!! nl2br(e($address)) !!}</p>
             </div>
-            <div class="flex flex-col">
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Phone</span>
-                <p class="text-gray-300 text-sm font-mono">{{ $phone }}</p>
+
+            {{-- Wilayah — tampil jika ada data baru --}}
+            @if($village || $district || $city || $province)
+            <div class="pt-1">
+                <span class="text-[9px] text-gray-600 uppercase font-bold tracking-widest">Wilayah</span>
+                <div class="flex flex-wrap gap-1.5 mt-1.5">
+                    @foreach(array_filter([$village, $district, $city, $province]) as $region)
+                    <span class="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-400 font-medium">
+                        {{ $region }}
+                    </span>
+                    @endforeach
+                    @if($postalCode)
+                    <span class="px-2 py-0.5 bg-blue-600/10 border border-blue-600/20 rounded text-[10px] text-blue-400 font-bold font-mono">
+                        {{ $postalCode }}
+                    </span>
+                    @endif
+                </div>
             </div>
+            @endif
+
         </div>
     </div>
-    {{-- Footer Actions --}}
-    <div class="mt-auto p-4 bg-[#050014]/50 border-t border-white/5 flex items-center justify-between">
-        <div class="flex gap-2">
-            {{-- TOMBOL EDIT --}}
-            <a href="{{ $id ? route('address.edit', array_filter(['id' => $id, 'origin' => request('origin')])) : '#' }}" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
-                <span class="material-symbols-outlined text-xl">edit</span>
+
+    {{-- ── FOOTER ACTIONS ── --}}
+    <div class="p-4 border-t {{ $isDefault ? 'border-blue-600/10 bg-blue-600/5' : 'border-white/5 bg-black/20' }} flex items-center justify-between gap-2">
+
+        {{-- Edit & Delete --}}
+        <div class="flex gap-1">
+            <a href="{{ $id ? route('address.edit', array_filter(['id' => $id, 'origin' => request('origin')])) : '#' }}"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+                title="Edit">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
             </a>
 
-            {{-- TOMBOL DELETE (Dihubungkan ke SweetAlert2) --}}
             @if($id)
-                {{-- Kita tidak perlu form di sini karena form sudah ada di file address.blade.php --}}
-                {{-- Tombol ini hanya memicu fungsi JavaScript global --}}
-                <button type="button" 
-                        onclick="confirmDelete('{{ $id }}')" 
-                        class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                    <span class="material-symbols-outlined text-xl">delete</span>
-                </button>
-            @else
-                {{-- Tampilan Statis --}}
-                <button class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                    <span class="material-symbols-outlined text-xl">delete</span>
-                </button>
+            <button type="button"
+                onclick="confirmDelete('{{ $id }}')"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                title="Delete">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
             @endif
         </div>
 
-        @if($isDefault)
-            <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest pointer-events-none">
-                Default Address
-            </span>
-        @else
+        {{-- Default / Use button --}}
+        <div class="flex-1 flex justify-end">
+            @if($showUseButton)
             <form action="{{ route('address.set_default', $id) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <button type="submit" class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors">
-                    Set as Default
-                </button>
-            </form>
-        @endif
-        @if($showUseButton)
-            <form action="{{ route('address.set_default', $id) }}" method="POST" class="mt-4">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="redirect_to" value="checkout">
                 @if($isDefault)
-                    <span class="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-green-500 border border-green-500/20 rounded-lg bg-green-500/5">
-                        <span class="material-symbols-outlined text-sm">check_circle</span>
-                        Currently Selected
-                    </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-green-400 border border-green-500/20 rounded-lg bg-green-500/5">
+                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                    Selected
+                </span>
                 @else
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all">
-                        <span class="material-symbols-outlined text-sm">check</span>
-                        Use This Address
-                    </button>
+                <button type="submit"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all">
+                    <span class="material-symbols-outlined text-sm">check</span>
+                    Gunakan
+                </button>
                 @endif
             </form>
-        @endif
+            @else
+            @if($isDefault)
+            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
+                Default Address
+            </span>
+            @else
+            <form action="{{ route('address.set_default', $id) }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <button type="submit"
+                    class="text-[10px] font-bold text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
+                    Set as Default
+                </button>
+            </form>
+            @endif
+            @endif
+        </div>
     </div>
-    
+
 </div>
