@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Cache;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -9,29 +10,22 @@ use Illuminate\Support\Facades\Http;
 class ChatbotController extends Controller
 {
     public function reply(Request $request)
-    {
-        // Ambil semua produk dengan relasi lengkap
+{
+    $productContext = Cache::remember('chatbot_product_context', 1800, function () {
         $products = Product::with([
             'series.category',
             'images'       => fn($q) => $q->where('is_primary', true),
-            'components',   // spesifikasi hardware
-            'attributes',   // garansi, warna, dimensi, dll
-            'benchmarks',   // FPS di game tertentu
-            'intendedUses', // cocok untuk apa (gaming, editing, dll)
+            'components',
+            'attributes',
+            'benchmarks',
+            'intendedUses',
         ])
             ->where('is_active', true)
             ->get()
             ->map(function ($p) {
-                // Komponen (CPU, GPU, RAM, dll)
                 $components = $p->components->map(fn($c) => $c->name)->join(', ');
-
-                // Attributes (Garansi, Warna, dll)
                 $attributes = $p->attributes->map(fn($a) => "{$a->name}: {$a->value}")->join(', ');
-
-                // Benchmarks (FPS di game)
                 $benchmarks = $p->benchmarks->map(fn($b) => "{$b->game}: {$b->fps} FPS")->join(', ');
-
-                // Intended Uses (Gaming, Editing, Programming, dll)
                 $uses = $p->intendedUses->map(fn($u) => $u->name)->join(', ');
 
                 return [
@@ -49,8 +43,7 @@ class ChatbotController extends Controller
                 ];
             });
 
-        // Format sebagai teks yang mudah dibaca AI
-        $productContext = $products->map(function ($p) {
+        return $products->map(function ($p) {
             return "
 PRODUK: {$p['name']}
 - Harga: {$p['price']}
@@ -62,6 +55,7 @@ PRODUK: {$p['name']}
 - Cocok untuk: {$p['uses']}
 - Slug: {$p['slug']}";
         })->join("\n---");
+    });
 
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.openrouter.key'),

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
@@ -41,7 +42,9 @@ class AppServiceProvider extends ServiceProvider
         // View Composer Navbar
         View::composer('components.navbar', function ($view) {
             // Kita ambil Category -> Series -> Products (Beserta Gambar)
-            $navbarCategories = Category::with(['series.products.images'])->get();
+            $navbarCategories = Cache::remember('navbar_categories', 3600, function () {
+                return Category::with(['series.products.images'])->get();
+            });
 
             $view->with('navbarCategories', $navbarCategories);
         });

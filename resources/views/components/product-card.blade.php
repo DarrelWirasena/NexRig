@@ -3,7 +3,7 @@
 <div class="group flex flex-col bg-white dark:bg-[#1a2036] rounded-xl overflow-hidden border border-gray-200 dark:border-[#232948] hover:border-primary transition-all duration-300 h-full shadow-sm hover:shadow-xl hover:shadow-primary/10">
     {{-- IMAGE SECTION --}}
     <div class="relative aspect-square md:aspect-[4/3] bg-gray-100 dark:bg-black/40 overflow-hidden shrink-0">
-        <img src="{{ $image }}" alt="{{ $name }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500">
+        <img src="{{ $image }}" alt="{{ $name }}" loading="lazy" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500">
 
         @if($badge)
         <div class="absolute top-2 left-2 md:top-3 md:left-3 bg-primary text-white text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded backdrop-blur-sm shadow-md z-10">

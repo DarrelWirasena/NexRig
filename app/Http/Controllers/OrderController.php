@@ -33,7 +33,7 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->latest()->get();
+        $orders = $query->latest()->paginate(10);
         return view('orders.index', compact('orders', 'tab', 'title', 'search'));
     }
 

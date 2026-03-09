@@ -81,6 +81,9 @@
             </a>
         </div>
         @endforelse
+        <div class="mt-6">
+            {{ $orders->appends(request()->query())->links() }}
+        </div>
     </div>
 
     {{-- SUPPORT BANNER --}}

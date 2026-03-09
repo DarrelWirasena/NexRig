@@ -2,12 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Cache;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
     protected $guarded = ['id'];
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget('navbar_categories');
+        });
+        static::deleted(function () {
+            Cache::forget('navbar_categories');
+        });
+    }
 
     protected $casts = [
         'is_active' => 'boolean',
