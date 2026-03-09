@@ -28,19 +28,19 @@ class AuthController extends Controller
                 'string',
                 'max:255',
                 'unique:users',
-                'regex:/^[a-zA-Z0-9._%+\-]+@(gmail\.com|yahoo\.com|outlook\.com|icloud\.com|hotmail\.com)$/'
             ],
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $otp = rand(100000, 999999);
+        $otp = random_int(100000, 999999);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user',
-            'otp_code' => $otp
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
         ]);
 
         Mail::to($user->email)->send(new OtpMail($otp));
@@ -73,12 +73,16 @@ class AuthController extends Controller
         $request->validate(['otp' => 'required|numeric']);
 
         $email = session('verify_email');
-        $user = User::where('email', $email)->where('otp_code', $request->otp)->first();
+        $user = User::where('email', $email)
+            ->where('otp_code', $request->otp)
+            ->where('otp_expires_at', '>', now())
+            ->first();
 
         if ($user) {
             $user->update([
                 'email_verified_at' => now(),
-                'otp_code' => null
+                'otp_code' => null,
+                'otp_expires_at' => null,
             ]);
 
             // Baru login DI SINI setelah OTP benar
@@ -157,9 +161,12 @@ class AuthController extends Controller
             'email.exists' => 'Terminal email tidak ditemukan di database kami.'
         ]);
 
-        $otp = rand(100000, 999999);
+        $otp = random_int(100000, 999999);
         $user = User::where('email', $request->email)->first();
-        $user->update(['otp_code' => $otp]);
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
+        ]);
 
         // 1. Menggunakan Mail khusus Reset Password
         Mail::to($user->email)->send(new ResetOtpMail($otp));
@@ -180,10 +187,16 @@ class AuthController extends Controller
         // 3. Ambil email langsung dari session yang sudah kita simpan
         $email = session('reset_email');
 
-        $user = User::where('email', $email)->where('otp_code', $request->otp)->first();
+        $user = User::where('email', $email)
+            ->where('otp_code', $request->otp)
+            ->where('otp_expires_at', '>', now())
+            ->first();
 
         if ($user) {
-            $user->update(['otp_code' => null]);
+            $user->update([
+                'otp_code' => null,
+                'otp_expires_at' => null,
+            ]);
 
             // Bersihkan status otp_sent, berikan izin reset
             session()->forget('otp_sent');

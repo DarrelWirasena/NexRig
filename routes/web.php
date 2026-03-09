@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use Illuminate\Support\Facades\Route;
 
 // Import Semua Controller
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
@@ -19,15 +20,6 @@ use App\Http\Controllers\AddressController;
 | 1. PUBLIC ROUTES (Bisa diakses siapa saja)
 |--------------------------------------------------------------------------
 */
-
-Route::get('/debug-headers', function () {
-    return response()->json([
-        'https' => request()->isSecure(),
-        'scheme' => request()->getScheme(),
-        'forwarded_proto' => request()->header('X-Forwarded-Proto'),
-        'all_headers' => request()->headers->all(),
-    ]);
-});
 
 // Halaman About Us (Tanpa Controller)
 Route::view('/about', 'about')->name('about');
@@ -72,7 +64,7 @@ Route::post('/cart/{id}', [CartController::class, 'store'])->name('cart.add');  
 Route::patch('/cart/update', [CartController::class, 'update'])->name('cart.update'); // URL update quantity
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove'); // [PENTING] Method DELETE
 
-Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'reply']);
+Route::post('/chatbot', [ChatbotController::class, 'reply'])->middleware('throttle:20,1');
 /*
 |--------------------------------------------------------------------------
 | 2. GUEST ROUTES (Hanya untuk yang BELUM Login)

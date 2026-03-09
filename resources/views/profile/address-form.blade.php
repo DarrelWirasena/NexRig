@@ -556,7 +556,7 @@
 
                     geocodeSpinner.classList.add('hidden');
                     geocodeDone.classList.remove('hidden');
-                    console.log("GPS Found: ", query); // Debugging
+                    // console.log("GPS Found: ", query); // Debugging
                 } else {
                     throw new Error('Not found at this detail level');
                 }
