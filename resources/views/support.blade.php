@@ -106,7 +106,7 @@
             {{-- Main Title --}}
             <h1 class="text-5xl md:text-7xl lg:text-8xl font-black uppercase italic tracking-tighter mb-12 leading-tight">
                 <span class="block text-white">How Can We</span>
-                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-white to-blue-500 animate-shine pb-4">
+                <span class="block text-transparent bg-clip-text bg-linear-to-r from-blue-500 via-white to-blue-500 animate-shine pb-4">
                     Help You?
                 </span>
             </h1>

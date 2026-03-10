@@ -14,6 +14,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\MidtransController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,9 @@ Route::patch('/cart/update', [CartController::class, 'update'])->name('cart.upda
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove'); // [PENTING] Method DELETE
 
 Route::post('/chatbot', [ChatbotController::class, 'reply'])->middleware('throttle:20,1');
+
+// Midtrans Webhook (outside auth to allow Midtrans to POST)
+Route::post('/webhook/midtrans', [MidtransController::class, 'webhook'])->name('midtrans.webhook');
 /*
 |--------------------------------------------------------------------------
 | 2. GUEST ROUTES (Hanya untuk yang BELUM Login)

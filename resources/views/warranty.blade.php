@@ -170,7 +170,7 @@
 
                 {{-- Intro Box --}}
                 <div class="bg-[#0a0a0a] border-l-4 border-blue-600 p-8 rounded-r-xl mb-12">
-                    <p class="!mb-0 text-lg text-white font-medium">
+                    <p class="mb-0! text-lg text-white font-medium">
                         Pembelian sistem komputer (PC Rakitan / Laptop) dari NexRig menandakan pengakuan dan persetujuan Anda terhadap syarat dan ketentuan Garansi Terbatas ini.
                     </p>
                 </div>
@@ -180,11 +180,11 @@
                     <h2>1. Ikhtisar (Overview)</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                         <div>
-                            <h3 class="!mt-0">PC Desktop</h3>
+                            <h3 class="mt-0!">PC Desktop</h3>
                             <p>Semua PC Rakitan NexRig <strong>BARU</strong> dilengkapi dengan garansi perangkat keras dan jasa selama <strong>2 tahun</strong> untuk pembeli asli, dimulai dari tanggal pembelian.</p>
                         </div>
                         <div>
-                            <h3 class="!mt-0">Laptop</h3>
+                            <h3 class="mt-0!">Laptop</h3>
                             <p>Semua Laptop NexRig dilengkapi dengan garansi perangkat keras dan jasa selama <strong>1 tahun</strong> (atau sesuai ketentuan spesifik model) untuk pembeli asli.</p>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
                     <p>Setiap sistem pengganti akan dijamin selama sisa masa garansi asli atau <strong>30 hari</strong>, mana yang lebih lama.</p>
 
                     <h3>Garansi Tidak Berlaku Jika:</h3>
-                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 !pl-0 !list-none">
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-0! list-none!">
                         <li class="bg-white/5 p-4 rounded border border-white/10 flex gap-3 items-start">
                             <span class="material-symbols-outlined text-red-500 mt-0.5">cancel</span>
                             <div>Sistem tidak lagi tercakup oleh garansi NexRig atau hukum konsumen yang berlaku.</div>
@@ -233,15 +233,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div class="bg-[#0a0a0a] p-6 rounded border border-white/10">
                             <strong class="block text-blue-400 mb-2 text-lg">Wear & Tear</strong>
-                            <p class="!text-sm !mb-0">Keausan normal akibat penggunaan wajar sehari-hari (contoh: debu, goresan halus pada casing).</p>
+                            <p class="text-sm! mb-0!">Keausan normal akibat penggunaan wajar sehari-hari (contoh: debu, goresan halus pada casing).</p>
                         </div>
                         <div class="bg-[#0a0a0a] p-6 rounded border border-white/10">
                             <strong class="block text-blue-400 mb-2 text-lg">Human Error</strong>
-                            <p class="!text-sm !mb-0">Overclocking berlebihan, modifikasi fisik casing, instalasi komponen tambahan yang salah, atau perbaikan mandiri.</p>
+                            <p class="text-sm! mb-0!">Overclocking berlebihan, modifikasi fisik casing, instalasi komponen tambahan yang salah, atau perbaikan mandiri.</p>
                         </div>
                         <div class="bg-[#0a0a0a] p-6 rounded border border-white/10">
                             <strong class="block text-blue-400 mb-2 text-lg">Force Majeure</strong>
-                            <p class="!text-sm !mb-0">Kecelakaan, penyalahgunaan, korsleting listrik rumah, petir, banjir, atau bencana alam lainnya.</p>
+                            <p class="text-sm! mb-0!">Kecelakaan, penyalahgunaan, korsleting listrik rumah, petir, banjir, atau bencana alam lainnya.</p>
                         </div>
                     </div>
                 </section>
@@ -253,13 +253,13 @@
                             <span class="material-symbols-outlined text-[200px]">warning</span>
                         </div>
                         <div class="relative z-10">
-                            <h2 class="!text-red-500 !mt-0 !border-none !text-3xl flex items-center gap-3">
+                            <h2 class="text-red-500! mt-0! border-none! text-3xl! flex items-center gap-3">
                                 <span class="material-symbols-outlined text-4xl">warning</span> Data Loss Warning
                             </h2>
-                            <p class="!text-gray-200 text-lg">
+                            <p class="text-gray-200! text-lg">
                                 Sebagai bagian dari proses penggantian atau perbaikan, semua perangkat lunak dan data pada sistem Anda akan diatur ulang ke <strong>PENGATURAN PABRIK (Factory Reset)</strong>.
                             </p>
-                            <p class="!mb-0 !text-gray-400">
+                            <p class="mb-0! text-gray-400!">
                                 NexRig <strong>tidak bertanggung jawab</strong> atas hilangnya data, keuntungan, atau pendapatan. Anda bertanggung jawab penuh untuk melakukan cadangan (*backup*) data dan menghapus informasi rahasia sebelum mengirimkan unit kepada kami.
                             </p>
                         </div>
@@ -272,7 +272,7 @@
                     <p>Semua permintaan garansi ditangani secara terpusat melalui sistem tiket layanan pelanggan kami.</p>
 
                     <div class="bg-[#0a0a0a] rounded-xl p-8 border border-white/10">
-                        <ol class="space-y-6 !mb-0">
+                        <ol class="space-y-6 mb-0!">
                             <li class="pl-4">
                                 <strong class="block text-white text-lg mb-1">1. Buat Tiket Support</strong>
                                 Ajukan permintaan melalui halaman <strong><a href="{{ route('support') }}" class="text-blue-400 hover:underline">Support Center</a></strong>. Sertakan bukti pembelian dan foto serial number.

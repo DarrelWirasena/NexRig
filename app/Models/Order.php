@@ -15,6 +15,7 @@ class Order extends Model
         'order_date',
         'total_price',
         'status',
+        'midtrans_order_id',
         'shipping_name',
         'shipping_phone',
         'shipping_address',

@@ -35,7 +35,7 @@
                                         @endphp
                                         <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
                                             <div class="absolute inset-0 bg-blue-600/20 blur-xl rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-500"></div>
-                                            <img src="{{ $imgUrl }}" class="relative z-10 w-full h-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover/item:scale-105">
+                                            <img src="{{ $imgUrl }}" alt="{{ $series->name }}" class="relative z-10 w-full h-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover/item:scale-105">
                                         </div>
                                         <h3 class="text-white font-black uppercase tracking-widest mb-4 border-b border-blue-600/50 pb-1">{{ $series->name }}</h3>
                                         <div class="flex flex-col gap-2 w-full max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
@@ -93,7 +93,7 @@
                         <div class="text-right hidden sm:block">
                             <p class="text-sm font-bold text-white leading-none">{{ Auth::user()->name }}</p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold border border-white/20">
+                        <div class="w-10 h-10 rounded-full bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold border border-white/20">
                             {{ substr(Auth::user()->name, 0, 1) }}
                         </div>
                     </button>
@@ -135,7 +135,7 @@
 
                 {{-- Header Drawer --}}
                 <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
-                    <img src="{{ asset('images/nexrig.png') }}" class="h-14 w-auto">
+                    <img src="{{ asset('images/nexrig.png') }}" alt="NexRig Logo" class="h-14 w-auto">
                     <button @click="mobileMenuOpen = false" class="text-white">
                         <span class="material-symbols-outlined text-3xl">close</span>
                     </button>
@@ -163,7 +163,7 @@
                                     : 'https://placehold.co/200x200/101010/FFF?text=' . urlencode($series->name);
                                     @endphp
                                     <div class="w-12 h-12 bg-[#111] rounded-lg flex items-center justify-center p-1 border border-white/10 shrink-0">
-                                        <img src="{{ $imgUrl }}" class="w-full h-full object-contain drop-shadow-md">
+                                        <img src="{{ $imgUrl }}" alt="{{ $series->name }}" class="w-full h-full object-contain drop-shadow-md">
                                     </div>
                                     <div class="grow">
                                         <p class="text-blue-500 text-[10px] font-black uppercase tracking-widest italic leading-none mb-1">{{ $series->name }}</p>

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem;
 use App\Filesystem\CloudinaryAdapter;
 use App\Filesystem\CloudinaryFilesystemAdapter;
-use App\Models\Category; 
+use App\Models\Category;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
         // Register Cloudinary Driver
-        Storage::extend('cloudinary', function ($app, $config) {
+        Storage::extend('cloudinary', function ($config) {
             $cloudinaryAdapter = new CloudinaryAdapter($config);
             $filesystem = new Filesystem($cloudinaryAdapter);
             

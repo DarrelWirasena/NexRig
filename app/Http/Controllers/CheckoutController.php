@@ -188,9 +188,11 @@ class CheckoutController extends Controller
                 ? ['bca_va', 'bni_va', 'bri_va', 'mandiri_va']
                 : ['qris', 'gopay'];
 
+            $midtransOrderId = 'NX-' . $order->id . '-' . time();
+
             $params = [
                 'transaction_details' => [
-                    'order_id'     => 'NX-' . $order->id . '-' . time(),
+                    'order_id'     => $midtransOrderId,
                     'gross_amount' => (int) round($grandTotal),
                 ],
                 'customer_details' => [
@@ -202,6 +204,9 @@ class CheckoutController extends Controller
             ];
 
             $snapToken = Snap::getSnapToken($params);
+
+            // Store Midtrans order ID in database
+            $order->update(['midtrans_order_id' => $midtransOrderId]);
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
