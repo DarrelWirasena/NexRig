@@ -24,11 +24,14 @@
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px;
-}
-
-html, body {
     max-width: 100%;
     overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+body {
+    max-width: 100%;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
