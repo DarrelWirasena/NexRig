@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ProductImage extends Model
 {
@@ -20,6 +21,18 @@ class ProductImage extends Model
     ];
 
     protected $appends = ['full_url'];
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget('navbar_categories');
+            Cache::forget('chatbot_product_context');
+        });
+        static::deleted(function () {
+            Cache::forget('navbar_categories');
+            Cache::forget('chatbot_product_context');
+        });
+    }
 
     public function product(): BelongsTo
     {

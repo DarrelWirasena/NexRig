@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 // PENTING:
-// Kita tidak perlu tulis 'use App\Models\ProductImage' 
+// Kita tidak perlu tulis 'use App\Models\ProductImage'
 // karena mereka satu folder (namespace). PHP otomatis tau.
 
 class Product extends Model
 {
     use HasFactory;
-    
+
     protected $guarded = ['id'];
 
     // 1. Relasi ke Series (Orang Tua Langsung)
@@ -59,9 +60,15 @@ class Product extends Model
 }
 protected static function booted()
     {
-        static::deleting(function ($product) {
+        static::saved(function () {
+            Cache::forget('navbar_categories');
+            Cache::forget('chatbot_product_context');
+        });
+        static::deleted(function ($product) {
             // Hapus semua order_items yang mengandung produk ini
             $product->orderItems()->delete();
+            Cache::forget('navbar_categories');
+            Cache::forget('chatbot_product_context');
         });
     }
 
