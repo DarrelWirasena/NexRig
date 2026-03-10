@@ -1,5 +1,23 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    /* ── Custom Dropdown CSS untuk Komponen Alamat ── */
+    .custom-select { position: relative; }
+    .custom-select .dd-trigger { text-align: left; }
+    .custom-select.open .dd-trigger { border-color: rgb(59 130 246 / 0.6) !important; background: rgb(255 255 255 / 0.07) !important; opacity: 1 !important; }
+    .custom-select.open .dd-trigger .material-symbols-outlined { transform: rotate(180deg); }
+    .custom-select .dd-menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; }
+    .custom-select .dd-list li { padding: 9px 14px; font-size: 13px; color: #d1d5db; cursor: pointer; transition: background 0.12s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .custom-select .dd-list li:hover { background: rgb(37 99 235 / 0.15); color: #fff; }
+    .custom-select .dd-list li.active { background: rgb(37 99 235 / 0.25); color: #60a5fa; font-weight: 700; }
+    .custom-select .dd-list::-webkit-scrollbar { width: 4px; }
+    .custom-select .dd-list::-webkit-scrollbar-track { background: transparent; }
+    .custom-select .dd-list::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    .custom-select.disabled .dd-trigger { cursor: not-allowed !important; opacity: 0.4 !important; }
+</style>
+@endsection
+
 @section('content')
 
 {{-- LOADING OVERLAY --}}
@@ -10,8 +28,7 @@
         <span
             class="material-symbols-outlined absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center text-primary animate-pulse"
             style="font-size: 44px; line-height: 44px; font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;"
-            aria-hidden="true"
-        >rocket_launch</span>
+            aria-hidden="true">rocket_launch</span>
     </div>
     <h3 class="text-white font-black text-2xl uppercase italic tracking-widest mb-1">Deploying Order</h3>
     <p class="text-slate-400 font-mono text-xs uppercase tracking-[0.3em]">Securing payment channel...</p>
@@ -39,10 +56,7 @@
             </div>
         </div>
 
-        {{-- ============================================================ --}}
-        {{-- MAIN GRID                                                     --}}
-        {{-- KIRI (col-span-8) | KANAN (col-span-4) — sejajar horizontal --}}
-        {{-- ============================================================ --}}
+        {{-- MAIN GRID --}}
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
 
             {{-- ========================= --}}
@@ -60,11 +74,14 @@
                     </div>
 
                     @if($address)
+                        {{-- A. JIKA USER SUDAH PUNYA ALAMAT --}}
                         <input type="hidden" name="recipient_name" value="{{ $address->recipient_name }}">
                         <input type="hidden" name="phone" value="{{ $address->phone }}">
                         <input type="hidden" name="full_address" value="{{ $address->full_address }}">
                         <input type="hidden" name="city" value="{{ $address->city }}">
                         <input type="hidden" name="postal_code" value="{{ $address->postal_code }}">
+                        <input type="hidden" name="latitude" value="{{ $address->latitude }}">
+                        <input type="hidden" name="longitude" value="{{ $address->longitude }}">
 
                         <div class="relative bg-slate-50 dark:bg-[#111422] border border-slate-200 dark:border-white/5 rounded-xl p-6 transition-all hover:border-primary/50">
                             <a href="{{ route('address.index', ['origin' => 'checkout']) }}"
@@ -91,7 +108,8 @@
                             </div>
                         </div>
                     @else
-                        <div class="rounded-xl border border-dashed border-slate-300 dark:border-white/20 bg-slate-50/50 dark:bg-white/5 p-6 sm:p-8">
+                        {{-- B. JIKA USER BELUM PUNYA ALAMAT --}}
+                        <div class="rounded-xl border border-dashed border-slate-300 dark:border-white/20 bg-slate-50/50 dark:bg-[#0a0a0a] p-6 sm:p-8">
                             <div class="mb-6 flex items-start gap-4 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500">
                                 <span class="material-symbols-outlined text-2xl animate-pulse">warning</span>
                                 <div>
@@ -99,6 +117,7 @@
                                     <p class="text-[11px] opacity-80 leading-relaxed">System requires valid delivery coordinates to initialize deployment logic.</p>
                                 </div>
                             </div>
+
                             @if($errors->any())
                             <div class="flex items-start gap-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-6">
                                 <span class="material-symbols-outlined text-2xl">error</span>
@@ -108,14 +127,14 @@
                                 </div>
                             </div>
                             @endif
-                            <div class="space-y-4">
-                                <x-address-form-fields />
-                            </div>
+
+                            {{-- MEMANGGIL KOMPONEN FORM ALAMAT --}}
+                            <x-address-form-fields />
+
                             <input type="hidden" name="is_default" value="1">
                         </div>
                     @endif
                 </div>
-                {{-- END SHIPPING --}}
 
                 {{-- B. PAYMENT SECTION --}}
                 <div class="bg-white dark:bg-[#0a0a0a] p-6 sm:p-8 rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl relative overflow-hidden">
@@ -146,10 +165,8 @@
                         </label>
                     </div>
                 </div>
-                {{-- END PAYMENT --}}
 
             </div>
-            {{-- END KOLOM KIRI --}}
 
             {{-- ========================= --}}
             {{-- KOLOM KANAN              --}}
@@ -210,26 +227,199 @@
 
                 </div>
             </div>
-            {{-- END KOLOM KANAN --}}
 
         </div>
-        {{-- END MAIN GRID --}}
-
     </form>
 </div>
+@endsection
 
+@section('scripts')
 <script>
-    document.getElementById('checkout-form').addEventListener('submit', function(e) {
-        if (!this.checkValidity()) return;
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ── 1. SCRIPT LOADING OVERLAY NEXRIG (TETAP ADA) ──
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                if (!this.checkValidity()) return;
+                const btn = this.querySelector('button[type="submit"]');
+                const loadingOverlay = document.getElementById('checkout-loading');
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                loadingOverlay.classList.remove('hidden');
+                loadingOverlay.classList.add('flex');
+            });
+        }
 
-        const btn = this.querySelector('button[type="submit"]');
-        const loadingOverlay = document.getElementById('checkout-loading');
+        // ── 2. SCRIPT API WILAYAH (HANYA AKTIF JIKA ADA FORM ALAMAT BARU) ──
+        const inpProvince = document.getElementById('sel_province');
+        // Jika input sel_province tidak ada (artinya user sudah punya alamat), hentikan eksekusi script ini
+        if (!inpProvince) return; 
 
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        const BB_KEY = '6514c99c902f5b03b940b80c83cab5f3fe60268806737e740fb04825f468d5de';
+        const BB_URL = 'https://api.binderbyte.com/wilayah';
 
-        loadingOverlay.classList.remove('hidden');
-        loadingOverlay.classList.add('flex');
+        const inpCity = document.getElementById('sel_city');
+        const inpDistrict = document.getElementById('sel_district');
+        const inpVillage = document.getElementById('sel_village');
+        const inpPostal = document.getElementById('postal_code');
+        const loadingEl = document.getElementById('regionLoading');
+
+        const SELECTED = { province: '', city: '', district: '', village: '' };
+
+        function setupDropdown(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            const trigger = wrapper.querySelector('.dd-trigger');
+            const menu = wrapper.querySelector('.dd-menu');
+            const search = wrapper.querySelector('.dd-search');
+            const list = wrapper.querySelector('.dd-list');
+
+            trigger.addEventListener('click', () => {
+                if (wrapper.classList.contains('disabled')) return;
+                const isOpen = wrapper.classList.toggle('open');
+                menu.classList.toggle('hidden', !isOpen);
+                if (isOpen) {
+                    search.value = '';
+                    filterList(list, '');
+                    search.focus();
+                }
+            });
+
+            search.addEventListener('input', () => filterList(list, search.value));
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) {
+                    wrapper.classList.remove('open');
+                    menu.classList.add('hidden');
+                }
+            });
+            return wrapper;
+        }
+
+        function filterList(list, query) {
+            const q = query.toLowerCase();
+            list.querySelectorAll('li').forEach(li => {
+                li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        function fillDropdown(wrapperId, items, placeholder, hiddenInput, nameInput, onSelect) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            const list = wrapper.querySelector('.dd-list');
+            const label = wrapper.querySelector('.dd-label');
+            const trigger = wrapper.querySelector('.dd-trigger');
+
+            list.innerHTML = '';
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.name;
+                li.addEventListener('click', () => {
+                    list.querySelectorAll('li').forEach(l => l.classList.remove('active'));
+                    li.classList.add('active');
+                    label.textContent = item.name;
+                    
+                    label.classList.remove('text-gray-400', 'text-gray-500');
+                    label.classList.add('text-slate-900', 'dark:text-white', 'font-bold');
+                    
+                    hiddenInput.value = item.id;
+                    if(nameInput) nameInput.value = item.name;
+
+                    wrapper.classList.remove('open');
+                    wrapper.querySelector('.dd-menu').classList.add('hidden');
+                    if (onSelect) onSelect(item);
+                });
+                list.appendChild(li);
+            });
+
+            wrapper.classList.remove('disabled');
+            trigger.disabled = false;
+            trigger.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function resetDropdown(wrapperId, placeholder) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            wrapper.querySelector('.dd-list').innerHTML = '';
+            wrapper.querySelector('.dd-label').textContent = placeholder;
+            wrapper.querySelector('.dd-label').classList.add('text-gray-400');
+            wrapper.querySelector('.dd-label').classList.remove('text-slate-900', 'dark:text-white', 'font-bold');
+            wrapper.querySelector('.dd-trigger').disabled = true;
+            wrapper.querySelector('.dd-trigger').classList.add('opacity-50', 'cursor-not-allowed');
+            wrapper.classList.add('disabled');
+            wrapper.classList.remove('open');
+            wrapper.querySelector('.dd-menu').classList.add('hidden');
+        }
+
+        async function fetchJSON(url) {
+            const res = await fetch(url);
+            const json = await res.json();
+            if (json.code !== '200' && json.code !== 200) throw new Error(json.messages ?? 'API error');
+            return json.value;
+        }
+
+        async function loadProvinces() {
+            if(loadingEl) loadingEl.classList.remove('hidden');
+            try {
+                const data = await fetchJSON(`${BB_URL}/provinsi?api_key=${BB_KEY}`);
+                fillDropdown('dd_province', data, '— Pilih Provinsi —', inpProvince, document.getElementById('province_name'), (item) => {
+                    SELECTED.province = item.name;
+                    loadCities(item.id);
+                });
+            } catch (e) { console.error(e); } finally { if(loadingEl) loadingEl.classList.add('hidden'); }
+        }
+
+        async function loadCities(provinceId) {
+            resetDropdown('dd_city', '— Pilih Kota —');
+            resetDropdown('dd_district', '— Pilih Kecamatan —');
+            resetDropdown('dd_village', '— Pilih Kelurahan —');
+            inpCity.value = ''; inpDistrict.value = ''; inpVillage.value = '';
+            
+            if(loadingEl) loadingEl.classList.remove('hidden');
+            try {
+                const data = await fetchJSON(`${BB_URL}/kabupaten?api_key=${BB_KEY}&id_provinsi=${provinceId}`);
+                fillDropdown('dd_city', data, '— Pilih Kota —', inpCity, document.getElementById('city_name'), (item) => {
+                    SELECTED.city = item.name;
+                    loadDistricts(item.id);
+                });
+            } catch (e) {} finally { if(loadingEl) loadingEl.classList.add('hidden'); }
+        }
+
+        async function loadDistricts(cityId) {
+            resetDropdown('dd_district', '— Pilih Kecamatan —');
+            resetDropdown('dd_village', '— Pilih Kelurahan —');
+            inpDistrict.value = ''; inpVillage.value = '';
+            
+            if(loadingEl) loadingEl.classList.remove('hidden');
+            try {
+                const data = await fetchJSON(`${BB_URL}/kecamatan?api_key=${BB_KEY}&id_kabupaten=${cityId}`);
+                fillDropdown('dd_district', data, '— Pilih Kecamatan —', inpDistrict, document.getElementById('district_name'), (item) => {
+                    SELECTED.district = item.name;
+                    loadVillages(item.id);
+                });
+            } catch (e) {} finally { if(loadingEl) loadingEl.classList.add('hidden'); }
+        }
+
+        async function loadVillages(districtId) {
+            resetDropdown('dd_village', '— Pilih Kelurahan —');
+            inpVillage.value = '';
+            
+            if(loadingEl) loadingEl.classList.remove('hidden');
+            try {
+                const data = await fetchJSON(`${BB_URL}/kelurahan?api_key=${BB_KEY}&id_kecamatan=${districtId}`);
+                fillDropdown('dd_village', data, '— Pilih Kelurahan —', inpVillage, document.getElementById('village_name'), (item) => {
+                    SELECTED.village = item.name;
+                });
+            } catch (e) {} finally { if(loadingEl) loadingEl.classList.add('hidden'); }
+        }
+
+        setupDropdown('dd_province');
+        setupDropdown('dd_city');
+        setupDropdown('dd_district');
+        setupDropdown('dd_village');
+        
+        loadProvinces();
     });
 </script>
 @endsection

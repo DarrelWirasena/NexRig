@@ -78,35 +78,74 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::check()) return redirect()->route('login');
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // 1. VALIDASI UMUM (Hanya jenis pembayaran yang wajib di awal)
         $request->validate([
-            'recipient_name' => 'required',
-            'phone'          => 'required',
-            'full_address'   => 'required',
-            'city'           => 'required',
-            'postal_code'    => 'required',
-            'payment_type'   => 'required',
+            'payment_type' => 'required|string',
         ]);
 
+        // 2. LOGIKA PENYIMPANAN ALAMAT
+        // Cek apakah form mengirimkan input 'is_default' (User mengisi komponen alamat baru)
+        if ($request->has('is_default') && $request->is_default == 1) {
+            
+            // Validasi khusus untuk form alamat baru
+            $request->validate([
+                'recipient_name' => 'required|string',
+                'phone'          => 'required|string',
+                'full_address'   => 'required|string',
+                'province_name'  => 'required|string',
+                'city_name'      => 'required|string',
+                'district_name'  => 'required|string',
+                'village_name'   => 'required|string',
+                'postal_code'    => 'required|string',
+            ]);
+
+            // Simpan alamat baru ke tabel addresses
+            $address = $user->addresses()->create([
+                'label'          => $request->label ?? 'Home',
+                'recipient_name' => $request->recipient_name,
+                'phone'          => $request->phone,
+                'province'       => $request->province_name,
+                'city'           => $request->city_name,
+                'district'       => $request->district_name,
+                'village'        => $request->village_name,
+                'postal_code'    => $request->postal_code,
+                'full_address'   => $request->full_address,
+                'latitude'       => $request->latitude,
+                'longitude'      => $request->longitude,
+                'is_default'     => true, // Jadikan otomatis sebagai alamat utama
+            ]);
+
+        } else {
+            // Jika user tidak mengisi form baru, ambil alamat utamanya dari database
+            $address = $user->addresses()->where('is_default', true)->first()
+                ?? $user->addresses()->first();
+        }
+
+        // Pastikan alamat ditemukan / berhasil dibuat
+        if (!$address) {
+            return back()->with('error', 'Valid shipping address is required.');
+        }
+
+        // 3. KALKULASI KERANJANG
         $cartItems = $this->getCartData();
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Cart is empty');
         }
 
-        $subtotal   = 0;
+        $subtotal = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item->price * $item->quantity;
         }
         $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate', 0.11));
 
-        // ── Ambil alamat default yang dipilih user ──────────────
-        $address = $user->addresses()->where('is_default', true)->first()
-            ?? $user->addresses()->first();
-
+        // 4. PROSES CHECKOUT & TRANSAKSI DATABASE
         DB::beginTransaction();
         try {
             $order = Order::create([
@@ -115,20 +154,17 @@ class CheckoutController extends Controller
                 'total_price'          => $grandTotal,
                 'status'               => 'pending',
 
-                // Relasi ke alamat
-                'user_address_id'      => $address?->id,
+                // Relasi ke tabel Address
+                'user_address_id'      => $address->id,
 
-                // Snapshot data pengiriman
-                'shipping_name'        => $request->recipient_name,
-                'shipping_phone'       => $request->phone,
-                'shipping_address'     => $request->full_address,
-                'shipping_city'        => $request->city,
-                'shipping_postal_code' => $request->postal_code,
-
-                // ── Koordinat dari alamat terpilih ──────────────
-                // Dipakai untuk live tracking map di order detail
-                'shipping_latitude'    => $address?->latitude,
-                'shipping_longitude'   => $address?->longitude,
+                // Snapshot data pengiriman dari objek $address
+                'shipping_name'        => $address->recipient_name,
+                'shipping_phone'       => $address->phone,
+                'shipping_address'     => $address->full_address,
+                'shipping_city'        => $address->city, 
+                'shipping_postal_code' => $address->postal_code,
+                'shipping_latitude'    => $address->latitude,
+                'shipping_longitude'   => $address->longitude,
             ]);
 
             foreach ($cartItems as $item) {
@@ -142,7 +178,7 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            // ── Midtrans ────────────────────────────────────────
+            // 5. INTEGRASI MIDTRANS
             Config::$serverKey    = config('midtrans.server_key');
             Config::$isProduction = config('midtrans.is_production');
             Config::$isSanitized  = true;
@@ -158,8 +194,9 @@ class CheckoutController extends Controller
                     'gross_amount' => (int) round($grandTotal),
                 ],
                 'customer_details' => [
-                    'first_name' => $request->recipient_name,
+                    'first_name' => $address->recipient_name,
                     'email'      => $user->email,
+                    'phone'      => $address->phone,
                 ],
                 'enabled_payments' => $enabled_payments,
             ];
@@ -168,6 +205,7 @@ class CheckoutController extends Controller
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
+            
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gateway Error: ' . $e->getMessage());
