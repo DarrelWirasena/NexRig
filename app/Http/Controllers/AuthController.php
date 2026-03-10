@@ -43,7 +43,15 @@ class AuthController extends Controller
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        Mail::to($user->email)->send(new OtpMail($otp));
+        // Try to send OTP email, but don't fail if it doesn't work
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send OTP email during registration', [
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Simpan email dan URL tujuan (redirect) ke session sementara
         session([
@@ -168,8 +176,15 @@ class AuthController extends Controller
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        // 1. Menggunakan Mail khusus Reset Password
-        Mail::to($user->email)->send(new ResetOtpMail($otp));
+        // Try to send reset OTP email, but don't fail if it doesn't work
+        try {
+            Mail::to($user->email)->send(new ResetOtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send reset OTP email', [
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // 2. Gunakan SESSION PERMANEN (bukan ->with) agar data email tidak hilang
         session([
