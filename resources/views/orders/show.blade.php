@@ -9,26 +9,46 @@
     .leaflet-tile {
         filter: brightness(0.45) saturate(0.6) hue-rotate(200deg);
     }
+
     .leaflet-container {
         background: #0a0a0a;
     }
+
     /* Timeline Animation */
     @keyframes timeline-in {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
+
     .timeline-item {
         animation: timeline-in 0.4s ease both;
     }
+
     /* Truck Map Pulse */
     .truck-pulse {
         box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
         animation: pulse-blue 2s infinite;
     }
+
     @keyframes pulse-blue {
-        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        0% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
     }
 </style>
 
@@ -47,12 +67,12 @@
                     </h1>
                     @php
                     $statusColor = match($order->status) {
-                        'pending'    => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                        'processing' => 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                        'shipped'    => 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                        'completed'  => 'bg-green-500/10 text-green-500 border-green-500/20',
-                        'cancelled'  => 'bg-red-500/10 text-red-500 border-red-500/20',
-                        default      => 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+                    'pending' => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                    'processing' => 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                    'shipped' => 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                    'completed' => 'bg-green-500/10 text-green-500 border-green-500/20',
+                    'cancelled' => 'bg-red-500/10 text-red-500 border-red-500/20',
+                    default => 'bg-gray-500/10 text-gray-500 border-gray-500/20',
                     };
                     @endphp
                     <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border {{ $statusColor }}">
@@ -115,40 +135,40 @@
 
                     // Membangun timeline mundur (dari kejadian terbaru ke terlama) sesuai status
                     if ($status === 'cancelled') {
-                        $history[] = [
-                            'title' => 'Pesanan Dibatalkan',
-                            'desc'  => 'Pesanan ini telah dibatalkan oleh sistem atau pengguna.',
-                            'icon'  => 'cancel', 'color' => 'text-red-500', 'bg' => 'bg-red-500/20 border-red-500/50'
-                        ];
+                    $history[] = [
+                    'title' => 'Pesanan Dibatalkan',
+                    'desc' => 'Pesanan ini telah dibatalkan oleh sistem atau pengguna.',
+                    'icon' => 'cancel', 'color' => 'text-red-500', 'bg' => 'bg-red-500/20 border-red-500/50'
+                    ];
                     } else {
-                        if (in_array($status, ['completed'])) {
-                            $history[] = [
-                                'title' => 'Paket Tiba di Tujuan',
-                                'desc'  => 'Paket telah sampai di alamat pengiriman dengan selamat.',
-                                'icon'  => 'home_pin', 'color' => 'text-green-400', 'bg' => 'bg-green-500/20 border-green-500/50'
-                            ];
-                        }
-                        if (in_array($status, ['shipped', 'completed'])) {
-                            $history[] = [
-                                'title' => 'Sedang Pengiriman',
-                                'desc'  => 'Kurir kami sedang dalam perjalanan menuju alamat pengiriman.',
-                                'icon'  => 'local_shipping', 'color' => 'text-blue-400', 'bg' => 'bg-blue-600 border-blue-400 truck-pulse'
-                            ];
-                        }
-                        if (in_array($status, ['pending', 'processing', 'shipped', 'completed'])) {
-                            $history[] = [
-                                'title' => 'Paket Sedang Disiapkan',
-                                'desc'  => 'Tim kami sedang merakit dan mengemas pesananmu di gudang.',
-                                'icon'  => 'inventory_2', 'color' => 'text-amber-400', 'bg' => 'bg-[#1a1a1a] border-white/20'
-                            ];
-                        }
-                        if (in_array($status, ['pending', 'processing', 'shipped', 'completed'])) {
-                            $history[] = [
-                                'title' => 'Pesanan Diterima',
-                                'desc'  => 'Pesanan berhasil dibuat dan sedang menunggu konfirmasi pembayaran.',
-                                'icon'  => 'receipt_long', 'color' => 'text-gray-400', 'bg' => 'bg-[#111] border-white/10'
-                            ];
-                        }
+                    if (in_array($status, ['completed'])) {
+                    $history[] = [
+                    'title' => 'Paket Tiba di Tujuan',
+                    'desc' => 'Paket telah sampai di alamat pengiriman dengan selamat.',
+                    'icon' => 'home_pin', 'color' => 'text-green-400', 'bg' => 'bg-green-500/20 border-green-500/50'
+                    ];
+                    }
+                    if (in_array($status, ['shipped', 'completed'])) {
+                    $history[] = [
+                    'title' => 'Sedang Pengiriman',
+                    'desc' => 'Kurir kami sedang dalam perjalanan menuju alamat pengiriman.',
+                    'icon' => 'local_shipping', 'color' => 'text-blue-400', 'bg' => 'bg-blue-600 border-blue-400 truck-pulse'
+                    ];
+                    }
+                    if (in_array($status, ['pending', 'processing', 'shipped', 'completed'])) {
+                    $history[] = [
+                    'title' => 'Paket Sedang Disiapkan',
+                    'desc' => 'Tim kami sedang merakit dan mengemas pesananmu di gudang.',
+                    'icon' => 'inventory_2', 'color' => 'text-amber-400', 'bg' => 'bg-[#1a1a1a] border-white/20'
+                    ];
+                    }
+                    if (in_array($status, ['pending', 'processing', 'shipped', 'completed'])) {
+                    $history[] = [
+                    'title' => 'Pesanan Diterima',
+                    'desc' => 'Pesanan berhasil dibuat dan sedang menunggu konfirmasi pembayaran.',
+                    'icon' => 'receipt_long', 'color' => 'text-gray-400', 'bg' => 'bg-[#111] border-white/10'
+                    ];
+                    }
                     }
                     @endphp
 
@@ -159,7 +179,7 @@
                             @foreach($history as $i => $item)
                             @php $isFirst = ($i === 0); @endphp
                             <div class="relative flex gap-5 pb-8 last:pb-0 timeline-item" style="animation-delay: {{ $i * 0.1 }}s">
-                                
+
                                 {{-- Ikon --}}
                                 <div class="relative z-10 shrink-0">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all {{ $isFirst ? $item['bg'] : 'bg-[#111] border-white/10' }}">
@@ -297,12 +317,13 @@
                 </div>
             </div>
 
-            {{-- 4. ORDER ACTION --}}
+            {{-- 4. ORDER ACTION (Di dalam kolom kanan) --}}
             <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6">
                 <h3 class="font-bold text-white mb-4">Aksi</h3>
 
                 @if($order->status === 'pending')
-                <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                {{-- Tambahkan type="button" agar tidak me-refresh halaman --}}
+                <button type="button" onclick="document.getElementById('cancelModal').classList.remove('hidden')"
                     class="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">cancel</span> Batalkan Pesanan
                 </button>
@@ -314,9 +335,7 @@
                 <div class="w-full py-2.5 bg-white/[0.03] border border-white/10 text-gray-600 text-sm font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
                     <span class="material-symbols-outlined text-sm">block</span> Batalkan Pesanan
                 </div>
-                <p class="text-[11px] text-gray-600 text-center mt-2">
-                    Tidak dapat dibatalkan — pesanan sedang diproses.
-                </p>
+                <p class="text-[11px] text-gray-600 text-center mt-2">Tidak dapat dibatalkan — pesanan sedang diproses.</p>
                 @endif
             </div>
 
@@ -324,111 +343,179 @@
     </div>
 </div>
 
+@if($order->status === 'pending')
+<div id="cancelModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('cancelModal').classList.add('hidden')"></div>
+    <div class="relative bg-[#0f0f0f] border border-red-500/30 rounded-2xl p-8 w-full max-w-md shadow-2xl">
+        <div class="flex flex-col items-center text-center mb-6">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-red-400 text-2xl">error</span>
+            </div>
+            <h3 class="text-lg font-black text-white uppercase tracking-tight">Batalkan Pesanan?</h3>
+            <p class="text-gray-400 text-sm mt-2">
+                Order <span class="text-white font-bold">#{{ $order->id }}</span> akan dibatalkan dan <span class="text-red-400 font-bold">tidak dapat dikembalikan</span>.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')"
+                class="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold rounded-lg transition-all">
+                Kembali
+            </button>
+            {{-- Form untuk menembak ke Controller --}}
+            <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="flex-1">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg transition-all">
+                    Ya, Batalkan
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- ====== SCRIPT PETA & RUTING (OSRM GEOJSON) ====== --}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // Konversi koordinat dari PHP, fallback ke Jakarta jika kosong agar peta tidak error
-        const destLat = parseFloat({{ $order->shipping_latitude ?? -6.2088 }});
-        const destLng = parseFloat({{ $order->shipping_longitude ?? 106.8456 }});
+        
+        let destLat = {{ $order->shipping_latitude ?? 'null' }};
+        let destLng = {{ $order->shipping_longitude ?? 'null' }};
+        
+        // Ambil nama kota sebagai cadangan pencarian jika koordinat kosong
+        const fallbackCity = "{{ $order->shipping_city ?? 'Jakarta' }}"; 
         const status = '{{ $order->status }}';
 
-        // Titik awal Gudang NexRig (Semarang)
-        const origin = { lat: -6.9932, lng: 110.4229 };
-        const dest = { lat: destLat, lng: destLng };
-
-        // Aktifkan zoom control dan scroll wheel
-        const map = L.map('deliveryMap', {
-            zoomControl: true, // Ubah menjadi true agar tombol + / - muncul
-            attributionControl: false,
-            scrollWheelZoom: true, // Ubah menjadi true agar bisa zoom pakai scroll mouse
-            dragging: true, // Pastikan dragging aktif agar map bisa digeser
-        });
-
-        // Memindahkan posisi tombol zoom ke kanan bawah agar tidak tertutup badge Live Tracking
-        map.zoomControl.setPosition('bottomright');
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-
-        // Fungsi pembuat icon HTML marker
-        function makeIcon(emoji, isTruck = false) {
-            const bg = isTruck ? '#2563eb' : '#111';
-            const border = isTruck ? '#60a5fa' : '#374151';
-            const extraClass = isTruck ? 'truck-pulse' : '';
-            return L.divIcon({
-                className: '',
-                html: `<div class="${extraClass}" style="background:${bg};border:2px solid ${border};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;">${emoji}</div>`,
-                iconSize: [36, 36],
-                iconAnchor: [18, 18],
-            });
-        }
-
-        // Ambil rute asli via jalan raya (OSRM public API - GeoJSON)
-        async function drawRoute() {
-            const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson`;
+        // Fungsi utama untuk inisiasi peta
+        async function initMap() {
             
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                let coords = [];
-                if (data.code === 'Ok' && data.routes.length > 0) {
-                    // OSRM mengirim format [lng, lat], kita balik menjadi [lat, lng] untuk Leaflet
-                    coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                } else {
-                    // Jika gagal ditarik garis lurus saja
-                    coords = [[origin.lat, origin.lng], [dest.lat, dest.lng]];
-                }
-
-                let activePath = [];
-                let pendingPath = [];
-                let truckPos = origin;
-
-                // Logika Posisi Truk & Warna Garis
-                if (status === 'pending' || status === 'processing' || status === 'cancelled') {
-                    // Masih digudang
-                    truckPos = origin;
-                    pendingPath = coords; // Semua jalan masih warna abu-abu
-                } else if (status === 'shipped') {
-                    // Sedang di jalan (Kita taruh posisi truk pas di titik TENGAH rute jalan raya)
-                    const midPoint = Math.floor(coords.length / 2);
-                    truckPos = { lat: coords[midPoint][0], lng: coords[midPoint][1] };
+            // Jika koordinat kosong (null), cari koordinat kotanya secara live via API
+            if (destLat === null || destLng === null) {
+                try {
+                    const searchRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(fallbackCity + ', Indonesia')}`);
+                    const searchData = await searchRes.json();
                     
-                    activePath = coords.slice(0, midPoint + 1); // Jalan yang sudah dilalui warna Biru
-                    pendingPath = coords.slice(midPoint);       // Sisa jalan warna Abu-abu putus-putus
-                } else if (status === 'completed') {
-                    // Sudah sampai
-                    truckPos = dest;
-                    activePath = coords; // Semua jalan diwarnai Biru
+                    if (searchData.length > 0) {
+                        destLat = parseFloat(searchData[0].lat);
+                        destLng = parseFloat(searchData[0].lon);
+                    } else {
+                        // Jika kota tidak ketemu, pakai titik default Jakarta
+                        destLat = -6.2088;
+                        destLng = 106.8456;
+                    }
+                } catch (e) {
+                    destLat = -6.2088;
+                    destLng = 106.8456;
                 }
-
-                // Menggambar Garis Rute di Peta
-                if (activePath.length > 0) {
-                    L.polyline(activePath, { color: '#2563eb', weight: 5, opacity: 0.9 }).addTo(map);
-                }
-                if (pendingPath.length > 0) {
-                    L.polyline(pendingPath, { color: '#6b7280', weight: 4, opacity: 0.6, dashArray: '8 8' }).addTo(map);
-                }
-
-                // Memasang Marker
-                L.marker([origin.lat, origin.lng], { icon: makeIcon('🏭') }).addTo(map); // Gudang
-                L.marker([dest.lat, dest.lng], { icon: makeIcon('📍') }).addTo(map);     // Rumah
-                
-                // Menampilkan ikon truk jika sedang dikirim atau diproses
-                if (status !== 'cancelled' && status !== 'completed') {
-                    L.marker([truckPos.lat, truckPos.lng], { icon: makeIcon('🚛', true), zIndexOffset: 1000 }).addTo(map);
-                }
-
-                // Sesuaikan kamera peta agar mencakup seluruh rute
-                map.fitBounds(coords, { padding: [50, 50] });
-
-            } catch (error) {
-                console.error('Gagal mengambil rute:', error);
+            } else {
+                // Pastikan tipe datanya angka Float
+                destLat = parseFloat(destLat);
+                destLng = parseFloat(destLng);
             }
+
+            // Titik awal Gudang NexRig (Semarang)
+            const origin = { lat: -6.9932, lng: 110.4229 };
+            const dest = { lat: destLat, lng: destLng };
+
+            const map = L.map('deliveryMap', {
+                zoomControl: true,
+                attributionControl: false,
+                scrollWheelZoom: true,
+                dragging: true,
+            });
+            
+            // Memindahkan posisi tombol zoom ke kanan bawah
+            map.zoomControl.setPosition('bottomright');
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+            // Fungsi pembuat icon HTML marker
+            function makeIcon(emoji, isTruck = false) {
+                const bg = isTruck ? '#2563eb' : '#111';
+                const border = isTruck ? '#60a5fa' : '#374151';
+                const extraClass = isTruck ? 'truck-pulse' : '';
+                return L.divIcon({
+                    className: '',
+                    html: `<div class="${extraClass}" style="background:${bg};border:2px solid ${border};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;">${emoji}</div>`,
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18],
+                });
+            }
+
+            // Ambil rute asli via jalan raya (OSRM public API - GeoJSON)
+            async function drawRoute() {
+                const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson`;
+                
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    
+                    let coords = [];
+                    if (data.code === 'Ok' && data.routes.length > 0) {
+                        // OSRM mengirim format [lng, lat], kita balik menjadi [lat, lng] untuk Leaflet
+                        coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    } else {
+                        // Jika gagal ditarik garis lurus saja
+                        coords = [[origin.lat, origin.lng], [dest.lat, dest.lng]];
+                    }
+
+                    let activePath = [];
+                    let pendingPath = [];
+                    let truckPos = origin;
+
+                    // Logika Posisi Truk & Warna Garis
+                    if (status === 'pending' || status === 'processing' || status === 'cancelled') {
+                        truckPos = origin;
+                        pendingPath = coords; // Semua jalan abu-abu
+                    } else if (status === 'shipped') {
+                        const midPoint = Math.floor(coords.length / 2);
+                        truckPos = { lat: coords[midPoint][0], lng: coords[midPoint][1] };
+                        activePath = coords.slice(0, midPoint + 1); // Jalan yang sudah dilalui warna Biru
+                        pendingPath = coords.slice(midPoint);       // Sisa jalan warna Abu-abu
+                    } else if (status === 'completed') {
+                        truckPos = dest;
+                        activePath = coords; // Semua jalan diwarnai Biru
+                    }
+
+                    // Menggambar Garis Rute di Peta
+                    if (activePath.length > 0) {
+                        L.polyline(activePath, { color: '#2563eb', weight: 5, opacity: 0.9 }).addTo(map);
+                    }
+                    if (pendingPath.length > 0) {
+                        L.polyline(pendingPath, { color: '#6b7280', weight: 4, opacity: 0.6, dashArray: '8 8' }).addTo(map);
+                    }
+
+                    // Memasang Marker
+                    L.marker([origin.lat, origin.lng], { icon: makeIcon('🏭') }).addTo(map); // Gudang
+                    L.marker([dest.lat, dest.lng], { icon: makeIcon('📍') }).addTo(map);     // Rumah
+                    
+                    // Menampilkan ikon truk
+                    if (status !== 'cancelled' && status !== 'completed') {
+                        L.marker([truckPos.lat, truckPos.lng], { icon: makeIcon('🚛', true), zIndexOffset: 1000 }).addTo(map);
+                    }
+
+                    // Sesuaikan kamera peta agar mencakup seluruh rute
+                    map.fitBounds(coords, { padding: [50, 50] });
+
+                } catch (error) {
+                    console.error('Gagal mengambil rute:', error);
+                }
+            }
+
+            drawRoute();
         }
 
-        drawRoute();
+        // PANGGIL FUNGSI MAP
+        initMap();
     });
 </script>
+
+{{-- Dark popup overrides --}}
+<style>
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: transparent !important; box-shadow: none !important; padding: 0 !important; }
+    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-dark-popup .leaflet-popup-content-wrapper { background: transparent; }
+    .leaflet-tooltip { background: #111 !important; border: 1px solid #374151 !important; color: #e5e7eb !important; font-size: 11px !important; font-weight: bold !important; border-radius: 6px !important; padding: 4px 10px !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important; }
+    .leaflet-tooltip-bottom::before { border-bottom-color: #374151 !important; }
+</style>
 @endsection
