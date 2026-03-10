@@ -51,7 +51,9 @@ class ProductImage extends Model
 
     public function getSrcAttribute(): string
     {
-        if (!$this->image_url) return 'https://placehold.co/200'; // Fallback jika null
+        if (!$this->image_url) {
+            return 'https://placehold.co/200'; // Fallback jika null
+        }
 
         if (strpos($this->image_url, 'http') === 0) {
             return $this->image_url;

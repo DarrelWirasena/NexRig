@@ -184,7 +184,7 @@
 
                 {{-- Intro --}}
                 <div class="bg-[#0a0a0a] border-l-4 border-blue-600 p-8 rounded-r-xl mb-12">
-                    <p class="!mb-0 text-lg text-white font-medium">
+                    <p class="mb-0! text-lg text-white font-medium">
                         Di NexRig, kami ingin Anda puas dengan pembelian Anda. Namun, sebagai penyedia PC rakitan (Custom PC), terdapat kebijakan khusus mengenai pengembalian barang karena sifat produk yang dipersonalisasi.
                     </p>
                 </div>
@@ -210,12 +210,12 @@
                         <div class="bg-[#0a0a0a] border border-white/10 p-6 rounded-xl">
                             <h4 class="text-white font-bold mb-2 uppercase">Kondisi Segel Utuh</h4>
                             <p class="text-3xl font-black text-blue-500 mb-2">No Fee</p>
-                            <p class="text-xs text-gray-400 !mb-0">Jika kotak PC/Komponen belum pernah dibuka sama sekali (Seal Utuh).</p>
+                            <p class="text-xs text-gray-400 mb-0!">Jika kotak PC/Komponen belum pernah dibuka sama sekali (Seal Utuh).</p>
                         </div>
                         <div class="bg-[#0a0a0a] border border-white/10 p-6 rounded-xl">
                             <h4 class="text-white font-bold mb-2 uppercase">Kondisi Terbuka (Open Box)</h4>
                             <p class="text-3xl font-black text-yellow-500 mb-2">15% Fee</p>
-                            <p class="text-xs text-gray-400 !mb-0">Dipotong 15% dari harga beli untuk biaya pemeriksaan ulang, pembersihan, dan penurunan nilai barang menjadi "Refurbished".</p>
+                            <p class="text-xs text-gray-400 mb-0!">Dipotong 15% dari harga beli untuk biaya pemeriksaan ulang, pembersihan, dan penurunan nilai barang menjadi "Refurbished".</p>
                         </div>
                     </div>
                     <p>Biaya pengiriman awal (shipping cost) tidak dapat dikembalikan. Biaya pengiriman balik ke gudang NexRig ditanggung oleh pembeli.</p>
@@ -227,7 +227,7 @@
                     <p>Produk berikut bersifat final dan <strong>tidak dapat dikembalikan</strong> atau ditukar:</p>
 
                     <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-xl">
-                        <ul class="!mb-0 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                        <ul class="mb-0! grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                             <li class="flex items-center gap-3 text-gray-300">
                                 <span class="material-symbols-outlined text-red-500">block</span>
                                 Software yang sudah diaktivasi (Windows Key, Office).
@@ -267,21 +267,21 @@
                             <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">1</div>
                             <div>
                                 <h4 class="text-white font-bold mb-1">Hubungi Support</h4>
-                                <p class="text-gray-400 text-sm !mb-0">Buka halaman Support dan ajukan tiket "Return Request". Sertakan nomor pesanan.</p>
+                                <p class="text-gray-400 text-sm mb-0!">Buka halaman Support dan ajukan tiket "Return Request". Sertakan nomor pesanan.</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
                             <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">2</div>
                             <div>
                                 <h4 class="text-white font-bold mb-1">Dapatkan Label RMA</h4>
-                                <p class="text-gray-400 text-sm !mb-0">Jika disetujui, kami akan mengirimkan dokumen RMA. Cetak dan tempel di paket.</p>
+                                <p class="text-gray-400 text-sm mb-0!">Jika disetujui, kami akan mengirimkan dokumen RMA. Cetak dan tempel di paket.</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
                             <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">3</div>
                             <div>
                                 <h4 class="text-white font-bold mb-1">Inspeksi & Refund</h4>
-                                <p class="text-gray-400 text-sm !mb-0">Setelah barang sampai di gudang, kami butuh 3-5 hari kerja untuk inspeksi. Jika lolos, dana akan dikembalikan dalam 7-14 hari kerja tergantung bank Anda.</p>
+                                <p class="text-gray-400 text-sm mb-0!">Setelah barang sampai di gudang, kami butuh 3-5 hari kerja untuk inspeksi. Jika lolos, dana akan dikembalikan dalam 7-14 hari kerja tergantung bank Anda.</p>
                             </div>
                         </div>
                     </div>
