@@ -23,8 +23,7 @@ class Order extends Model
         'shipping_postal_code',
         'shipping_latitude',
         'shipping_longitude',
-        'payment_type',     
-        'midtrans_order_id'
+        'payment_type',
     ];
 
     protected $casts = [
