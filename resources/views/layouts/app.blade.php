@@ -2,6 +2,11 @@
 <html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
+    <link rel="shortcut icon"         href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
+
+
     {{-- 2. ASSETS (Vite) --}}
     {{-- Memanggil app.css dan app.js yang sudah kita bersihkan --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])

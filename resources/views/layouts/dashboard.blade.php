@@ -7,7 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- LOGIKA: Jika ada variabel $title, pakai itu. Jika tidak, pakai default 'NexRig' --}}
     <title>{{ $title ?? config('app.name', 'NexRig') }}</title>
-
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
+    <link rel="shortcut icon"         href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
     {{-- Fonts & Icons --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
