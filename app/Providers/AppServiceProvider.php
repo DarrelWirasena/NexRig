@@ -22,19 +22,38 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * Check if application is running in production environment
+     * Considers config app.env and proxy headers (Railway, Cloudflare)
+     */
+    private function isProduction(): bool
+    {
+        if (config('app.env') === 'production') {
+            return true;
+        }
+
+        // Check for HTTPS indicator from reverse proxies (Railway, Cloudflare, etc)
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            return true;
+        }
+
+        // Check native HTTPS
+        return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    }
+
+    /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        // Force HTTPS in production
-        if (config('app.env') === 'production') {
+        // Force HTTPS in production or when behind a proxy with HTTPS
+        if ($this->isProduction()) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
         // Register Cloudinary Driver
         Storage::extend('cloudinary', function ($config) {
             $cloudinaryAdapter = new CloudinaryAdapter($config);
             $filesystem = new Filesystem($cloudinaryAdapter);
-            
+
             // Gunakan custom CloudinaryFilesystemAdapter
             return new CloudinaryFilesystemAdapter($filesystem, $cloudinaryAdapter, $config);
         });
