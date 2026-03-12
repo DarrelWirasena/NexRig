@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\CartItem;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -13,45 +14,17 @@ use Midtrans\Snap;
 
 class CheckoutController extends Controller
 {
-    private function getCartData()
+    protected CartService $cartService;
+
+    public function __construct(CartService $cartService)
     {
-        $cartItems = [];
-
-        if (Auth::check()) {
-            $dbItems = CartItem::where('user_id', Auth::id())
-                ->with(['product.images'])
-                ->get();
-
-            foreach ($dbItems as $item) {
-                if (!$item->product) continue;
-                $cartItems[] = (object) [
-                    'product_id' => $item->product_id,
-                    'name'       => $item->product->name,
-                    'price'      => $item->product->price,
-                    'quantity'   => $item->quantity,
-                    'image'      => $item->product->images->first()->src ?? 'https://placehold.co/100'
-                ];
-            }
-        } else {
-            $sessionCart = session()->get('cart', []);
-            foreach ($sessionCart as $productId => $details) {
-                $cartItems[] = (object) [
-                    'product_id' => $productId,
-                    'name'       => $details['name'],
-                    'price'      => $details['price'],
-                    'quantity'   => $details['quantity'],
-                    'image'      => $details['image']
-                ];
-            }
-        }
-
-        return $cartItems;
+        $this->cartService = $cartService;
     }
 
     public function index()
     {
         $title = 'Checkout';
-        $cartItems = $this->getCartData();
+        $cartItems = $this->cartService->getCartData();
 
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
@@ -93,7 +66,7 @@ class CheckoutController extends Controller
         // 2. LOGIKA PENYIMPANAN ALAMAT
         // Cek apakah form mengirimkan input 'is_default' (User mengisi komponen alamat baru)
         if ($request->has('is_default') && $request->is_default == 1) {
-            
+
             // Validasi khusus untuk form alamat baru
             $request->validate([
                 'recipient_name' => 'required|string',
@@ -121,7 +94,6 @@ class CheckoutController extends Controller
                 'longitude'      => $request->longitude,
                 'is_default'     => true, // Jadikan otomatis sebagai alamat utama
             ]);
-
         } else {
             // Jika user tidak mengisi form baru, ambil alamat utamanya dari database
             $address = $user->addresses()->where('is_default', true)->first()
@@ -134,7 +106,7 @@ class CheckoutController extends Controller
         }
 
         // 3. KALKULASI KERANJANG
-        $cartItems = $this->getCartData();
+        $cartItems = $this->cartService->getCartData();
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Cart is empty');
         }
@@ -161,7 +133,7 @@ class CheckoutController extends Controller
                 'shipping_name'        => $address->recipient_name,
                 'shipping_phone'       => $address->phone,
                 'shipping_address'     => $address->full_address,
-                'shipping_city'        => $address->city, 
+                'shipping_city'        => $address->city,
                 'shipping_postal_code' => $address->postal_code,
                 'shipping_latitude'    => $address->latitude,
                 'shipping_longitude'   => $address->longitude,
@@ -210,7 +182,6 @@ class CheckoutController extends Controller
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
-            
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gateway Error: ' . $e->getMessage());

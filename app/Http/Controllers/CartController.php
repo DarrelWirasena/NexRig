@@ -4,61 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\CartItem;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    // =================================================================
-    // HELPER: Ambil & Format Data Cart (Standardized Object)
-    // =================================================================
-    private function getCartData()
+    protected CartService $cartService;
+
+    public function __construct(CartService $cartService)
     {
-        $cartItems = [];
-
-        if (Auth::check()) {
-            // A. LOGGED IN USER (Ambil dari Database)
-            // Load relasi product, images, dan category agar tidak N+1 Query
-            $dbItems = CartItem::where('user_id', Auth::id())
-                ->with(['product.images', 'product.series.category'])
-                ->get();
-
-            foreach ($dbItems as $item) {
-                // Self-Healing: Hapus item jika produknya sudah dihapus dari DB toko
-                if (!$item->product) {
-                    $item->delete();
-                    continue;
-                }
-
-                // Standardisasi ke Object
-                $cartItems[] = (object) [
-                    'row_id' => $item->product_id, // Gunakan Product ID sebagai key unik
-                    'name' => $item->product->name,
-                    'price' => $item->product->price,
-                    // Gunakan accessor src jika ada, atau fallback manual
-                    'image' => $item->product->images->first()->src ?? 'https://placehold.co/100',
-                    'quantity' => $item->quantity,
-                    'category' => $item->product->series->category->name ?? 'Component'
-                ];
-            }
-        } else {
-            // B. GUEST (Ambil dari Session)
-            $sessionCart = session()->get('cart', []);
-
-            foreach ($sessionCart as $productId => $details) {
-                // Standardisasi ke Object (agar sama dengan DB logic)
-                $cartItems[] = (object) [
-                    'row_id' => $productId,
-                    'name' => $details['name'],
-                    'price' => $details['price'],
-                    'image' => $details['image'], // Session sudah simpan URL string
-                    'quantity' => $details['quantity'],
-                    'category' => $details['category'] ?? 'Component'
-                ];
-            }
-        }
-
-        return $cartItems;
+        $this->cartService = $cartService;
     }
 
     // =================================================================
@@ -67,7 +23,7 @@ class CartController extends Controller
     public function index()
     {
         $title = 'Your Cart';
-        $cartItems = $this->getCartData();
+        $cartItems = $this->cartService->getCartData();
 
         $total = 0;
         foreach ($cartItems as $item) {
@@ -215,7 +171,6 @@ class CartController extends Controller
     public function destroy(Request $request, $id)
     {
         if (Auth::check()) {
-            // CartItem::where('user_id', Auth::id())->where('product_id', $id)->delete();
             $deleted = CartItem::where('user_id', Auth::id())
                 ->where('product_id', $id)
                 ->delete();
@@ -251,7 +206,7 @@ class CartController extends Controller
     private function sendCartResponse($message, $updatedItemId = null)
     {
         // 1. Ambil data terbaru yang SUDAH STANDARD (Array of Objects)
-        $cartItems = $this->getCartData();
+        $cartItems = $this->cartService->getCartData();
 
         // 2. Hitung Total & Qty Item Terkait
         $total = 0;
