@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'quantity',
+        'price'
+    ];
 
     // Relasi: Item milik satu Order
     public function order()

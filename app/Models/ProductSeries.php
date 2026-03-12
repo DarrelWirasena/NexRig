@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductSeries extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'category_id',
+        'name',
+        'is_active',
+        'slug',
+        'description',
+        'banner_image'
+    ];
 
     protected static function booted()
     {

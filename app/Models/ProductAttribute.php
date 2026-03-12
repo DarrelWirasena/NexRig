@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductAttribute extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'product_id',
+        'name',
+        'value'
+    ];
 
     protected static function booted()
     {

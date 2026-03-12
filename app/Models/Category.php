@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'is_active'
+    ];
 
     protected static function booted()
     {
@@ -46,12 +50,12 @@ class Category extends Model
     {
         // Ambil semua series id dulu
         $seriesIds = $this->series()->pluck('id');
-        
+
         // Update series
-         $this->series()->update(['is_active' => false]);
-        
+        $this->series()->update(['is_active' => false]);
+
         // Update produk menggunakan seriesIds (hindari ambiguous column)
-       Product::whereIn('product_series_id', $seriesIds)->update(['is_active' => false]);
+        Product::whereIn('product_series_id', $seriesIds)->update(['is_active' => false]);
 
         $this->update(['is_active' => false]);
     }

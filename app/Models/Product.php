@@ -14,7 +14,16 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'product_series_id',
+        'name',
+        'slug',
+        'tier',
+        'price',
+        'short_description',
+        'description',
+        'is_active'
+    ];
 
     // 1. Relasi ke Series (Orang Tua Langsung)
     public function series()
@@ -36,16 +45,17 @@ class Product extends Model
     }
 
     // 4. Relasi Komponen (Many-to-Many)
-    public function components() {
+    public function components()
+    {
         return $this->belongsToMany(Component::class, 'product_components')
-                    ->withPivot('quantity');
+            ->withPivot('quantity');
     }
 
     // 5. Relasi Benchmark Game (Many-to-Many)
     public function benchmarks()
-{
-    return $this->hasMany(Benchmark::class);
-}
+    {
+        return $this->hasMany(Benchmark::class);
+    }
     // 6. Relasi Kegunaan yang Dituju (Many-to-Many)
     public function intendedUses()
     {
@@ -53,12 +63,12 @@ class Product extends Model
     }
 
     // 7. Relasi Spesifikasi Tambahan
-   public function attributes()
-{
-    // Ini menghubungkan Produk ke banyak ProductAttribute
-    return $this->hasMany(ProductAttribute::class);
-}
-protected static function booted()
+    public function attributes()
+    {
+        // Ini menghubungkan Produk ke banyak ProductAttribute
+        return $this->hasMany(ProductAttribute::class);
+    }
+    protected static function booted()
     {
         static::saved(function () {
             Cache::forget('navbar_categories');
@@ -79,5 +89,4 @@ protected static function booted()
     {
         return $this->hasMany(OrderItem::class);
     }
-
 }
