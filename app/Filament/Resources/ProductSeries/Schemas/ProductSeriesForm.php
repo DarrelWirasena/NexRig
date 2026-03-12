@@ -36,7 +36,16 @@ class ProductSeriesForm
                             $url = CloudinaryHelper::upload($state, 'product-series');
                             $set('banner_image', $url);
                         } catch (\Exception $e) {
-                            //
+                            \Log::error('Cloudinary upload failed for product series banner', [
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Upload Failed')
+                                ->body('Could not upload banner image to cloud storage: ' . $e->getMessage())
+                                ->send();
                         }
                     })
                     ->dehydrated(false),
@@ -44,7 +53,7 @@ class ProductSeriesForm
                 TextInput::make('banner_image')
                     ->label('Banner Image URL (from Cloudinary)')
                     ->readOnly()
-                    ->hidden(fn ($get) => !$get('banner_image')),
+                    ->hidden(fn($get) => !$get('banner_image')),
             ]);
     }
 }

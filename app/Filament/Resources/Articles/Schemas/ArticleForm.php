@@ -36,7 +36,16 @@ class ArticleForm
                             $url = CloudinaryHelper::upload($state, 'articles');
                             $set('image_url', $url);
                         } catch (\Exception $e) {
-                            //
+                            \Log::error('Cloudinary upload failed for article image', [
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Upload Failed')
+                                ->body('Could not upload image to cloud storage: ' . $e->getMessage())
+                                ->send();
                         }
                     })
                     ->dehydrated(false),
@@ -44,7 +53,7 @@ class ArticleForm
                 TextInput::make('image_url')
                     ->label('Image URL (from Cloudinary)')
                     ->readOnly()
-                    ->hidden(fn ($get) => !$get('image_url')),
+                    ->hidden(fn($get) => !$get('image_url')),
 
                 Textarea::make('excerpt')
                     ->columnSpanFull(),

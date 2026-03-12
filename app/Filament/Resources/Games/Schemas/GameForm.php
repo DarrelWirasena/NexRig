@@ -28,7 +28,16 @@ class GameForm
                             $url = CloudinaryHelper::upload($state, 'games');
                             $set('image_url', $url);
                         } catch (\Exception $e) {
-                            // handle error jika perlu
+                            \Log::error('Cloudinary upload failed for game image', [
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Upload Failed')
+                                ->body('Could not upload image to cloud storage: ' . $e->getMessage())
+                                ->send();
                         }
                     })
                     ->dehydrated(false),
@@ -36,7 +45,7 @@ class GameForm
                 TextInput::make('image_url')
                     ->label('Image URL (from Cloudinary)')
                     ->readOnly()
-                    ->hidden(fn ($get) => !$get('image_url')),
+                    ->hidden(fn($get) => !$get('image_url')),
             ]);
     }
 }

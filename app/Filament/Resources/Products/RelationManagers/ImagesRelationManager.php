@@ -44,7 +44,16 @@ class ImagesRelationManager extends RelationManager
                             $url = CloudinaryHelper::upload($state, 'products');
                             $set('image_url', $url);
                         } catch (\Exception $e) {
-                            //
+                            \Log::error('Cloudinary upload failed for product image', [
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Upload Failed')
+                                ->body('Could not upload image to cloud storage: ' . $e->getMessage())
+                                ->send();
                         }
                     })
                     ->dehydrated(false),
@@ -52,7 +61,7 @@ class ImagesRelationManager extends RelationManager
                 TextInput::make('image_url')
                     ->label('Image URL (from Cloudinary)')
                     ->readOnly()
-                    ->hidden(fn ($get) => !$get('image_url')),
+                    ->hidden(fn($get) => !$get('image_url')),
 
                 Toggle::make('is_primary')
                     ->label('Set as Primary Image')
