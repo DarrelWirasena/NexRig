@@ -181,7 +181,52 @@
             });
         });
     </script>
+<footer class="bg-[#050505] text-gray-400 font-sans border-t border-white/10">
+    </footer>
 
+<button id="backToTopBtn" onclick="scrollToTop()" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-blue-500 hover:scale-110 z-50">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+    </svg>
+</button>
+
+<script>
+    // 1. Script untuk Menu Footer Mobile (Accordion)
+    function toggleFooterMenu(menuId, iconId) {
+        if (window.innerWidth >= 768) return;
+        const menu = document.getElementById(menuId);
+        const icon = document.getElementById(iconId);
+
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            menu.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+
+    // 2. Script untuk Tombol Back to Top
+    const backToTopBtn = document.getElementById("backToTopBtn");
+
+    window.addEventListener("scroll", () => {
+        // Tombol akan melayang muncul setelah user scroll 300px ke bawah
+        if (window.scrollY > 300) { 
+            backToTopBtn.classList.remove("opacity-0", "invisible", "translate-y-4");
+            backToTopBtn.classList.add("opacity-100", "visible", "translate-y-0");
+        } else {
+            backToTopBtn.classList.remove("opacity-100", "visible", "translate-y-0");
+            backToTopBtn.classList.add("opacity-0", "invisible", "translate-y-4");
+        }
+    });
+
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+</script>
     {{-- Stack Scripts (Untuk script halaman spesifik) --}}
     @stack('scripts')
 </body>
