@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\CartItem;
+use App\Models\Product;
 use App\Services\CartService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,226 +18,225 @@ class CartController extends Controller
         $this->cartService = $cartService;
     }
 
-    // =================================================================
-    // 1. INDEX (View Page)
-    // =================================================================
     public function index()
     {
-        $title = 'Your Cart';
         $cartItems = $this->cartService->getCartData();
+        $totals    = $this->calculateTotals($cartItems);
 
-        $total = 0;
-        foreach ($cartItems as $item) {
-            $total += $item->price * $item->quantity;
-        }
-
-        $tax = $total * config('shop.tax_rate');
-        $grandTotal = $total + $tax;
-
-        return view('cart.index', [
-            'cart'       => $cartItems,
-            'total'      => $total,
-            'tax'        => $tax,
-            'grandTotal' => $grandTotal,
-            'title'      => $title
-        ]);
+        return $this->view('cart.index', 'Your Cart', array_merge(
+            ['cart' => $cartItems],
+            $totals
+        ));
     }
 
-    // =================================================================
-    // 2. STORE (Add to Cart)
-    // =================================================================
-    public function store(Request $request, $id)
+    public function store(Request $request, int $id)
     {
-        // Load relasi lengkap untuk persiapan simpan session
         $product = Product::with(['images', 'series.category'])->findOrFail($id);
+        $qty     = (int) $request->input('quantity', 1);
 
-        $qty = (int) $request->input('quantity', 1);
+        // ── Validasi stok sebelum add to cart ─────────────────────────────────
+        if ($product->track_stock) {
+            // Hitung qty yang sudah ada di cart saat ini
+            $currentQty = 0;
+
+            if (Auth::check()) {
+                $existing   = CartItem::where('user_id', Auth::id())
+                    ->where('product_id', $id)->first();
+                $currentQty = $existing?->quantity ?? 0;
+            } else {
+                $cart       = session()->get('cart', []);
+                $currentQty = $cart[$id]['quantity'] ?? 0;
+            }
+
+            $totalQty = $currentQty + $qty;
+
+            if ($product->stock <= 0) {
+                $msg = 'Stok ' . $product->name . ' habis.';
+                return $request->wantsJson() || $request->ajax()
+                    ? $this->errorResponse($msg, 422)
+                    : back()->with('error', $msg);
+            }
+
+            if ($totalQty > $product->stock) {
+                $sisa = $product->stock - $currentQty;
+                $msg  = $sisa <= 0
+                    ? 'Kamu sudah menambahkan semua stok yang tersedia (' . $product->stock . ' unit).'
+                    : 'Hanya bisa menambah ' . $sisa . ' lagi. Stok tersisa: ' . $product->stock . ' unit.';
+
+                return $request->wantsJson() || $request->ajax()
+                    ? $this->errorResponse($msg, 422)
+                    : back()->with('error', $msg);
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         if (Auth::check()) {
-            // --- DB LOGIC ---
             $cartItem = CartItem::where('user_id', Auth::id())
-                ->where('product_id', $id)
-                ->first();
+                ->where('product_id', $id)->first();
 
             if ($cartItem) {
-                $cartItem->quantity += $qty;
-                $cartItem->save();
+                $cartItem->increment('quantity', $qty);
             } else {
                 CartItem::create([
-                    'user_id' => Auth::id(),
+                    'user_id'    => Auth::id(),
                     'product_id' => $id,
-                    'quantity' => $qty
+                    'quantity'   => $qty,
                 ]);
             }
         } else {
-            // --- SESSION LOGIC ---
-            $cart = session()->get('cart', []);
+            $cart   = session()->get('cart', []);
+            $imgSrc = $product->images->first()->src ?? 'https://placehold.co/100';
 
-            // Siapkan URL Gambar (String)
-            $imgSrc = 'https://placehold.co/100';
-            if ($product->images->count() > 0) {
-                $imgSrc = $product->images->first()->src;
-            }
-
-            // Jika item belum ada, buat baru
             if (!isset($cart[$id])) {
                 $cart[$id] = [
-                    "name" => $product->name,
-                    "quantity" => 0,
-                    "price" => $product->price,
-                    "image" => $imgSrc,
-                    "id" => $id,
-                    // PENTING: Category wajib ada untuk session
-                    "category" => $product->series->category->name ?? 'Component'
+                    'name'     => $product->name,
+                    'quantity' => 0,
+                    'price'    => $product->price,
+                    'image'    => $imgSrc,
+                    'id'       => $id,
+                    'category' => $product->series->category->name ?? 'Component',
                 ];
             }
 
-            // Tambah quantity
             $cart[$id]['quantity'] += $qty;
             session()->put('cart', $cart);
         }
 
-        // Response AJAX
         if ($request->wantsJson() || $request->ajax()) {
-            return $this->sendCartResponse('Product added successfully!', $id);
+            return $this->buildCartJsonResponse('Product added successfully!', $id);
         }
 
-        return redirect()->back()->with('success', 'Product added successfully!');
+        return back()->with('success', 'Product added successfully!');
     }
 
-    // =================================================================
-    // 3. UPDATE (Change Quantity)
-    // =================================================================
     public function update(Request $request)
     {
-        // Validasi
         if (!$request->id) {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'Product ID required'], 400);
-            }
-            return redirect()->back()->with('error', 'Invalid Request');
+            return $request->wantsJson() || $request->ajax()
+                ? $this->errorResponse('Product ID required', 400)
+                : $this->redirectError('Invalid Request');
         }
 
-        if (!isset($request->change) && !isset($request->quantity)) {
-            return redirect()->back();
-        }
+        $id      = $request->id;
+        $product = Product::find($id);
 
-        $id = $request->id;
-        $targetQty = 1;
-
-        // --- UPDATE LOGIC ---
         if (Auth::check()) {
-            $cartItem = CartItem::where('user_id', Auth::id())->where('product_id', $id)->first();
-            if ($cartItem) {
-                // Hitung Target Quantity
-                if (isset($request->quantity)) {
-                    $targetQty = (int) $request->quantity;
-                } elseif (isset($request->change)) {
-                    $targetQty = $cartItem->quantity + (int) $request->change;
-                }
+            $cartItem = CartItem::where('user_id', Auth::id())
+                ->where('product_id', $id)->first();
 
-                // Simpan (Min 1)
+            if ($cartItem) {
+                $targetQty = isset($request->quantity)
+                    ? (int) $request->quantity
+                    : $cartItem->quantity + (int) ($request->change ?? 0);
+
                 $targetQty = max(1, $targetQty);
-                $cartItem->quantity = $targetQty;
-                $cartItem->save();
+
+                // ── Validasi stok saat update quantity ────────────────────────
+                if ($product && $product->track_stock && $targetQty > $product->stock) {
+                    $msg = 'Stok ' . $product->name . ' hanya tersisa ' . $product->stock . ' unit.';
+                    return $request->wantsJson() || $request->ajax()
+                        ? $this->errorResponse($msg, 422)
+                        : back()->with('error', $msg);
+                }
+                // ─────────────────────────────────────────────────────────────
+
+                $cartItem->update(['quantity' => $targetQty]);
             }
         } else {
             $cart = session()->get('cart', []);
-            if (isset($cart[$id])) {
-                // Hitung Target Quantity
-                if (isset($request->quantity)) {
-                    $targetQty = (int) $request->quantity;
-                } elseif (isset($request->change)) {
-                    $targetQty = $cart[$id]['quantity'] + (int) $request->change;
-                }
 
-                // Simpan (Min 1)
+            if (isset($cart[$id])) {
+                $targetQty = isset($request->quantity)
+                    ? (int) $request->quantity
+                    : $cart[$id]['quantity'] + (int) ($request->change ?? 0);
+
                 $targetQty = max(1, $targetQty);
+
+                // ── Validasi stok saat update quantity (guest) ────────────────
+                if ($product && $product->track_stock && $targetQty > $product->stock) {
+                    $msg = 'Stok ' . $product->name . ' hanya tersisa ' . $product->stock . ' unit.';
+                    return $request->wantsJson() || $request->ajax()
+                        ? $this->errorResponse($msg, 422)
+                        : back()->with('error', $msg);
+                }
+                // ─────────────────────────────────────────────────────────────
+
                 $cart[$id]['quantity'] = $targetQty;
                 session()->put('cart', $cart);
             }
         }
 
-        // Response
         if ($request->wantsJson() || $request->ajax()) {
-            return $this->sendCartResponse('Cart updated', $id);
+            return $this->buildCartJsonResponse('Cart updated', $id);
         }
 
-        return redirect()->back()->with('success', 'Cart updated');
+        return back()->with('success', 'Cart updated');
     }
 
-    // =================================================================
-    // 4. DESTROY (Remove Item)
-    // =================================================================
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id)
     {
         if (Auth::check()) {
             $deleted = CartItem::where('user_id', Auth::id())
-                ->where('product_id', $id)
-                ->delete();
+                ->where('product_id', $id)->delete();
 
-            if (!$deleted) {
-                $response = $this->sendCartResponse('Item not found');
-                $data = $response->getData(true);
-                $data['success'] = false;
-                $data['removedId'] = $id;
-                return response()->json($data, 404);
+            if (!$deleted && ($request->wantsJson() || $request->ajax())) {
+                return $this->errorResponse('Item not found', 404);
             }
         } else {
             $cart = session()->get('cart', []);
-            if (isset($cart[$id])) {
-                unset($cart[$id]);
-                session()->put('cart', $cart);
-            }
+            unset($cart[$id]);
+            session()->put('cart', $cart);
         }
 
         if ($request->wantsJson() || $request->ajax()) {
-            $response = $this->sendCartResponse('Item removed from cart');
-            $data = $response->getData(true);
-            $data['removedId'] = $id;
+            $response                  = $this->buildCartJsonResponse('Item removed from cart');
+            $data                      = $response->getData(true);
+            $data['data']['removedId'] = $id;
             return response()->json($data);
         }
 
-        return redirect()->back()->with('success', 'Item removed');
+        return back()->with('success', 'Item removed');
     }
 
-    // =================================================================
-    // HELPER: Generate JSON Response Standard
-    // =================================================================
-    private function sendCartResponse($message, $updatedItemId = null)
-    {
-        // 1. Ambil data terbaru yang SUDAH STANDARD (Array of Objects)
-        $cartItems = $this->cartService->getCartData();
+    // ─────────────────────────────────────────────────────────────────────────
+    // Private Helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
-        // 2. Hitung Total & Qty Item Terkait
-        $total = 0;
-        $totalQty = 0;
+    private function calculateTotals(array $cartItems): array
+    {
+        $total      = array_reduce($cartItems, fn($carry, $item) => $carry + ($item->price * $item->quantity), 0);
+        $tax        = $total * config('shop.tax_rate');
+        $grandTotal = $total + $tax;
+
+        return compact('total', 'tax', 'grandTotal');
+    }
+
+    private function buildCartJsonResponse(string $message, $updatedItemId = null): JsonResponse
+    {
+        $cartItems      = $this->cartService->getCartData();
+        $totals         = $this->calculateTotals($cartItems);
+        $totalQty       = array_sum(array_column((array) $cartItems, 'quantity'));
         $updatedItemQty = 0;
 
         foreach ($cartItems as $item) {
-            $total += $item->price * $item->quantity;
-            $totalQty += $item->quantity;
-
             if ($updatedItemId && $item->row_id == $updatedItemId) {
                 $updatedItemQty = $item->quantity;
             }
         }
 
-        $tax = $total * config('shop.tax_rate'); // PPN 11% (Contoh)
-        $grandTotal = $total + $tax;
-
-        // 3. Render View dengan data 'items' (Sesuai perbaikan view sebelumnya)
         $cartHtml = view('components.mini-cart-items', ['items' => $cartItems])->render();
 
         return response()->json([
             'success' => true,
             'message' => $message,
-            'cartHtml' => $cartHtml,
-            'cartCount' => $totalQty, // Jumlah total item (bukan jumlah jenis produk)
-            'subtotal' => 'Rp ' . number_format($total, 0, ',', '.'),
-            'tax' => 'Rp ' . number_format($tax, 0, ',', '.'),
-            'grand_total' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
-            'item_quantity' => $updatedItemQty
+            'data'    => [
+                'cartHtml'      => $cartHtml,
+                'cartCount'     => $totalQty,
+                'subtotal'      => 'Rp ' . number_format($totals['total'], 0, ',', '.'),
+                'tax'           => 'Rp ' . number_format($totals['tax'], 0, ',', '.'),
+                'grand_total'   => 'Rp ' . number_format($totals['grandTotal'], 0, ',', '.'),
+                'item_quantity' => $updatedItemQty,
+            ],
         ]);
     }
 }

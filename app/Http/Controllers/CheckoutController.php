@@ -23,23 +23,27 @@ class CheckoutController extends Controller
 
     public function index()
     {
-        $title = 'Checkout';
+        $title     = 'Checkout';
         $cartItems = $this->cartService->getCartData();
 
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $subtotal += $item->price * $item->quantity;
-        }
-        $tax        = $subtotal * config('shop.tax_rate');
-        $grandTotal = $subtotal + $tax;
-
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to checkout.');
         }
+
+        // ── Validasi stok di halaman checkout (tampilkan warning awal) ────────
+        $stockErrors = $this->cartService->validateStock();
+        if (!empty($stockErrors)) {
+            return redirect()->route('cart.index')
+                ->with('error', implode(' ', $stockErrors));
+        }
+
+        $subtotal = array_reduce($cartItems, fn($c, $i) => $c + $i->price * $i->quantity, 0);
+        $tax      = $subtotal * config('shop.tax_rate', 0.11);
+        $grandTotal = $subtotal + $tax;
 
         /** @var \App\Models\User $user */
         $user    = Auth::user();
@@ -58,16 +62,10 @@ class CheckoutController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 1. VALIDASI UMUM (Hanya jenis pembayaran yang wajib di awal)
-        $request->validate([
-            'payment_type' => 'required|string',
-        ]);
+        $request->validate(['payment_type' => 'required|string']);
 
-        // 2. LOGIKA PENYIMPANAN ALAMAT
-        // Cek apakah form mengirimkan input 'is_default' (User mengisi komponen alamat baru)
+        // ── Simpan / ambil alamat ─────────────────────────────────────────────
         if ($request->has('is_default') && $request->is_default == 1) {
-
-            // Validasi khusus untuk form alamat baru
             $request->validate([
                 'recipient_name' => 'required|string',
                 'phone'          => 'required|string',
@@ -79,7 +77,6 @@ class CheckoutController extends Controller
                 'postal_code'    => 'required|string',
             ]);
 
-            // Simpan alamat baru ke tabel addresses
             $address = $user->addresses()->create([
                 'label'          => $request->label ?? 'Home',
                 'recipient_name' => $request->recipient_name,
@@ -92,32 +89,34 @@ class CheckoutController extends Controller
                 'full_address'   => $request->full_address,
                 'latitude'       => $request->latitude,
                 'longitude'      => $request->longitude,
-                'is_default'     => true, // Jadikan otomatis sebagai alamat utama
+                'is_default'     => true,
             ]);
         } else {
-            // Jika user tidak mengisi form baru, ambil alamat utamanya dari database
             $address = $user->addresses()->where('is_default', true)->first()
                 ?? $user->addresses()->first();
         }
 
-        // Pastikan alamat ditemukan / berhasil dibuat
         if (!$address) {
             return back()->with('error', 'Valid shipping address is required.');
         }
 
-        // 3. KALKULASI KERANJANG
+        // ── Kalkulasi cart ────────────────────────────────────────────────────
         $cartItems = $this->cartService->getCartData();
+
         if (count($cartItems) == 0) {
             return redirect()->route('cart.index')->with('error', 'Cart is empty');
         }
 
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $subtotal += $item->price * $item->quantity;
+        // ── Validasi stok FINAL (double-check sebelum transaksi) ──────────────
+        $stockErrors = $this->cartService->validateStock();
+        if (!empty($stockErrors)) {
+            return back()->with('error', implode(' ', $stockErrors));
         }
+
+        $subtotal   = array_reduce($cartItems, fn($c, $i) => $c + $i->price * $i->quantity, 0);
         $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate', 0.11));
 
-        // 4. PROSES CHECKOUT & TRANSAKSI DATABASE
+        // ── Transaksi DB ──────────────────────────────────────────────────────
         DB::beginTransaction();
         try {
             $order = Order::create([
@@ -125,11 +124,7 @@ class CheckoutController extends Controller
                 'order_date'           => now(),
                 'total_price'          => $grandTotal,
                 'status'               => 'pending',
-
-                // Relasi ke tabel Address
                 'user_address_id'      => $address->id,
-
-                // Snapshot data pengiriman dari objek $address
                 'shipping_name'        => $address->recipient_name,
                 'shipping_phone'       => $address->phone,
                 'shipping_address'     => $address->full_address,
@@ -148,9 +143,12 @@ class CheckoutController extends Controller
                 ]);
             }
 
+            // ── Kurangi stok setelah order items tersimpan ────────────────────
+            $this->cartService->decrementStockForCart();
+
             DB::commit();
 
-            // 5. INTEGRASI MIDTRANS
+            // ── Integrasi Midtrans ─────────────────────────────────────────────
             Config::$serverKey    = config('midtrans.server_key');
             Config::$isProduction = config('midtrans.is_production');
             Config::$isSanitized  = true;
@@ -176,12 +174,16 @@ class CheckoutController extends Controller
             ];
 
             $snapToken = Snap::getSnapToken($params);
-
-            // Store Midtrans order ID in database
             $order->update(['midtrans_order_id' => $midtransOrderId]);
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
+
+        } catch (\RuntimeException $e) {
+            // RuntimeException dari decrementStock = stok habis di detik terakhir (race condition)
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gateway Error: ' . $e->getMessage());
