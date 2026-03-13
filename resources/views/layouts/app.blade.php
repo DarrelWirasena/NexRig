@@ -6,20 +6,15 @@
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
     <link rel="shortcut icon"         href="https://res.cloudinary.com/dwu1fbd69/image/upload/v1773198090/logonexrig_tryrac.png">
 
-
     {{-- 2. ASSETS (Vite) --}}
-    {{-- Memanggil app.css dan app.js yang sudah kita bersihkan --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>
-        {{-- Cek apakah ini halaman Home (URL '/') --}}
         @if(request()->is('/'))
         {{ config('app.name', 'NexRig') }} - {{ $title ?? 'The Ultimate Gaming Experience' }}
-
-        {{-- Jika bukan Home, pakai format standar (Nama Halaman di depan) --}}
         @else
         {{ $title ?? ucwords(str_replace(['-', '.'], ' ', Route::currentRouteName())) }} - {{ config('app.name', 'NexRig') }}
         @endif
@@ -32,7 +27,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
     @stack('styles')
 </head>
-{{-- GANTI overflow-x-hidden MENJADI overflow-x-clip --}}
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen flex flex-col
     {{ Route::is('login') || Route::is('register') ? '' : 'pt-20' }}">
@@ -62,7 +56,6 @@
     <x-mini-cart />
 
     {{-- 2. Video Overlay (Alpine.js Component) --}}
-    {{-- Logika JS-nya sudah ditangani Alpine, Style-nya sudah di app.css --}}
     <div x-data="{ open: false, videoUrl: '' }"
         x-on:open-video.window="open = true; videoUrl = $event.detail.url"
         x-on:keydown.escape.window="open = false; videoUrl = ''"
@@ -91,7 +84,6 @@
         </div>
     </div>
 
-    {{-- 3. Toast Notification --}}
     {{-- 3. Flash Message Data (Hidden Bridge to JS) --}}
     <div id="flash-messages"
         data-success="{{ session('success') }}"
@@ -103,24 +95,21 @@
     {{--
     =========================================================
     CHATBOT (NexRig Assistant)
-    Taruh sebelum @vite di bagian bawah app.blade.php
     =========================================================
     --}}
 
-    {{-- Floating Button --}}
-    {{-- FOOTER --}}
     @if(!Route::is('login') && !Route::is('register'))
+    {{-- Floating Button Chat --}}
     <button id="chat-toggle-btn"
         onclick="toggleChat()"
-        class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
+        class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(19,55,236,0.3)] hover:scale-110 transition-all duration-300 transform">
         <span class="material-symbols-outlined text-white">chat</span>
     </button>
     @endif
 
-
     {{-- Chat Window --}}
     <div id="chat-window"
-        class="chat-closed chat-hide fixed bottom-24 right-6 z-50 w-80 border border-white/10 rounded-2xl shadow-2xl flex flex-col bg-[#121212]"
+        class="chat-closed chat-hide fixed bottom-24 right-6 z-50 w-80 border border-white/10 rounded-2xl shadow-2xl flex flex-col bg-[#121212] transition-all duration-300 transform"
         style="display:none; height: 420px"
         aria-hidden="true">
 
@@ -181,52 +170,76 @@
             });
         });
     </script>
-<footer class="bg-[#050505] text-gray-400 font-sans border-t border-white/10">
-    </footer>
 
-<button id="backToTopBtn" onclick="scrollToTop()" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-blue-500 hover:scale-110 z-50">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-    </svg>
-</button>
+    {{-- 
+    =========================================================
+    BACK TO TOP BUTTON
+    =========================================================
+    --}}
+    <button id="backToTopBtn" onclick="scrollToTop()" 
+        class="fixed bottom-6 right-6 z-40 w-14 h-10 bg-white/5 backdrop-blur-md border border-white/10 text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-white/20 hover:scale-110">
+        <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
+    </button>
 
-<script>
-    // 1. Script untuk Menu Footer Mobile (Accordion)
-    function toggleFooterMenu(menuId, iconId) {
-        if (window.innerWidth >= 768) return;
-        const menu = document.getElementById(menuId);
-        const icon = document.getElementById(iconId);
+    {{-- 
+    =========================================================
+    GLOBAL SCRIPTS
+    =========================================================
+    --}}
+    <script>
+        // 1. Script Menu Footer Mobile
+        function toggleFooterMenu(menuId, iconId) {
+            if (window.innerWidth >= 768) return;
+            const menu = document.getElementById(menuId);
+            const icon = document.getElementById(iconId);
 
-        if (menu.classList.contains('hidden')) {
-            menu.classList.remove('hidden');
-            icon.classList.add('rotate-180');
-        } else {
-            menu.classList.add('hidden');
-            icon.classList.remove('rotate-180');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                menu.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
         }
-    }
 
-    // 2. Script untuk Tombol Back to Top
-    const backToTopBtn = document.getElementById("backToTopBtn");
+        // 2. Logika Dynamic Scroll: Back to Top & Chatbot Position
+        const backToTopBtn = document.getElementById("backToTopBtn");
+        const chatToggleBtn = document.getElementById("chat-toggle-btn");
+        const chatWindow = document.getElementById("chat-window");
 
-    window.addEventListener("scroll", () => {
-        // Tombol akan melayang muncul setelah user scroll 300px ke bawah
-        if (window.scrollY > 300) { 
-            backToTopBtn.classList.remove("opacity-0", "invisible", "translate-y-4");
-            backToTopBtn.classList.add("opacity-100", "visible", "translate-y-0");
-        } else {
-            backToTopBtn.classList.remove("opacity-100", "visible", "translate-y-0");
-            backToTopBtn.classList.add("opacity-0", "invisible", "translate-y-4");
-        }
-    });
-
-    function scrollToTop() {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 300) { 
+                // Munculkan tombol Back to Top
+                if (backToTopBtn) {
+                    backToTopBtn.classList.remove("opacity-0", "invisible", "translate-y-4");
+                    backToTopBtn.classList.add("opacity-100", "visible", "translate-y-0");
+                }
+                
+                // Dorong Tombol Chat & Jendela Chat ke atas menghindari tabrakan
+                if (chatToggleBtn) chatToggleBtn.classList.add("-translate-y-16");
+                if (chatWindow) chatWindow.classList.add("-translate-y-16");
+                
+            } else {
+                // Sembunyikan tombol Back to Top
+                if (backToTopBtn) {
+                    backToTopBtn.classList.remove("opacity-100", "visible", "translate-y-0");
+                    backToTopBtn.classList.add("opacity-0", "invisible", "translate-y-4");
+                }
+                
+                // Kembalikan Tombol Chat & Jendela Chat ke posisi default
+                if (chatToggleBtn) chatToggleBtn.classList.remove("-translate-y-16");
+                if (chatWindow) chatWindow.classList.remove("-translate-y-16");
+            }
         });
-    }
-</script>
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+    </script>
+
     {{-- Stack Scripts (Untuk script halaman spesifik) --}}
     @stack('scripts')
 </body>
