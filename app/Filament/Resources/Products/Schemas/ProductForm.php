@@ -17,25 +17,48 @@ class ProductForm
                 TextInput::make('product_series_id')
                     ->required()
                     ->numeric(),
+
                 TextInput::make('name')
                     ->required(),
+
                 TextInput::make('slug')
                     ->required(),
+
                 Select::make('tier')
                     ->options([
-            'Core' => 'Core',
-            'Pro' => 'Pro',
-            'Elite' => 'Elite',
-            'Creator' => 'Creator',
-            'Extreme' => 'Extreme',
-        ]),
+                        'Core'    => 'Core',
+                        'Pro'     => 'Pro',
+                        'Elite'   => 'Elite',
+                        'Creator' => 'Creator',
+                        'Extreme' => 'Extreme',
+                    ]),
+
                 TextInput::make('price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp'),
+
+                // ── Stock tracking ───────────────────────────────────────────
+                Toggle::make('track_stock')
+                    ->label('Lacak stok')
+                    ->helperText('Nonaktifkan untuk produk pre-order atau unlimited.')
+                    ->default(true)
+                    ->live(),  // ← reactive: sembunyikan field stock jika toggle off
+
+                TextInput::make('stock')
+                    ->label('Jumlah stok')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->suffix('unit')
+                    ->visible(fn ($get) => $get('track_stock')),  // ← hanya tampil jika track_stock = true
+                // ────────────────────────────────────────────────────────────
+
                 TextInput::make('short_description'),
+
                 Textarea::make('description')
                     ->columnSpanFull(),
+
                 Toggle::make('is_active')
                     ->required(),
             ]);

@@ -15,26 +15,45 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('product_series_id')
-                    ->numeric()
+                TextColumn::make('series.name')
+                    ->label('Series')
                     ->sortable(),
+
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
+
                 TextColumn::make('tier')
                     ->badge(),
+
                 TextColumn::make('price')
-                    ->money()
+                    ->money('IDR')
                     ->sortable(),
-                TextColumn::make('short_description')
-                    ->searchable(),
+
+                // ── Stock columns ────────────────────────────────────────────
+                TextColumn::make('stock')
+                    ->label('Stok')
+                    ->numeric()
+                    ->sortable()
+                    ->color(fn ($record) => match (true) {
+                        !$record->track_stock    => 'gray',
+                        $record->stock === 0     => 'danger',
+                        $record->stock <= 5      => 'warning',
+                        default                  => 'success',
+                    })
+                    ->formatStateUsing(fn ($record) => $record->track_stock
+                        ? $record->stock . ' unit'
+                        : '∞ unlimited'
+                    ),
+                // ─────────────────────────────────────────────────────────────
+
                 IconColumn::make('is_active')
                     ->boolean(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

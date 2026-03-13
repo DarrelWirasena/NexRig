@@ -6,10 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
-// PENTING:
-// Kita tidak perlu tulis 'use App\Models\ProductImage'
-// karena mereka satu folder (namespace). PHP otomatis tau.
-
 class Product extends Model
 {
     use HasFactory;
@@ -20,73 +16,130 @@ class Product extends Model
         'slug',
         'tier',
         'price',
+        'stock',          // ← baru
+        'track_stock',    // ← baru
         'short_description',
         'description',
-        'is_active'
+        'is_active',
     ];
 
-    // 1. Relasi ke Series (Orang Tua Langsung)
+    protected $casts = [
+        'track_stock' => 'boolean',
+        'is_active'   => 'boolean',
+    ];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Scopes
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Hanya produk yang stoknya tersedia.
+     * Produk dengan track_stock = false dianggap selalu tersedia.
+     */
+    public function scopeInStock($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('track_stock', false)
+              ->orWhere('stock', '>', 0);
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Cek apakah stok tersedia untuk qty tertentu.
+     */
+    public function hasStock(int $qty = 1): bool
+    {
+        if (!$this->track_stock) return true;
+        return $this->stock >= $qty;
+    }
+
+    /**
+     * Kurangi stok. Throw exception jika stok tidak cukup.
+     */
+    public function decrementStock(int $qty = 1): void
+    {
+        if (!$this->track_stock) return;
+
+        if ($this->stock < $qty) {
+            throw new \RuntimeException("Stok {$this->name} tidak mencukupi.");
+        }
+
+        $this->decrement('stock', $qty);
+    }
+
+    /**
+     * Kembalikan stok (saat order dibatalkan).
+     */
+    public function incrementStock(int $qty = 1): void
+    {
+        if (!$this->track_stock) return;
+        $this->increment('stock', $qty);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Relasi
+    // ─────────────────────────────────────────────────────────────────────────
+
     public function series()
     {
         return $this->belongsTo(ProductSeries::class, 'product_series_id');
     }
 
-    // 2. Accessor: Jalan Pintas ke Kategori (Kakek)
-    // Supaya di frontend tetap bisa panggil: $product->category->name
     public function getCategoryAttribute()
     {
         return $this->series ? $this->series->category : null;
     }
 
-    // 3. Relasi Gambar
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    // 4. Relasi Komponen (Many-to-Many)
     public function components()
     {
         return $this->belongsToMany(Component::class, 'product_components')
             ->withPivot('quantity');
     }
 
-    // 5. Relasi Benchmark Game (Many-to-Many)
     public function benchmarks()
     {
         return $this->hasMany(Benchmark::class);
     }
-    // 6. Relasi Kegunaan yang Dituju (Many-to-Many)
+
     public function intendedUses()
     {
         return $this->belongsToMany(IntendedUse::class, 'intended_use_product');
     }
 
-    // 7. Relasi Spesifikasi Tambahan
     public function attributes()
     {
-        // Ini menghubungkan Produk ke banyak ProductAttribute
         return $this->hasMany(ProductAttribute::class);
     }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Events
+    // ─────────────────────────────────────────────────────────────────────────
+
     protected static function booted()
     {
         static::saved(function () {
             Cache::forget('navbar_categories');
             Cache::forget('chatbot_product_context');
         });
+
         static::deleted(function ($product) {
-            // Hapus semua order_items yang mengandung produk ini
             $product->orderItems()->delete();
             Cache::forget('navbar_categories');
             Cache::forget('chatbot_product_context');
         });
-    }
-
-    /**
-     * Relasi ke order_items (pastikan relasi ini ada)
-     */
-    public function orderItems()
-    {
-        return $this->hasMany(OrderItem::class);
     }
 }

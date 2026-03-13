@@ -10,20 +10,16 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'quantity',
-        'price'
+        'price',
     ];
 
-    // Relasi: Item milik satu Order
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    // Relasi: Item adalah satu Produk
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-
-    protected $fillable = ['order_id', 'product_id', 'quantity', 'price'];
 }
