@@ -21,6 +21,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function addresses()
     {
         return $this->hasMany(UserAddress::class);
+
+        
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(\App\Models\Wishlist::class);
+    }
+    
+    // Helper: cek apakah produk sudah di-wishlist
+    public function hasWishlisted(int $productId): bool
+    {
+        return $this->wishlists()->where('product_id', $productId)->exists();
     }
 
     /**

@@ -4,7 +4,8 @@
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1624705002806-5d72df8343f7?q=80&w=2500"
                 class="w-full h-full object-cover opacity-60 mix-blend-luminosity scale-105 animate-pulse" style="animation-duration: 10s"
-                alt="Hero Background">
+                alt="" role="presentation" aria-hidden="true"
+                onerror="this.style.display='none'">
             <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/30 via-transparent to-[#050505]"></div>
             <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
         </div>

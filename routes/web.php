@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\MidtransController;
+use App\Http\Controllers\WishlistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,4 +145,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/address/{id}/edit', [AddressController::class, 'edit'])->name('address.edit');
     Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
     Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
+
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/{id}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
 });

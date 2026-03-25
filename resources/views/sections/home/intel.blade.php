@@ -1,12 +1,16 @@
 <div>
     {{-- SECTION 6: NEXRIG INTEL (LATEST ARTICLES) --}}
-    <section class="scroll-trigger opacity-0 bg-[#080808] py-24 border-t border-white/5 relative overflow-hidden">
+    {{-- Tambahkan Alpine.js x-data untuk mendeteksi status loading --}}
+    <section class="scroll-trigger opacity-0 bg-[#080808] py-24 border-t border-white/5 relative overflow-hidden"
+             x-data="{ isLoaded: false }" 
+             x-init="window.addEventListener('load', () => { setTimeout(() => isLoaded = true, 500) })">
 
         {{-- Background Pattern Halus --}}
         <div class="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
 
         <div class="max-w-[1440px] mx-auto px-4 relative z-10">
-            {{-- Header Section --}}
+            
+            {{-- Header Section (Tetap Statis) --}}
             <div class="flex justify-between items-end mb-12">
                 <div>
                     <span class="text-primary font-bold text-sm tracking-widest uppercase mb-2 block animate-pulse">/// System Logs</span>
@@ -20,57 +24,97 @@
                 </a>
             </div>
 
-            {{-- GRID ARTICLES (HOME VERSION) --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                @foreach($intelArticles as $article)
-                <a href="{{ route('articles.show', $article->slug) }}" class="group relative h-[400px] w-full overflow-hidden block clip-corner border border-white/10 hover:border-primary/50 transition-all duration-500">
-
-                    {{-- 1. Image Background --}}
-                    <div class="absolute inset-0 overflow-hidden">
-                        {{-- Sesuaikan dengan nama kolom di database Anda: image_url --}}
-                        <img src="{{ $article->src }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-125">
-                    </div>
-
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
+            {{-- ========================================== --}}
+            {{-- 1. SKELETON UI (Tampil saat loading) --}}
+            {{-- ========================================== --}}
+            <div x-show="!isLoaded" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full animate-pulse">
+                @for($i = 0; $i < 3; $i++)
+                <div class="relative h-[400px] w-full overflow-hidden block clip-corner border border-white/10 bg-white/5">
+                    
+                    {{-- Skeleton Gradient Shadow --}}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 
                     <div class="absolute inset-0 p-8 flex flex-col justify-end">
-
-                        {{-- Top Label (Category) --}}
+                        {{-- Top Label (Category) Skeleton --}}
                         <div class="absolute top-6 left-6">
-                            <span class="bg-primary/20 backdrop-blur border border-primary/30 text-white text-[10px] font-black uppercase px-3 py-1 tracking-widest">
-                                {{ $article->category }}
-                            </span>
+                            <div class="w-20 h-6 bg-white/10 rounded"></div>
                         </div>
 
-                        {{-- Date (Format sesuai keinginan, misal: OCT 12) --}}
-                        <div class="text-gray-400 text-[10px] font-mono mb-2 uppercase tracking-widest flex items-center gap-2">
-                            <span class="w-2 h-px bg-primary"></span>
-                            {{ $article->published_at ? $article->published_at->format('M d') : $article->created_at->format('M d') }}
+                        {{-- Date Skeleton --}}
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="w-2 h-px bg-white/20"></span>
+                            <div class="w-12 h-3 bg-white/10 rounded"></div>
                         </div>
 
-                        {{-- Title --}}
-                        <h3 class="text-2xl font-black text-white uppercase italic leading-tight mb-4">
-                            <span class="bg-left-bottom bg-gradient-to-r from-primary to-primary bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out pb-1">
-                                {{ $article->title }}
-                            </span>
-                        </h3>
+                        {{-- Title Skeleton --}}
+                        <div class="w-full h-8 bg-white/10 rounded mb-2"></div>
+                        <div class="w-2/3 h-8 bg-white/10 rounded mb-6"></div>
 
-                        {{-- Read More Indicator --}}
-                        <div class="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider group-hover:text-primary transition-colors translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 duration-500">
-                            Read Dossier <span class="material-symbols-outlined text-sm">arrow_outward</span>
-                        </div>
+                        {{-- Read More Skeleton --}}
+                        <div class="w-24 h-4 bg-white/5 rounded"></div>
                     </div>
-                </a>
-                @endforeach
+                </div>
+                @endfor
             </div>
 
-            {{-- Mobile "View All" Button --}}
-            <div class="mt-8 md:hidden">
-                <a href="{{ route('articles.index') }}" class="w-full block text-center py-4 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all clip-button text-xs">
-                    View All Logs
-                </a>
+            {{-- ========================================== --}}
+            {{-- 2. KONTEN ASLI (Tampil setelah loading selesai) --}}
+            {{-- ========================================== --}}
+            <div x-show="isLoaded" x-cloak x-transition.opacity.duration.700ms class="contents">
+                
+                {{-- GRID ARTICLES (HOME VERSION) --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach($intelArticles as $article)
+                    <a href="{{ route('articles.show', $article->slug) }}" class="group relative h-[400px] w-full overflow-hidden block clip-corner border border-white/10 hover:border-primary/50 transition-all duration-500">
+
+                        {{-- 1. Image Background --}}
+                        <div class="absolute inset-0 overflow-hidden">
+                            {{-- Sesuaikan dengan nama kolom di database Anda: image_url --}}
+                            <img src="{{ $article->src }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:contrast-125">
+                        </div>
+
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
+
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+
+                            {{-- Top Label (Category) --}}
+                            <div class="absolute top-6 left-6">
+                                <span class="bg-primary/20 backdrop-blur border border-primary/30 text-white text-[10px] font-black uppercase px-3 py-1 tracking-widest">
+                                    {{ $article->category }}
+                                </span>
+                            </div>
+
+                            {{-- Date (Format sesuai keinginan, misal: OCT 12) --}}
+                            <div class="text-gray-400 text-[10px] font-mono mb-2 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-px bg-primary"></span>
+                                {{ $article->published_at ? $article->published_at->format('M d') : $article->created_at->format('M d') }}
+                            </div>
+
+                            {{-- Title --}}
+                            <h3 class="text-2xl font-black text-white uppercase italic leading-tight mb-4">
+                                <span class="bg-left-bottom bg-gradient-to-r from-primary to-primary bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out pb-1">
+                                    {{ $article->title }}
+                                </span>
+                            </h3>
+
+                            {{-- Read More Indicator --}}
+                            <div class="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider group-hover:text-primary transition-colors translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 duration-500">
+                                Read Dossier <span class="material-symbols-outlined text-sm">arrow_outward</span>
+                            </div>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+
+                {{-- Mobile "View All" Button --}}
+                <div class="mt-8 md:hidden">
+                    <a href="{{ route('articles.index') }}" class="w-full block text-center py-4 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all clip-button text-xs">
+                        View All Logs
+                    </a>
+                </div>
+
             </div>
+
         </div>
     </section>
 </div>

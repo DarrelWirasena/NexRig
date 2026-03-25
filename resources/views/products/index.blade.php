@@ -211,29 +211,137 @@
     {{-- END STICKY NAVIGATION BAR WRAPPER --}}
 
 
-    {{-- 3. PRODUCT GRID --}}
-    <div class="px-4 md:px-10 pb-20">
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-            @forelse($products as $product)
-                @php
-                    $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
-                    $imageUrl = $primaryImage ? $primaryImage->full_url : 'https://via.placeholder.com/600';
-                @endphp
-
-                <a href="{{ route('products.show', $product->slug) }}" class="block group h-full">
-                    <x-product-card :product="$product" :name="$product->name" :price="$product->price" :description="$product->short_description"
-                        :image="$imageUrl" badge="{{ $product->tier ?? 'Custom' }}" :specs="$product->components->take(3)->pluck('name')->toArray()" />
-                </a>
-            @empty
-                <div class="col-span-full py-20 text-center">
-                    <span class="material-symbols-outlined text-6xl text-gray-800 mb-4 italic">search_off</span>
-                    <p class="text-gray-500 font-bold uppercase italic tracking-widest">No builds found in the database.</p>
+    {{-- 3. PRODUCT GRID DENGAN SKELETON LOADING --}}
+    <div class="px-4 md:px-10 pb-20" 
+         x-data="{ isLoaded: false }" 
+         x-init="window.addEventListener('load', () => { setTimeout(() => isLoaded = true, 500) })">
+         
+        {{-- ========================================== --}}
+        {{-- SKELETON UI (Tampil sebelum halaman termuat) --}}
+        {{-- ========================================== --}}
+        <div x-show="!isLoaded" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 w-full">
+            @for($i = 0; $i < 8; $i++) {{-- Menampilkan 8 kotak skeleton dummy --}}
+            <div class="bg-white/5 dark:bg-[#1a2036]/50 rounded-xl overflow-hidden border border-white/10 h-full flex flex-col animate-pulse">
+                
+                {{-- Skeleton Image --}}
+                <div class="w-full aspect-square md:aspect-[4/3] bg-white/10 dark:bg-white/5"></div>
+                
+                {{-- Skeleton Content --}}
+                <div class="p-3 md:p-5 flex flex-col flex-1">
+                    {{-- Judul --}}
+                    <div class="h-4 md:h-5 bg-white/10 dark:bg-white/5 rounded w-3/4 mb-3"></div>
+                    
+                    {{-- Deskripsi --}}
+                    <div class="h-3 bg-white/10 dark:bg-white/5 rounded w-full mb-1.5"></div>
+                    <div class="h-3 bg-white/10 dark:bg-white/5 rounded w-5/6 mb-4"></div>
+                    
+                    {{-- Specs --}}
+                    <div class="flex gap-2 mb-4 mt-auto">
+                        <div class="h-4 md:h-5 w-16 bg-white/10 dark:bg-white/5 rounded"></div>
+                        <div class="h-4 md:h-5 w-12 bg-white/10 dark:bg-white/5 rounded hidden md:block"></div>
+                        <div class="h-4 md:h-5 w-20 bg-white/10 dark:bg-white/5 rounded hidden md:block"></div>
+                    </div>
+                    
+                    {{-- Footer (Harga & Tombol) --}}
+                    <div class="pt-3 border-t border-white/10 flex items-center justify-between mt-auto">
+                        <div class="flex flex-col gap-1 w-1/2">
+                            <div class="h-2 w-16 bg-white/10 dark:bg-white/5 rounded"></div>
+                            <div class="h-4 md:h-5 w-24 bg-white/10 dark:bg-white/5 rounded"></div>
+                        </div>
+                        <div class="h-8 md:h-10 w-16 md:w-20 bg-white/10 dark:bg-white/5 rounded-lg"></div>
+                    </div>
                 </div>
-            @endforelse
+            </div>
+            @endfor
         </div>
 
-        <div class="mt-12">
-            {{ $products->appends(request()->query())->links() }}
+        {{-- ========================================== --}}
+        {{-- KONTEN ASLI (Tampil setelah halaman termuat) --}}
+        {{-- ========================================== --}}
+        <div x-show="isLoaded" x-cloak x-transition.opacity.duration.700ms class="contents">
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                @forelse($products as $product)
+                    @php
+                        $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
+                        $imageUrl = $primaryImage ? $primaryImage->full_url : 'https://via.placeholder.com/600';
+                    @endphp
+
+                    <a href="{{ route('products.show', $product->slug) }}" class="block group h-full">
+                        <x-product-card :product="$product" :name="$product->name" :price="$product->price" :description="$product->short_description"
+                            :image="$imageUrl" badge="{{ $product->tier ?? 'Custom' }}" :specs="$product->components->take(3)->pluck('name')->toArray()" />
+                    </a>
+                @empty
+                    <div class="col-span-full py-20 text-center">
+                        <span class="material-symbols-outlined text-6xl text-gray-800 mb-4 italic">search_off</span>
+                        <p class="text-gray-500 font-bold uppercase italic tracking-widest">No builds found in the database.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="mt-12">
+                {{ $products->appends(request()->query())->links() }}
+            </div>
         </div>
+
     </div>
+
+    @push('scripts')
+<script>
+async function toggleWishlistCard(event, btn, productId) {
+    // Cegah link produk ikut terklik
+    event.preventDefault();
+    event.stopPropagation();
+ 
+    const icon = btn.querySelector('.material-symbols-outlined');
+    const isWishlisted = btn.dataset.wishlisted === 'true';
+ 
+    btn.disabled = true;
+ 
+    // Optimistic UI — ubah tampilan langsung
+    if (!isWishlisted) {
+        icon.style.fontVariationSettings = "'FILL' 1";
+        btn.classList.remove('bg-black/40', 'border-white/20', 'text-white/50');
+        btn.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+    }
+ 
+    try {
+        const res  = await fetch(`/wishlist/${productId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+        });
+        const data = await res.json();
+ 
+        if (data.wishlisted) {
+            // ── Tersimpan ──
+            btn.dataset.wishlisted               = 'true';
+            icon.style.fontVariationSettings     = "'FILL' 1";
+            btn.classList.remove('bg-black/40', 'border-white/20', 'text-white/50', 'opacity-0');
+            btn.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+        } else {
+            // ── Dihapus ──
+            btn.dataset.wishlisted               = 'false';
+            icon.style.fontVariationSettings     = "'FILL' 0";
+            btn.classList.remove('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+            btn.classList.add('bg-black/40', 'border-white/20', 'text-white/50');
+        }
+ 
+        if (typeof window.showToast === 'function') {
+            window.showToast(data.message, data.wishlisted ? 'success' : 'info');
+        }
+ 
+    } catch (err) {
+        // Rollback jika gagal
+        icon.style.fontVariationSettings = isWishlisted ? "'FILL' 1" : "'FILL' 0";
+        console.error('Wishlist error:', err);
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+@endpush
+ 
+
 @endsection

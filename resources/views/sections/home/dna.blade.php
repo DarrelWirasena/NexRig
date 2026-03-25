@@ -1,11 +1,59 @@
 <div>
     {{-- NEW SECTION: THE NEXRIG DNA --}}
-    <div class="scroll-trigger opacity-0 bg-background-dark py-24 px-4 relative overflow-hidden">
+    {{-- Tambahkan Alpine x-data untuk mendeteksi status loading --}}
+    <div class="scroll-trigger opacity-0 bg-background-dark py-24 px-4 relative overflow-hidden"
+         x-data="{ isLoaded: false }" 
+         x-init="window.addEventListener('load', () => { setTimeout(() => isLoaded = true, 500) })">
+         
         {{-- Background Accents --}}
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div class="max-w-[1440px] mx-auto relative z-10">
-            <div class="flex flex-col md:flex-row gap-16 items-center">
+            
+            {{-- ========================================== --}}
+            {{-- 1. SKELETON UI (Tampil sebelum loading selesai) --}}
+            {{-- ========================================== --}}
+            <div x-show="!isLoaded" class="flex flex-col md:flex-row gap-16 items-center w-full animate-pulse">
+                {{-- Text Side Skeleton --}}
+                <div class="w-full md:w-1/2">
+                    {{-- Heading Skeleton --}}
+                    <div class="h-10 md:h-12 bg-white/10 rounded-lg w-3/4 mb-3"></div>
+                    <div class="h-10 md:h-12 bg-white/10 rounded-lg w-1/2 mb-8"></div>
+                    
+                    {{-- Paragraph Skeleton --}}
+                    <div class="space-y-3 mb-10">
+                        <div class="h-4 bg-white/5 rounded w-full"></div>
+                        <div class="h-4 bg-white/5 rounded w-5/6"></div>
+                        <div class="h-4 bg-white/5 rounded w-4/6"></div>
+                    </div>
+
+                    {{-- List Skeleton --}}
+                    <ul class="space-y-6">
+                        @for($i=0; $i<3; $i++)
+                        <li class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-white/10 rounded shrink-0"></div>
+                            <div class="space-y-2 w-full mt-1">
+                                <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                                <div class="h-3 bg-white/5 rounded w-3/4"></div>
+                            </div>
+                        </li>
+                        @endfor
+                    </ul>
+                </div>
+
+                {{-- Image Side Skeleton --}}
+                <div class="w-full md:w-1/2 relative">
+                    <div class="w-full aspect-[4/3] bg-white/5 rounded-2xl border border-white/10"></div>
+                    {{-- Skeleton Decorative Elements --}}
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+                    <div class="absolute -top-5 -left-5 w-20 h-20 border border-white/10"></div>
+                </div>
+            </div>
+
+            {{-- ========================================== --}}
+            {{-- 2. KONTEN ASLI (Tampil setelah loading selesai) --}}
+            {{-- ========================================== --}}
+            <div x-show="isLoaded" x-cloak x-transition.opacity.duration.700ms class="flex flex-col md:flex-row gap-16 items-center">
                 {{-- Text Side --}}
                 <div class="w-full md:w-1/2">
                     <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-6 leading-tight">
@@ -58,6 +106,7 @@
                     <div class="absolute -top-5 -left-5 w-20 h-20 border border-primary/30"></div>
                 </div>
             </div>
+            
         </div>
     </div>
 </div>

@@ -9,6 +9,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Support\Facades\Log;
 use Filament\Schemas\Schema;
 
 class ArticleForm
@@ -36,7 +37,7 @@ class ArticleForm
                             $url = CloudinaryHelper::upload($state, 'articles');
                             $set('image_url', $url);
                         } catch (\Exception $e) {
-                            \Log::error('Cloudinary upload failed for article image', [
+                            Log::error('Cloudinary upload failed for article image', [
                                 'error' => $e->getMessage(),
                                 'file' => $e->getFile(),
                                 'line' => $e->getLine()
