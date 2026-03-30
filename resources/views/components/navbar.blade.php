@@ -21,21 +21,25 @@
                 </a>
 
                 {{-- NAVIGATION DESKTOP --}}
-                <nav class="hidden lg:flex items-center gap-1 ml-4">
+                <nav class="hidden lg:flex items-center gap-1 ml-4 h-full">
                 @foreach ($navbarCategories as $category)
-                    <div class="relative group">
+                    <div class="relative group h-full flex items-center">
                         <button
-                            class="flex items-center px-4 py-4 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors border-b-2 border-transparent group-hover:border-blue-500 whitespace-nowrap">
+                            class="flex items-center px-4 py-6 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors border-b-2 border-transparent group-hover:border-blue-500 whitespace-nowrap">
                             {{ $category->name }}
                         </button>
 
                         <div class="fixed left-0 right-0 px-4 lg:px-10
-                                    opacity-0 invisible pointer-events-none
-                                    group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
-                                    transition-all duration-500 ease-out
-                                    -translate-x-8 group-hover:translate-x-0
-                                    z-50"
-                             style="top: 80px;">
+                            opacity-0 invisible pointer-events-none
+                            group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
+                            transition-all duration-300 ease-out
+                            -translate-x-8 group-hover:translate-x-0
+                            z-50"
+                            style="top: 80px; padding-top: 12px;">
+                            
+                            {{-- Tetap biarkan jembatan transparan ini agar hover tidak putus --}}
+                            <div class="absolute -top-8 left-0 right-0 h-10 bg-transparent"></div>
+
                             <div class="bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_40px_80px_rgba(0,0,0,0.9)] overflow-hidden p-6 max-w-[1440px] mx-auto">
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                     @foreach ($category->series as $series)
@@ -123,26 +127,32 @@
 
                 {{-- User avatar — desktop only --}}
                 @auth
-                <div class="hidden lg:flex relative group h-10 items-center z-50 ml-1 pl-3 border-l border-white/10">
-                    <button class="flex items-center gap-2.5 outline-none">
+                <div class="hidden lg:flex relative group h-full items-center z-50 ml-1 pl-3 border-l border-white/10">
+                    
+                    {{-- TOMBOL AVATAR --}}
+                    <button class="flex items-center gap-2.5 py-6 outline-none">
                         <div class="text-right hidden sm:block">
                             <p class="text-sm font-bold text-white leading-none">{{ Auth::user()->name }}</p>
                         </div>
-                        <div class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 hover:bg-white/20 transition-colors">
+                        <div class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
                             <span class="material-symbols-outlined text-[22px] text-white"
                                   style="font-variation-settings: 'FILL' 1">account_circle</span>
                         </div>
                     </button>
 
                     {{-- DROPDOWN USER --}}
-                    <div class="absolute top-full right-0 mt-3 w-52
+                    <div class="absolute top-[80px] right-0 w-52
                                 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10
                                 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)]
                                 opacity-0 invisible pointer-events-none
                                 group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
-                                transition-all duration-200
+                                transition-all duration-200 ease-out
                                 translate-y-2 group-hover:translate-y-0
-                                z-50 p-1.5">
+                                z-50 p-1.5 pt-3">
+                        
+                        {{-- 👇 JEMBATAN TRANSPARAN 👇 --}}
+                        <div class="absolute -top-6 left-0 right-0 h-6 bg-transparent"></div>
+
                         <div class="px-3 py-2.5 border-b border-white/10 mb-1">
                             <p class="text-sm text-white font-bold truncate">{{ Auth::user()->name }}</p>
                             <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>

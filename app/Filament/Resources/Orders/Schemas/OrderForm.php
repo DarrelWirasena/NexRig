@@ -24,26 +24,31 @@ class OrderForm
                     ->numeric()
                     ->prefix('Rp'),
 
-                // Ganti TextInput status menjadi Select
                 Select::make('status')
+                    ->label('Status')
                     ->required()
                     ->default('pending')
                     ->options([
-                        'pending'    => 'Pending',
-                        'processing' => 'Processing',
-                        'shipped'    => 'Shipped',
-                        'completed'  => 'Completed',
-                        'cancelled'  => 'Cancelled',
+                        'pending'    => 'Menunggu Pembayaran',
+                        'processing' => 'Dikemas',
+                        'shipped'    => 'Dikirim',
+                        'completed'  => 'Selesai',
+                        'cancelled'  => 'Dibatalkan',
                     ])
-                    ->native(false), // pakai dropdown cantik bukan select bawaan browser
+                    ->native(false),
 
-                TextInput::make('shipping_name'),
+                TextInput::make('shipping_name')
+                    ->label('Nama Penerima'),
                 TextInput::make('shipping_phone')
+                    ->label('Nomor Telepon')
                     ->tel(),
                 Textarea::make('shipping_address')
+                    ->label('Alamat Pengiriman')
                     ->columnSpanFull(),
-                TextInput::make('shipping_city'),
-                TextInput::make('shipping_postal_code'),
+                TextInput::make('shipping_city')
+                    ->label('Kota'),
+                TextInput::make('shipping_postal_code')
+                    ->label('Kode Pos'),
             ]);
     }
 }

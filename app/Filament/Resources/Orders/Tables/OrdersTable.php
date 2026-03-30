@@ -30,9 +30,17 @@ class OrdersTable
                     ->money('IDR')
                     ->sortable(),
 
-                // Status dengan badge warna
                 TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending'    => 'Menunggu Pembayaran',
+                        'processing' => 'Dikemas',
+                        'shipped'    => 'Dikirim',
+                        'completed'  => 'Selesai',
+                        'cancelled'  => 'Dibatalkan',
+                        default      => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'pending'    => 'warning',
                         'processing' => 'info',
@@ -55,16 +63,15 @@ class OrdersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // Filter by status
                 SelectFilter::make('status')
+                    ->label('Filter Status')
                     ->options([
-                        'pending'    => 'Pending',
-                        'processing' => 'Processing',
-                        'shipped'    => 'Shipped',
-                        'completed'  => 'Completed',
-                        'cancelled'  => 'Cancelled',
-                    ])
-                    ->label('Filter Status'),
+                        'pending'    => 'Menunggu Pembayaran',
+                        'processing' => 'Dikemas',
+                        'shipped'    => 'Dikirim',
+                        'completed'  => 'Selesai',
+                        'cancelled'  => 'Dibatalkan',
+                    ]),
             ])
             ->recordActions([
                 EditAction::make(),

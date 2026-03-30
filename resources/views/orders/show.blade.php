@@ -66,18 +66,17 @@
                             Order <span class="text-blue-600">#{{ $order->id }}</span>
                         </h1>
                         @php
-                            $statusColor = match ($order->status) {
-                                'pending' => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                                'processing' => 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                                'shipped' => 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                                'completed' => 'bg-green-500/10 text-green-500 border-green-500/20',
-                                'cancelled' => 'bg-red-500/10 text-red-500 border-red-500/20',
-                                default => 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+                            $statusData = match ($order->status) {
+                                'pending'    => ['label' => 'Menunggu Pembayaran', 'class' => 'bg-amber-500/10 text-amber-500 border-amber-500/20'],
+                                'processing' => ['label' => 'Dikemas',             'class' => 'bg-blue-500/10 text-blue-500 border-blue-500/20'],
+                                'shipped'    => ['label' => 'Dikirim',             'class' => 'bg-purple-500/10 text-purple-500 border-purple-500/20'],
+                                'completed'  => ['label' => 'Selesai',             'class' => 'bg-green-500/10 text-green-500 border-green-500/20'],
+                                'cancelled'  => ['label' => 'Dibatalkan',          'class' => 'bg-red-500/10 text-red-500 border-red-500/20'],
+                                default      => ['label' => $order->status,        'class' => 'bg-gray-500/10 text-gray-500 border-gray-500/20'],
                             };
                         @endphp
-                        <span
-                            class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border {{ $statusColor }}">
-                            {{ $order->status }}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border {{ $statusData['class'] }}">
+                            {{ $statusData['label'] }}
                         </span>
                     </div>
                     <p class="text-gray-400 text-xs mt-1 font-mono">Dibuat pada
@@ -313,10 +312,18 @@
                                         <span class="text-white font-bold">{{ $item->quantity }}</span>
                                     </div>
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right flex flex-col items-end gap-2">
                                     <span class="block text-white font-bold">
                                         Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}
                                     </span>
+                                    
+                                    {{-- TOMBOL ULASAN MUNCUL JIKA STATUS SELESAI --}}
+                                    @if($order->status === 'completed')
+                                        <a href="{{ route('products.show', $item->product->slug) }}#review" 
+                                           class="text-[10px] px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30 rounded flex items-center gap-1 transition-colors whitespace-nowrap font-bold uppercase tracking-wider">
+                                            <span class="material-symbols-outlined text-[12px]">rate_review</span> Ulas Produk
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -402,8 +409,7 @@
                 <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6">
                     <h3 class="font-bold text-white mb-4">Aksi</h3>
 
-                    @if ($order->status === 'pending')
-                        {{-- Tambahkan type="button" agar tidak me-refresh halaman --}}
+                    @if (in_array($order->status, ['pending', 'processing']))
                         <button type="button" onclick="document.getElementById('cancelModal').classList.remove('hidden')"
                             class="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-sm">cancel</span> Batalkan Pesanan
@@ -413,21 +419,27 @@
                             class="w-full py-2.5 border border-red-500/20 text-red-500/60 text-sm font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
                             <span class="material-symbols-outlined text-sm">cancel</span> Pesanan Dibatalkan
                         </div>
+                    @elseif($order->status === 'completed')
+                        <div
+                            class="w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-500 text-sm font-bold rounded-lg flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-sm">check_circle</span> Pesanan Selesai
+                        </div>
+                        <p class="text-[11px] text-gray-500 text-center mt-3 leading-relaxed">
+                            Terima kasih telah berbelanja! Jangan lupa bagikan pengalamanmu dengan memberikan ulasan pada produk.
+                        </p>
                     @else
                         <div
                             class="w-full py-2.5 bg-white/[0.03] border border-white/10 text-gray-600 text-sm font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
                             <span class="material-symbols-outlined text-sm">block</span> Batalkan Pesanan
                         </div>
-                        <p class="text-[11px] text-gray-600 text-center mt-2">Tidak dapat dibatalkan — pesanan sedang
-                            diproses.</p>
+                        <p class="text-[11px] text-gray-600 text-center mt-2">Tidak dapat dibatalkan — pesanan sedang dikirim.</p>
                     @endif
                 </div>
-
             </div>
         </div>
     </div>
 
-    @if ($order->status === 'pending')
+    @if (in_array($order->status, ['pending', 'processing']))
         <div id="cancelModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"
                 onclick="document.getElementById('cancelModal').classList.add('hidden')"></div>

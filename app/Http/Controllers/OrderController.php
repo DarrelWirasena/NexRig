@@ -13,15 +13,17 @@ class OrderController extends Controller
     {
         $search = $request->input('search');
         $title  = 'My Orders';
-        $tab    = $request->query('tab', 'active');
+        
+        // Default tab sekarang adalah 'all' (Semua Pesanan)
+        $tab    = $request->query('tab', 'all');
 
         $query = Order::where('user_id', Auth::id())
             ->with(['items.product.images', 'items.product.series']);
 
-        if ($tab === 'past') {
-            $query->whereIn('status', ['completed', 'cancelled']);
-        } else {
-            $query->whereIn('status', ['pending', 'processing', 'shipped']);
+        // LOGIKA FILTER STATUS BARU
+        if ($tab !== 'all') {
+            // Jika tab bukan 'all', filter sesuai parameter tab
+            $query->where('status', $tab);
         }
 
         if ($request->filled('search')) {
@@ -77,9 +79,10 @@ class OrderController extends Controller
             abort(403);
         }
 
-        if ($order->status !== 'pending') {
+        // ✅ UBAH DISINI: Izinkan pembatalan jika status 'pending' atau 'processing'
+        if (!in_array($order->status, ['pending', 'processing'])) {
             return redirect()->route('orders.show', $order->id)
-                ->with('error', 'Pesanan hanya dapat dibatalkan saat status masih Pending.');
+                ->with('error', 'Pesanan hanya dapat dibatalkan saat status masih Menunggu Pembayaran atau Dikemas.');
         }
 
         $order->update(['status' => 'cancelled']);
