@@ -5,297 +5,156 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
-use App\Services\BrevoMailService;
+use App\Mail\OtpMail;
+use App\Mail\ResetOtpMail;
 
 class AuthController extends Controller
 {
-    // --- REGISTER ---
-    public function showRegisterForm()
-    {
-        $title = "Register";
-        return view("auth.register", compact("title"));
+    // ==========================================
+    // 1. FITUR REGISTRASI & VERIFIKASI
+    // ==========================================
+    public function showRegisterForm() {
+        return view('auth.register', ['title' => 'Register']);
     }
 
-    public function register(Request $request)
-    {
+    public function register(Request $request) {
         $request->validate([
-            "name" => "required|string|max:255",
-            "email" => ["required", "string", "max:255", "unique:users"],
-            "password" => "required|string|min:8|confirmed",
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $otp = random_int(100000, 999999);
 
+        // Buat User (tapi belum bisa login karena belum verify OTP)
         $user = User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "password" => Hash::make($request->password),
-            "role" => "user",
-            "otp_code" => $otp,
-            "otp_expires_at" => now()->addMinutes(10),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user',
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        // Try to send OTP email via Brevo API, but don't fail if it doesn't work
-        try {
-            app(BrevoMailService::class)->sendOtpEmail(
-                $user->email,
-                $user->name,
-                $otp,
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error(
-                "Failed to send OTP email during registration via Brevo",
-                [
-                    "email" => $user->email,
-                    "error" => $e->getMessage(),
-                ],
-            );
-        }
+        // Kirim Email
+        Mail::to($user->email)->send(new OtpMail($otp));
 
-        // Simpan email dan URL tujuan (redirect) ke session sementara
-        session([
-            "verify_email" => $user->email,
-            "redirect_url" => $request->input("redirect"), // Simpan redirect url
-        ]);
+        // Simpan email ke session agar halaman verify tahu email siapa
+        session(['verify_email' => $user->email]);
 
-        // Arahkan ke halaman input OTP, BUKAN ke home
-        return redirect()
-            ->route("otp.verify")
-            ->with("success", "Transmission sent. Check your email terminal.");
+        return redirect()->route('otp.verify')->with('success', 'Kode OTP dikirim ke email.');
     }
 
-    // --- TAMPILAN HALAMAN OTP (Fungsi yang sebelumnya hilang) ---
-    public function showOtpForm()
-    {
-        // Jika tidak ada session email, kembalikan ke register
-        if (!session("verify_email")) {
-            return redirect()->route("register");
-        }
-
-        $title = "Verify Identity";
-        return view("auth.verify-otp", compact("title"));
+    public function showOtpForm() {
+        if (!session('verify_email')) return redirect()->route('register');
+        return view('auth.verify-otp', ['title' => 'Verify OTP']);
     }
 
-    // --- PROSES CEK OTP ---
-    public function verifyOtp(Request $request)
-    {
-        $request->validate(["otp" => "required|numeric"]);
+    public function verifyOtp(Request $request) {
+        $request->validate(['otp' => 'required|numeric']);
+        $email = session('verify_email');
 
-        $email = session("verify_email");
-        $user = User::where("email", $email)
-            ->where("otp_code", $request->otp)
-            ->where("otp_expires_at", ">", now())
-            ->first();
+        $user = User::where('email', $email)->where('otp_code', $request->otp)
+                    ->where('otp_expires_at', '>', now())->first();
 
         if ($user) {
-            $user->update([
-                "email_verified_at" => now(),
-                "otp_code" => null,
-                "otp_expires_at" => null,
-            ]);
-
-            // Baru login DI SINI setelah OTP benar
+            // Bersihkan OTP & Verifikasi Email
+            $user->update(['email_verified_at' => now(), 'otp_code' => null, 'otp_expires_at' => null]);
+            
+            // Login & Bersihkan Session
             Auth::login($user);
+            session()->forget('verify_email');
 
-            // Ambil URL tujuan dari session, lalu bersihkan session
-            $redirect = session("redirect_url");
-            session()->forget(["verify_email", "redirect_url"]);
-
-            // Arahkan ke URL tujuan atau ke home jika tidak ada
-            return redirect($redirect ?: route("home"))->with(
-                "success",
-                "Access Granted. Welcome to the Fleet.",
-            );
+            return redirect()->route('home')->with('success', 'Akses Diberikan!');
         }
 
-        return back()->withErrors([
-            "otp" => "Access Code Invalid / Corrupted.",
-        ]);
+        return back()->withErrors(['otp' => 'Kode OTP Salah atau Kedaluwarsa.']);
     }
 
-    // --- LOGIN ---
-    public function showLoginForm()
-    {
-        // Bersihkan session sisa dari fitur lupa password jika ada
-        session()->forget(["reset_email", "otp_sent", "allow_reset_for"]);
-
-        $title = "Login";
-        return view("auth.login", compact("title"));
+    // ==========================================
+    // 2. FITUR LOGIN & LOGOUT
+    // ==========================================
+    public function showLoginForm() {
+        // Bersihkan sampah session jika ada
+        session()->forget(['verify_email', 'reset_email', 'allow_reset_for']);
+        return view('auth.login', ['title' => 'Login']);
     }
 
-    public function login(Request $request)
-    {
-        // 1. Validasi - HANYA email dan password
-        $credentials = $request->validate(
-            [
-                "email" => ["required", "email"],
-                "password" => ["required"],
-            ],
-            [
-                "email.required" => "Email wajib diisi.",
-                "email.email" => "Format email tidak valid.",
-                "password.required" => "Password wajib diisi.",
-            ],
-        );
+    public function login(Request $request) {
+        $credentials = $request->validate(['email' => 'required|email', 'password' => 'required']);
 
-        // 2. Coba Login
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()
-                ->intended(route("home"))
-                ->with("success", "You are logged in!");
+            return redirect()->intended(route('home'))->with('success', 'Login Berhasil.');
         }
 
-        // 3. Gagal Login
-        return back()
-            ->withErrors([
-                "email" => "Email atau password salah.",
-            ])
-            ->onlyInput("email");
+        return back()->withErrors(['email' => 'Kredensial tidak valid.'])->onlyInput('email');
     }
 
-    // --- LOGOUT ---
-    public function logout(Request $request)
-    {
+    public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect()
-            ->route("home")
-            ->with("success", "Logged out successfully");
+        return redirect()->route('home');
     }
 
     // ==========================================
-    // --- FITUR LUPA PASSWORD & RESET ---
+    // 3. FITUR LUPA PASSWORD
     // ==========================================
-
-    public function showForgotForm()
-    {
-        $title = "System Recovery";
-        return view("auth.forgot-password", compact("title"));
+    public function showForgotForm() {
+        return view('auth.forgot-password', ['title' => 'System Recovery']);
     }
 
-    public function sendResetOtp(Request $request)
-    {
-        $request->validate(
-            [
-                "email" => "required|email|exists:users,email",
-            ],
-            [
-                "email.exists" =>
-                    "Terminal email tidak ditemukan di database kami.",
-            ],
-        );
+    public function sendResetOtp(Request $request) {
+        $request->validate(['email' => 'required|email|exists:users,email']);
 
         $otp = random_int(100000, 999999);
-        $user = User::where("email", $request->email)->first();
-        $user->update([
-            "otp_code" => $otp,
-            "otp_expires_at" => now()->addMinutes(10),
-        ]);
+        $user = User::where('email', $request->email)->first();
+        $user->update(['otp_code' => $otp, 'otp_expires_at' => now()->addMinutes(10)]);
 
-        // Try to send reset OTP email via Brevo API, but don't fail if it doesn't work
-        try {
-            app(BrevoMailService::class)->sendResetOtpEmail(
-                $user->email,
-                $user->name,
-                $otp,
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error(
-                "Failed to send reset OTP email via Brevo",
-                [
-                    "email" => $user->email,
-                    "error" => $e->getMessage(),
-                ],
-            );
-        }
+        // Kirim Email
+        Mail::to($user->email)->send(new ResetOtpMail($otp));
 
-        // 2. Gunakan SESSION PERMANEN (bukan ->with) agar data email tidak hilang
-        session([
-            "reset_email" => $user->email,
-            "otp_sent" => true,
-        ]);
-
-        return back()->with("success", "Recovery code sent to your terminal.");
+        session(['reset_email' => $user->email, 'otp_sent' => true]);
+        return back()->with('success', 'Kode pemulihan dikirim ke email.');
     }
 
-    public function verifyResetOtp(Request $request)
-    {
-        $request->validate(["otp" => "required|numeric"]);
+    public function verifyResetOtp(Request $request) {
+        $request->validate(['otp' => 'required|numeric']);
+        $email = session('reset_email');
 
-        // 3. Ambil email langsung dari session yang sudah kita simpan
-        $email = session("reset_email");
-
-        $user = User::where("email", $email)
-            ->where("otp_code", $request->otp)
-            ->where("otp_expires_at", ">", now())
-            ->first();
+        $user = User::where('email', $email)->where('otp_code', $request->otp)
+                    ->where('otp_expires_at', '>', now())->first();
 
         if ($user) {
-            $user->update([
-                "otp_code" => null,
-                "otp_expires_at" => null,
-            ]);
+            $user->update(['otp_code' => null, 'otp_expires_at' => null]);
+            session()->forget(['otp_sent', 'reset_email']);
+            session(['allow_reset_for' => $user->email]); // Beri izin reset
 
-            // Bersihkan status otp_sent, berikan izin reset
-            session()->forget("otp_sent");
-            session(["allow_reset_for" => $user->email]);
-
-            return redirect()
-                ->route("password.reset")
-                ->with(
-                    "success",
-                    "Identity Verified. Proceed to modify access code.",
-                );
+            return redirect()->route('password.reset')->with('success', 'Identitas terverifikasi.');
         }
 
-        return back()->withErrors([
-            "otp" => "Invalid / Corrupted Recovery Code.",
-        ]);
+        return back()->withErrors(['otp' => 'Kode OTP Salah.']);
     }
 
-    public function showResetForm()
-    {
-        // Cegah akses jika belum verifikasi OTP
-        if (!session("allow_reset_for")) {
-            return redirect()->route("login");
-        }
-
-        $title = "Override Protocol";
-        return view("auth.reset-password", compact("title"));
+    public function showResetForm() {
+        if (!session('allow_reset_for')) return redirect()->route('login');
+        return view('auth.reset-password', ['title' => 'Override Protocol']);
     }
 
-    public function updatePassword(Request $request)
-    {
-        $request->validate([
-            "password" => "required|string|min:8|confirmed",
-        ]);
-
-        $email = session("allow_reset_for");
-        $user = User::where("email", $email)->first();
+    public function updatePassword(Request $request) {
+        $request->validate(['password' => 'required|string|min:8|confirmed']);
+        $email = session('allow_reset_for');
+        $user = User::where('email', $email)->first();
 
         if ($user) {
-            // ✅ Cek apakah password baru sama dengan password lama
-            if (Hash::check($request->password, $user->password)) {
-                return back()->withErrors([
-                    "password" =>
-                        "New access code cannot be the same as the old one.",
-                ]);
-            }
-
-            $user->update(["password" => Hash::make($request->password)]);
-            session()->forget("allow_reset_for");
-
-            return redirect()
-                ->route("login")
-                ->with("success", "Access Code Overridden. You may now login.");
+            $user->update(['password' => Hash::make($request->password)]);
+            session()->forget('allow_reset_for');
+            return redirect()->route('login')->with('success', 'Password berhasil diubah, silakan login.');
         }
 
-        return redirect()
-            ->route("login")
-            ->withErrors(["email" => "System Error. Try again."]);
+        return redirect()->route('login')->withErrors(['email' => 'Sistem Error.']);
     }
 }

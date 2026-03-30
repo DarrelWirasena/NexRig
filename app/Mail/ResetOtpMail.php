@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Mail;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -9,17 +7,14 @@ use Illuminate\Queue\SerializesModels;
 class ResetOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
-
     public $otp;
 
-    public function __construct($otp)
-    {
+    public function __construct($otp) {
         $this->otp = $otp;
     }
 
-    public function build()
-    {
+    public function build() {
         return $this->subject('NexRig - System Override Request')
-                    ->view('emails.reset-otp');
+                    ->view('emails.reset-otp'); // Memanggil view email
     }
 }
