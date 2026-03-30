@@ -242,6 +242,201 @@
 
     {{-- Stack Scripts (Untuk script halaman spesifik) --}}
     @stack('scripts')
+
+    {{-- ========================================================
+     COOKIE & TERMS CONSENT SYSTEM (BANNER + MODAL)
+     ======================================================== --}}
+<div x-data="{ 
+        showBanner: false,
+        showPreferences: false,
+        // State untuk menyimpan pilihan checkbox
+        prefs: {
+            transaction: true,
+            shipping: true,
+            cancellation: true,
+            reviews: true
+        },
+        init() {
+            if (!localStorage.getItem('nexrig_consent')) {
+                setTimeout(() => this.showBanner = true, 1500);
+            }
+        },
+        acceptAll() {
+            this.prefs = { transaction: true, shipping: true, cancellation: true, reviews: true };
+            localStorage.setItem('nexrig_consent', 'all');
+            this.showBanner = false;
+            this.showPreferences = false;
+        },
+        acceptSelected() {
+            // Menyimpan spesifik opsi mana saja yang dipilih user
+            localStorage.setItem('nexrig_consent_prefs', JSON.stringify(this.prefs));
+            localStorage.setItem('nexrig_consent', 'selected');
+            this.showBanner = false;
+            this.showPreferences = false;
+        },
+        rejectAll() {
+            this.prefs = { transaction: false, shipping: false, cancellation: false, reviews: false };
+            localStorage.setItem('nexrig_consent', 'rejected');
+            this.showBanner = false;
+        }
+    }" 
+    class="no-print">
+
+    {{-- 1. BOTTOM BANNER --}}
+    <div x-show="showBanner"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         style="display: none;"
+         class="fixed bottom-0 left-0 right-0 z-[9990] bg-[#12121a] border-t border-[#2a2a35] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        
+        <div class="max-w-[1600px] mx-auto px-4 md:px-8 py-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-300 text-center lg:text-left">
+                This website uses cookies and local storage to ensure you get the best experience on our website. 
+                <a href="{{ route('privacy') }}" class="text-gray-400 hover:text-white underline underline-offset-2 transition-colors">Privacy Policy</a>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 shrink-0 w-full lg:w-auto">
+                <button @click="showPreferences = true" 
+                    class="px-6 py-2.5 border border-gray-400 hover:border-white bg-[#1a1a24] hover:bg-[#252532] text-gray-200 hover:text-white text-xs font-black uppercase tracking-wider transition-colors">
+                    Preferences
+                </button>
+                <button @click="rejectAll()" 
+                    class="px-6 py-2.5 bg-primary hover:bg-blue-500text-white text-xs font-black uppercase tracking-wider transition-colors">
+                    Reject
+                </button>
+                <button @click="acceptAll()" 
+                    class="px-8 py-2.5 bg-primary hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(155,81,224,0.4)]">
+                    Accept
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- 2. PREFERENCES MODAL (Pop-up Detail) --}}
+    <div x-show="showPreferences"
+         style="display: none;"
+         class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+
+        <div @click.outside="showPreferences = false"
+             x-show="showPreferences"
+             x-transition:enter="transition ease-out duration-400 delay-100"
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+             class="w-full max-w-4xl bg-[#0e0e14] border border-[#2a2a35] shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
+            
+            {{-- Header Modal --}}
+            <div class="flex justify-between items-center p-6 border-b border-[#2a2a35] shrink-0">
+                <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">Choose Type of Cookies & Terms You Accept</h1>
+                <button @click="showPreferences = false" class="w-8 h-8 border border-blue-500/50 hover:bg-blue-500/20 text-white flex items-center justify-center transition-colors group">
+                    <span class="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">close</span>
+                </button>
+            </div>
+
+            {{-- Content Scroll Area --}}
+            <div class="p-6 overflow-y-auto space-y-8 flex-1" style="scrollbar-width: thin; scrollbar-color: #3f3f4e #1a1a24;">
+                
+                {{-- Point 1: Strictly Required (TIDAK BISA DI-KLIK/DIMATIKAN) --}}
+                <div class="opacity-80">
+                    <div class="flex items-center gap-3 mb-2 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-[#4ade80] text-[20px] font-bold">check</span>
+                        <h2 class="text-white font-bold text-sm tracking-wide">Strictly Required Cookies & Local Storage</h2>
+                        <span class="ml-auto text-[10px] text-gray-500 font-bold uppercase tracking-widest">Always Active</span>
+                    </div>
+                    <p class="text-[13px] text-gray-400 leading-relaxed pl-8">
+                        Penyimpanan lokal diperlukan agar situs dapat berjalan, seperti menyimpan data Keranjang Belanja (Cart) Anda saat belum login dan mengelola sesi autentikasi. Data ini tidak dapat dinonaktifkan.
+                    </p>
+                </div>
+
+                {{-- Point 2: Transaksi (INTERAKTIF) --}}
+                <div>
+                    <button type="button" @click="prefs.transaction = !prefs.transaction" class="flex items-center gap-3 mb-2 cursor-pointer outline-none group w-full text-left">
+                        <span class="material-symbols-outlined text-[20px] font-bold transition-colors"
+                              :class="prefs.transaction ? 'text-[#4ade80]' : 'text-gray-600 group-hover:text-gray-400'">check</span>
+                        <h2 class="font-bold text-sm tracking-wide transition-colors"
+                            :class="prefs.transaction ? 'text-white' : 'text-gray-500'">Transaksi & Verifikasi Pembayaran</h2>
+                    </button>
+                    <p class="text-[13px] leading-relaxed pl-8 transition-opacity duration-300"
+                       :class="prefs.transaction ? 'text-gray-400 opacity-100' : 'text-gray-600 opacity-50'">
+                        Kami menggunakan Midtrans sebagai gerbang pembayaran. Pesanan akan dibatalkan otomatis jika pembayaran tidak diselesaikan dalam 1x24 jam. NexRig berhak membatalkan pesanan secara sepihak jika terjadi kesalahan sistem pada harga.
+                    </p>
+                </div>
+
+                {{-- Point 3: Pengiriman (INTERAKTIF) --}}
+                <div>
+                    <button type="button" @click="prefs.shipping = !prefs.shipping" class="flex items-center gap-3 mb-2 cursor-pointer outline-none group w-full text-left">
+                        <span class="material-symbols-outlined text-[20px] font-bold transition-colors"
+                              :class="prefs.shipping ? 'text-[#4ade80]' : 'text-gray-600 group-hover:text-gray-400'">check</span>
+                        <h2 class="font-bold text-sm tracking-wide transition-colors"
+                            :class="prefs.shipping ? 'text-white' : 'text-gray-500'">Akurasi Alamat & Tracking Pengiriman</h2>
+                    </button>
+                    <p class="text-[13px] leading-relaxed pl-8 transition-opacity duration-300"
+                       :class="prefs.shipping ? 'text-gray-400 opacity-100' : 'text-gray-600 opacity-50'">
+                        Fitur pelacakan rute Distribution Center (DC) adalah simulasi visual. Pengguna wajib memeriksa kembali kebenaran titik koordinat alamat pengiriman. NexRig tidak bertanggung jawab atas paket yang nyasar akibat kesalahan input pengguna.
+                    </p>
+                </div>
+
+                {{-- Point 4: Pembatalan (INTERAKTIF) --}}
+                <div>
+                    <button type="button" @click="prefs.cancellation = !prefs.cancellation" class="flex items-center gap-3 mb-2 cursor-pointer outline-none group w-full text-left">
+                        <span class="material-symbols-outlined text-[20px] font-bold transition-colors"
+                              :class="prefs.cancellation ? 'text-[#4ade80]' : 'text-gray-600 group-hover:text-gray-400'">check</span>
+                        <h2 class="font-bold text-sm tracking-wide transition-colors"
+                            :class="prefs.cancellation ? 'text-white' : 'text-gray-500'">Kebijakan Pembatalan Pesanan</h2>
+                    </button>
+                    <p class="text-[13px] leading-relaxed pl-8 transition-opacity duration-300"
+                       :class="prefs.cancellation ? 'text-gray-400 opacity-100' : 'text-gray-600 opacity-50'">
+                        Pembatalan pesanan secara mandiri hanya diizinkan jika status pesanan masih "Menunggu Pembayaran" atau "Dikemas". Pesanan tidak dapat dibatalkan dengan alasan apa pun jika status telah berubah menjadi "Dikirim".
+                    </p>
+                </div>
+
+                {{-- Point 5: Ulasan (INTERAKTIF) --}}
+                <div>
+                    <button type="button" @click="prefs.reviews = !prefs.reviews" class="flex items-center gap-3 mb-2 cursor-pointer outline-none group w-full text-left">
+                        <span class="material-symbols-outlined text-[20px] font-bold transition-colors"
+                              :class="prefs.reviews ? 'text-[#4ade80]' : 'text-gray-600 group-hover:text-gray-400'">check</span>
+                        <h2 class="font-bold text-sm tracking-wide transition-colors"
+                            :class="prefs.reviews ? 'text-white' : 'text-gray-500'">Konten & Ulasan Pengguna</h2>
+                    </button>
+                    <p class="text-[13px] leading-relaxed pl-8 transition-opacity duration-300"
+                       :class="prefs.reviews ? 'text-gray-400 opacity-100' : 'text-gray-600 opacity-50'">
+                        Fitur ulasan hanya dapat diakses setelah pesanan selesai. NexRig berhak menghapus ulasan yang mengandung SARA, spam, atau kata kasar tanpa pemberitahuan. Anda memberikan izin kepada kami untuk menggunakan foto ulasan sebagai materi promosi.
+                    </p>
+                </div>
+
+            </div>
+
+            {{-- Footer Modal / Action Buttons --}}
+            <div class="p-6 border-t border-[#2a2a35] shrink-0 bg-[#12121a]">
+                <div class="flex flex-col sm:flex-row gap-4 w-full">
+                    {{-- Tombol Accept Selected (Menjalankan fungsi acceptSelected() --}}
+                    <button @click="acceptSelected()" 
+                        class="flex-1 px-6 py-4 bg-primary hover:bg-blue-500 text-white text-sm font-black uppercase tracking-wider transition-colors text-center">
+                        Accept Selected
+                    </button>
+                    {{-- Tombol Accept All (Menjalankan fungsi acceptAll() dan mencentang semua kembali --}}
+                    <button @click="acceptAll()" 
+                        class="flex-1 px-8 py-4 bg-primary hover:bg-blue-500 text-white text-sm font-black uppercase tracking-wider transition-colors text-center shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                        Accept All
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

@@ -59,6 +59,8 @@ Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
+
+
 // Fitur Keranjang (Cart)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 // [DIPERBARUI] Menggunakan URL Standar RESTful
