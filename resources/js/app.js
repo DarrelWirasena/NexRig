@@ -488,47 +488,114 @@ window.closeChat = function () {
     }, 400);
 };
 
-window.sendMessage = async function () {
-    const input    = document.getElementById("chat-input");
-    const messages = document.getElementById("chat-messages");
-    const sendBtn  = document.getElementById("send-btn");
+window.sendMessage = async function() {
+    const input    = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+    const sendBtn  = document.getElementById('send-btn');
     const text     = input.value.trim();
+
     if (!text) return;
 
-    appendChatMessage("user", text);
-    saveChatHistory("user", text);
-    input.value      = "";
+    appendChatMessage('user', text);
+    saveChatHistory('user', text);
+    input.value      = '';
     sendBtn.disabled = true;
-    showChatLoading();
+
+    // Create bot bubble immediately
+    const botBubble = document.createElement('div');
+    botBubble.className = 'flex justify-start';
+    botBubble.innerHTML = `
+        <div class="bot-bubble bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%] prose prose-invert prose-sm">
+            <span class="chat-dot w-1.5 h-1.5 bg-gray-400 rounded-full inline-block animate-pulse"></span>
+        </div>`;
+    messages.appendChild(botBubble);
+    messages.scrollTop = messages.scrollHeight;
+
+    const bubble = botBubble.querySelector('.bot-bubble');
+    let fullText = '';
+    let streamDone = false;
 
     try {
-        const res  = await fetch("/chatbot", {
-            method: "POST",
+        const res = await fetch('/chatbot', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({ message: text }),
+            body: JSON.stringify({ message: text })
         });
 
-        if (!res.ok) throw new Error("Request gagal");
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        bubble.innerHTML = '';
 
-        const data = await res.json();
-        hideChatLoading();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-        if (data.reply) {
-            appendChatMessage("bot", data.reply);
-            saveChatHistory("bot", data.reply, data.products ?? []);
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    if (data === '[DONE]') break;
+
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.token) {
+                            fullText += json.token;
+                            if (!streamDone) {
+                                const displayText = fullText.replace(/\s*\[PRODUCTS\][\s\S]*?(\[\/PRODUCTS\])?\s*/g, '').trim();
+                                bubble.innerHTML = window.marked 
+                                    ? marked.parse(displayText) 
+                                    : displayText;
+                                messages.scrollTop = messages.scrollHeight;
+                            }
+                        }
+                    } catch {}
+                }
+            }
         }
-        if (data.products?.length > 0) appendChatProductCards(data.products);
-    } catch (err) {
-        hideChatLoading();
-        appendChatMessage("bot", "Maaf, terjadi kesalahan. Silakan coba lagi.");
+
+        streamDone = true;
+        // After stream ends, extract product cards if any
+
+        const productMatch = fullText.match(/\[PRODUCTS\]\s*([\s\S]*?)\s*\[\/PRODUCTS\]/);
+        if (productMatch) {
+            const cleanText = fullText.replace(/\s*\[PRODUCTS\][\s\S]*?\[\/PRODUCTS\]\s*/g, '').trim();
+            bubble.innerHTML = window.marked ? marked.parse(cleanText) : cleanText;
+
+            const slugs = JSON.parse(productMatch[1]) ?? [];
+            if (slugs.length > 0) {
+                // Fetch product cards from server
+                const cardRes = await fetch('/chatbot/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ slugs: slugs.map(s => s.slug) })
+                });
+                const cardData = await cardRes.json();
+                if (cardData.products?.length > 0) {
+                    appendChatProductCards(cardData.products);
+                    saveChatHistory('bot', fullText, cardData.products);
+                    return; // exit early, history already saved with products
+                }
+            }
+        }
+
+        // Only save history here if no products were found
+        saveChatHistory('bot', fullText);
+
+    } catch (error) {
+        bubble.innerHTML = 'Maaf, terjadi kesalahan. Silakan coba lagi.';
     }
 
     messages.scrollTop = messages.scrollHeight;
-    sendBtn.disabled   = false;
-};
+    sendBtn.disabled = false;
+}
 
 function appendChatMessage(type, content) {
     const messages = document.getElementById("chat-messages");
@@ -602,19 +669,22 @@ function escapeHtml(text) {
 }
 
 function saveChatHistory(type, content, products = null) {
+    const cleanContent = type === 'bot'
+        ? content.replace(/\s*\[PRODUCTS\][\s\S]*?\[\/PRODUCTS\]\s*/g, '').trim()
+        : content;
     const history = getChatHistory();
-    history.push({ type, content, products, time: Date.now() });
+    history.push({ type, content: cleanContent, products, time: Date.now() });
     if (history.length > 50) history.shift();
-    localStorage.setItem("saka_chat_history", JSON.stringify(history));
+    localStorage.setItem("nexrig_chat_history", JSON.stringify(history));
 }
 
 function getChatHistory() {
-    try { return JSON.parse(localStorage.getItem("saka_chat_history") ?? "[]"); }
+    try { return JSON.parse(localStorage.getItem("nexrig_chat_history") ?? "[]"); }
     catch { return []; }
 }
 
 window.clearChatHistory = function () {
-    localStorage.removeItem("saka_chat_history");
+    localStorage.removeItem("nexrig_chat_history");
     document.getElementById("chat-messages").innerHTML = `
         <div class="flex justify-start">
             <div class="bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%]">
