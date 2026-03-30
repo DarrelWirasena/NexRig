@@ -1221,12 +1221,12 @@
                         </div>
                         @php
                         $statusDef = match($order->status) {
-                        'pending' => ['label' => 'Pending', 'bg' => 'rgba(245,158,11,0.15)', 'color' => '#fcd34d', 'border' => 'rgba(245,158,11,0.4)'],
-                        'processing' => ['label' => 'Processing', 'bg' => 'rgba(37,99,235,0.15)', 'color' => '#93c5fd', 'border' => 'rgba(59,130,246,0.4)'],
-                        'shipped' => ['label' => 'Shipped', 'bg' => 'rgba(168,85,247,0.15)', 'color' => '#d8b4fe', 'border' => 'rgba(168,85,247,0.4)'],
-                        'completed' => ['label' => 'Completed', 'bg' => 'rgba(34,197,94,0.15)', 'color' => '#86efac', 'border' => 'rgba(34,197,94,0.4)'],
-                        'cancelled' => ['label' => 'Cancelled', 'bg' => 'rgba(239,68,68,0.15)', 'color' => '#fca5a5', 'border' => 'rgba(239,68,68,0.4)'],
-                        default => ['label' => ucfirst($order->status), 'bg' => 'rgba(100,100,100,0.15)', 'color' => '#aaa', 'border' => 'rgba(100,100,100,0.3)'],
+                        'pending'    => ['label' => 'Menunggu Pembayaran', 'bg' => 'rgba(245,158,11,0.15)', 'color' => '#fcd34d', 'border' => 'rgba(245,158,11,0.4)'],
+                        'processing' => ['label' => 'Dikemas',             'bg' => 'rgba(37,99,235,0.15)', 'color' => '#93c5fd', 'border' => 'rgba(59,130,246,0.4)'],
+                        'shipped'    => ['label' => 'Dikirim',             'bg' => 'rgba(168,85,247,0.15)', 'color' => '#d8b4fe', 'border' => 'rgba(168,85,247,0.4)'],
+                        'completed'  => ['label' => 'Selesai',             'bg' => 'rgba(34,197,94,0.15)', 'color' => '#86efac', 'border' => 'rgba(34,197,94,0.4)'],
+                        'cancelled'  => ['label' => 'Dibatalkan',          'bg' => 'rgba(239,68,68,0.15)', 'color' => '#fca5a5', 'border' => 'rgba(239,68,68,0.4)'],
+                        default      => ['label' => ucfirst($order->status), 'bg' => 'rgba(100,100,100,0.15)', 'color' => '#aaa', 'border' => 'rgba(100,100,100,0.3)'],
                         };
                         @endphp
                         <div class="status-pill" style="background:{{ $statusDef['bg'] }};color:{{ $statusDef['color'] }};border-color:{{ $statusDef['border'] }};">

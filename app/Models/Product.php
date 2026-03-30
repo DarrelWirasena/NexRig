@@ -143,4 +143,20 @@ class Product extends Model
             Cache::forget('chatbot_product_context');
         });
     }
+    // Tambahkan di bagian Relasi
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    // Helper: rata-rata rating (di-cache agar tidak query terus)
+    public function getAverageRatingAttribute(): float
+    {
+        return round($this->reviews()->avg('rating') ?? 0, 1);
+    }
+
+    public function getRatingCountAttribute(): int
+    {
+        return $this->reviews()->count();
+    }
 }

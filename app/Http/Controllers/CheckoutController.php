@@ -192,14 +192,18 @@ class CheckoutController extends Controller
 
     public function success($id)
     {
-        $title = 'Order Success';
-        $order = Order::with('items.product')
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+        $order = Order::findOrFail($id);
 
-        CartItem::where('user_id', Auth::id())->delete();
-        session()->forget('cart');
+        // Pastikan order milik user yang sedang login
+        abort_if($order->user_id !== Auth::id(), 403);
 
-        return view('checkout.success', compact('order', 'title'));
+        // Jika statusnya masih pending, ubah menjadi processing (Dikemas)
+        if ($order->status === 'pending') {
+            $order->update([
+                'status' => 'processing'
+            ]);
+        }
+
+        return view('checkout.success', compact('order'));
     }
 }

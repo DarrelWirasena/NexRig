@@ -159,7 +159,6 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        // Tidak ada perubahan di sini, kode lama kamu sudah benar
         $product = Product::with([
             'series.category',
             'series.products' => function ($q) {
@@ -169,12 +168,81 @@ class ProductController extends Controller
             'attributes',
             'benchmarks.game',
             'components',
-            'intendedUses'
+            'intendedUses',
+            'reviews.user', // ← tambahkan ini
         ])
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
+
         $title = $product->name;
-        return view('products.show', compact('product', 'title'));
+
+        // Cek apakah user login punya order completed yang mengandung produk ini
+        // dan belum pernah review
+        $eligibleOrder = null;
+        $existingReview = null;
+
+        if (auth()->check()) {
+            // Order yang sudah selesai dan mengandung produk ini
+            $eligibleOrder = \App\Models\Order::where('user_id', auth()->id())
+                ->where('status', 'completed')
+                ->whereHas('items', fn($q) => $q->where('product_id', $product->id))
+                ->latest()
+                ->first();
+
+            // Cek apakah sudah pernah review produk ini
+            if ($eligibleOrder) {
+                $existingReview = \App\Models\Review::where('user_id', auth()->id())
+                    ->where('product_id', $product->id)
+                    ->first();
+            }
+        }
+
+        // Distribusi rating (untuk bar chart)
+        $ratingDistribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $count = $product->reviews()->where('rating', $i)->count();
+            $ratingDistribution[$i] = [
+                'count'   => $count,
+                'percent' => $product->rating_count > 0
+                    ? round(($count / $product->rating_count) * 100)
+                    : 0,
+            ];
+        }
+
+        return view('products.show', compact(
+            'product',
+            'title',
+            'eligibleOrder',
+            'existingReview',
+            'ratingDistribution',
+        ));
+    }
+
+    public function reviews(Request $request, $slug)
+    {
+        $product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
+
+        $query = $product->reviews()->with('user')->latest();
+
+        // Filter berdasarkan rating
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        $reviews      = $query->paginate(10);
+        $totalReviews = $product->rating_count;
+
+        // Distribusi untuk filter
+        $ratingDistribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $count = $product->reviews()->where('rating', $i)->count();
+            $ratingDistribution[$i] = [
+                'count'   => $count,
+                'percent' => $totalReviews > 0 ? round(($count / $totalReviews) * 100) : 0,
+            ];
+        }
+
+        return view('products.reviews', compact('product', 'reviews', 'totalReviews', 'ratingDistribution'));
     }
 }

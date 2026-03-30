@@ -24,19 +24,19 @@
                     Order #{{ $order->id }}
                 </h3>
 
-                {{-- LOGIC WARNA STATUS DIPINDAH KE SINI --}}
+                {{-- LOGIC WARNA & LABEL STATUS --}}
                 @php
-                $statusColor = match($order->status) {
-                'pending' => 'text-amber-500 border-amber-500/30 bg-amber-500/10',
-                'processing' => 'text-blue-400 border-blue-400/30 bg-blue-400/10',
-                'shipped' => 'text-purple-400 border-purple-400/30 bg-purple-400/10',
-                'completed' => 'text-green-400 border-green-400/30 bg-green-400/10',
-                'cancelled' => 'text-red-400 border-red-400/30 bg-red-400/10',
-                default => 'text-gray-400 border-gray-400/30 bg-gray-400/10',
+                $statusData = match($order->status) {
+                    'pending'    => ['label' => 'Menunggu Pembayaran', 'class' => 'text-amber-500 border-amber-500/30 bg-amber-500/10'],
+                    'processing' => ['label' => 'Dikemas',             'class' => 'text-blue-400 border-blue-400/30 bg-blue-400/10'],
+                    'shipped'    => ['label' => 'Dikirim',             'class' => 'text-purple-400 border-purple-400/30 bg-purple-400/10'],
+                    'completed'  => ['label' => 'Selesai',             'class' => 'text-green-400 border-green-400/30 bg-green-400/10'],
+                    'cancelled'  => ['label' => 'Dibatalkan',          'class' => 'text-red-400 border-red-400/30 bg-red-400/10'],
+                    default      => ['label' => $order->status,        'class' => 'text-gray-400 border-gray-400/30 bg-gray-400/10'],
                 };
                 @endphp
-                <span class="px-2.5 py-0.5 text-[10px] font-black rounded border uppercase tracking-wider {{ $statusColor }}">
-                    {{ $order->status }}
+                <span class="px-2.5 py-0.5 text-[10px] font-black rounded border uppercase tracking-wider {{ $statusData['class'] }}">
+                    {{ $statusData['label'] }}
                 </span>
             </div>
 

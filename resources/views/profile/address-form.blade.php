@@ -571,48 +571,85 @@
             let geocodeTimer = null;
 
             async function geocodeAddress(queryArray) {
+                // 1. Tampilkan indikator loading di awal
                 geocodeStatus.classList.remove('hidden');
                 geocodeSpinner.classList.remove('hidden');
                 geocodeDone.classList.add('hidden');
                 geocodeFail.classList.add('hidden');
 
-                try {
-                    const query = queryArray.filter(Boolean).join(', ');
-                    const res = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`
-                        );
-                    const data = await res.json();
+                let finalLat = '';
+                let finalLng = '';
+                let finalPostcode = '';
 
-                    if (data.length > 0) {
-                        // Cari hasil yang punya postcode dulu
-                        const withPostcode = data.find(r => r.address?.postcode);
-                        const result = withPostcode ?? data[0];
+                // 2. Siapkan urutan pencarian dari spesifik ke umum (Desa -> Kec -> Kota)
+                const queriesToTry = [];
+                let currentQuery = [...queryArray];
+                while (currentQuery.length >= 2) {
+                    queriesToTry.push(currentQuery.filter(Boolean).join(', '));
+                    currentQuery.shift();
+                }
 
-                        inpLat.value = parseFloat(result.lat).toFixed(7);
-                        inpLng.value = parseFloat(result.lon).toFixed(7);
+                // 3. Cari satu per satu secara iteratif
+                for (const query of queriesToTry) {
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`);
+                        
+                        if (!res.ok) continue;
 
-                        // Selalu update kode pos dari Nominatim (tidak cek apakah kosong)
-                        const postcode = result.address?.postcode ?? '';
-                        if (postcode) {
-                            inpPostal.value = postcode;
+                        const data = await res.json();
+
+                        if (data && data.length > 0) {
+                            // a. Kunci koordinat dari wilayah yang PALING SPESIFIK (hanya diisi sekali)
+                            if (!finalLat && !finalLng) {
+                                finalLat = parseFloat(data[0].lat).toFixed(7);
+                                finalLng = parseFloat(data[0].lon).toFixed(7);
+                            }
+
+                            // b. Coba cari kode pos di hasil pencarian saat ini
+                            const withPostcode = data.find(r => r.address && r.address.postcode);
+                            if (withPostcode) {
+                                finalPostcode = withPostcode.address.postcode;
+                            } else if (data[0].address && data[0].address.postcode) {
+                                finalPostcode = data[0].address.postcode;
+                            }
+
+                            // c. Jika KOORDINAT dan KODE POS sudah dapat semua, baru BERHENTI mencari
+                            if (finalLat && finalLng && finalPostcode) {
+                                break; 
+                            }
+                            // Jika koordinat dapat TAPI kode pos kosong, loop akan otomatis LANJUT 
+                            // ke wilayah yang lebih luas (misal dari Desa ke Kecamatan) untuk numpang cari kode pos.
                         }
+                    } catch (error) {
+                        console.warn('Geocode fail for:', query);
+                    }
+                }
 
-                        geocodeSpinner.classList.add('hidden');
-                        geocodeDone.classList.remove('hidden');
+                // 4. HASIL AKHIR: HENTIKAN SPINNER MUTAR & UPDATE UI
+                geocodeSpinner.classList.add('hidden');
+
+                if (finalLat && finalLng) {
+                    // Selalu update koordinat
+                    inpLat.value = finalLat;
+                    inpLng.value = finalLng;
+
+                    if (finalPostcode) {
+                        // Jika berhasil dapat kode pos (entah dari level desa, kecamatan, atau kota)
+                        inpPostal.value = finalPostcode;
+                        geocodeDone.classList.remove('hidden'); // Centang hijau
                     } else {
-                        throw new Error('Not found');
+                        // Jika sudah dicari sampai level provinsi tapi API Nominatim tetap tidak punya data kode pos
+                        inpPostal.value = '';
+                        geocodeFail.classList.remove('hidden'); // Tanda seru merah
+                        geocodeFail.title = "Koordinat ditemukan, tapi kode pos tidak tersedia di database peta. Silakan isi manual.";
                     }
-                } catch (error) {
-                    if (queryArray.length > 2) {
-                        const narrowed = [...queryArray];
-                        narrowed.shift();
-                        await geocodeAddress(narrowed);
-                    } else {
-                        inpLat.value = '';
-                        inpLng.value = '';
-                        geocodeSpinner.classList.add('hidden');
-                        geocodeFail.classList.remove('hidden');
-                    }
+                } else {
+                    // Gagal total (Bahkan tidak ketemu koordinatnya)
+                    inpLat.value = '';
+                    inpLng.value = '';
+                    inpPostal.value = '';
+                    geocodeFail.classList.remove('hidden');
+                    geocodeFail.title = "Alamat tidak ditemukan di peta. Silakan isi manual.";
                 }
             }
 

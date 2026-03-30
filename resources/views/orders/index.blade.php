@@ -34,32 +34,40 @@
         </form>
     </div>
 
-    {{-- FILTER TABS (LOGIC) --}}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <div class="flex bg-[#0a0a0a] p-1 rounded-xl border border-white/10 w-full sm:w-auto">
+    {{-- CSS Tambahan untuk menyembunyikan scrollbar di mobile --}}
+        <style>
+            .hide-scrollbar::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        </style>
 
-            {{-- TAB: ACTIVE ORDERS --}}
-            <a href="{{ route('orders.index', ['tab' => 'active', 'search' => $search]) }}"
-                class="flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all text-center
-               {{ $tab == 'active' 
-                    ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
-                    : 'text-gray-500 hover:text-white hover:bg-white/5' 
-               }}">
-                Active Orders
-            </a>
+        {{-- FILTER TABS (STATUS BASED) --}}
+        <div class="mb-8 overflow-x-auto hide-scrollbar pb-2">
+            <div class="flex bg-[#0a0a0a] p-1.5 rounded-xl border border-white/10 w-max min-w-full lg:w-full">
+                
+                @php
+                    $tabs = [
+                        'all'        => 'Semua',
+                        'pending'    => 'Belum Bayar',
+                        'processing' => 'Dikemas',
+                        'shipped'    => 'Dikirim',
+                        'completed'  => 'Selesai',
+                        'cancelled'  => 'Dibatalkan',
+                    ];
+                @endphp
 
-            {{-- TAB: PAST ORDERS --}}
-            <a href="{{ route('orders.index', ['tab' => 'past', 'search' => $search]) }}"
-                class="flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all text-center
-               {{ $tab == 'past' 
-                    ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
-                    : 'text-gray-500 hover:text-white hover:bg-white/5' 
-               }}">
-                Past Orders
-            </a>
+                @foreach($tabs as $key => $label)
+                    <a href="{{ route('orders.index', ['tab' => $key, 'search' => $search]) }}"
+                        class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all text-center flex-1 sm:flex-none whitespace-nowrap select-none
+                        {{ $tab === $key 
+                            ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
+                            : 'text-gray-500 hover:text-white hover:bg-white/5' 
+                        }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
 
+            </div>
         </div>
-    </div>
 
     {{-- ORDER LIST --}}
     <div class="space-y-6">
@@ -71,10 +79,18 @@
         <div class="text-center py-20 bg-[#0a0a0a] border border-dashed border-white/10 rounded-xl">
             <span class="material-symbols-outlined text-6xl text-gray-700 mb-4">package_2</span>
             <h3 class="text-xl font-bold text-white mb-2">
-                No {{ $tab == 'active' ? 'active' : 'past' }} orders found
+                Tidak ada pesanan ditemukan
             </h3>
             <p class="text-gray-500 text-sm mb-6">
-                {{ $tab == 'active' ? "You don't have any orders in progress." : "You haven't completed any orders yet." }}
+                @if($tab === 'pending')
+                    Kamu tidak memiliki pesanan yang menunggu pembayaran.
+                @elseif($tab === 'processing')
+                    Belum ada pesanan yang sedang dikemas saat ini.
+                @elseif($tab === 'shipped')
+                    Belum ada pesanan yang sedang dalam perjalanan.
+                @else
+                    Belum ada riwayat pesanan di kategori ini.
+                @endif
             </p>
             <a href="{{ route('products.index') }}" class="px-6 py-2 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors inline-block">
                 Browse Catalog

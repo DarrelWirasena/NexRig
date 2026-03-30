@@ -403,6 +403,12 @@
                     </div>
                 </div>
             </section>
+            @include('sections.product.review', [
+            'product'            => $product,
+            'ratingDistribution' => $ratingDistribution,
+            'eligibleOrder'      => $eligibleOrder,
+            'existingReview'     => $existingReview,
+        ])
         </div>
     </div>
 </div>

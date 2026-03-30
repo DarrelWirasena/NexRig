@@ -16,7 +16,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\WishlistController;
-
+use App\Http\Controllers\ReviewController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Bisa diakses siapa saja)
@@ -151,4 +151,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{id}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+     // Review
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/products/{slug}/reviews', [ProductController::class, 'reviews'])
+    ->name('products.reviews');
 });
