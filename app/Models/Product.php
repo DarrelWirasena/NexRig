@@ -16,11 +16,12 @@ class Product extends Model
         'slug',
         'tier',
         'price',
-        'stock',          // ← baru
-        'track_stock',    // ← baru
+        'stock',
+        'track_stock',
         'short_description',
         'description',
         'is_active',
+        'restock_note',   
     ];
 
     protected $casts = [

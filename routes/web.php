@@ -66,7 +66,8 @@ Route::post('/cart/{id}', [CartController::class, 'store'])->name('cart.add');  
 Route::patch('/cart/update', [CartController::class, 'update'])->name('cart.update'); // URL update quantity
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove'); // [PENTING] Method DELETE
 
-Route::post('/chatbot', [ChatbotController::class, 'reply'])->middleware('throttle:20,1');
+Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'reply'])->middleware('throttle:20,1');
+Route::post('/chatbot/products', [App\Http\Controllers\ChatbotController::class, 'getProductCards'])->middleware('throttle:20,1');
 
 // Midtrans Webhook (outside auth to allow Midtrans to POST)
 Route::post('/webhook/midtrans', [MidtransController::class, 'webhook'])->name('midtrans.webhook');

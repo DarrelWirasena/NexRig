@@ -54,6 +54,11 @@ class ProductForm
                     ->visible(fn ($get) => $get('track_stock')),  // ← hanya tampil jika track_stock = true
                 // ────────────────────────────────────────────────────────────
 
+                TextInput::make('restock_note')
+                ->label('Restock Note (for chatbot)')
+                ->placeholder('e.g. Estimasi restock April 2026, atau Hubungi admin untuk pre-order')
+                ->nullable(),
+
                 TextInput::make('short_description'),
 
                 Textarea::make('description')
