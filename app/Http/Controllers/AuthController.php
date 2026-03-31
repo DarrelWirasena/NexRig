@@ -16,6 +16,8 @@ class AuthController extends Controller
     // 1. FITUR REGISTRASI & VERIFIKASI
     // ==========================================
     public function showRegisterForm() {
+        // Bersihkan ingatan lupa password
+        session()->forget(['reset_email', 'otp_sent', 'allow_reset_for']);
         return view('auth.register', ['title' => 'Register']);
     }
 
@@ -104,6 +106,8 @@ class AuthController extends Controller
     // 3. FITUR LUPA PASSWORD
     // ==========================================
     public function showForgotForm() {
+        // Bersihkan ingatan registrasi
+        session()->forget(['pending_user', 'verify_email']);
         return view('auth.forgot-password', ['title' => 'System Recovery']);
     }
 
@@ -115,9 +119,9 @@ class AuthController extends Controller
         $user->update(['otp_code' => $otp, 'otp_expires_at' => now()->addMinutes(10)]);
 
         // Kirim Email
-        Mail::to($user->email)->send(new ResetOtpMail($otp));
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ResetOtpMail($otp));
 
-        session(['reset_email' => $user->email, 'otp_sent' => true]);
+        session(['reset_email' => $user->email, 'otp_sent' => true, 'last_otp_sent_at' => time()]);
         return back()->with('success', 'Kode pemulihan dikirim ke email.');
     }
 
@@ -156,5 +160,69 @@ class AuthController extends Controller
         }
 
         return redirect()->route('login')->withErrors(['email' => 'Sistem Error.']);
+    }
+
+    public function resendOtp(Request $request) {
+        // 1. TANGKAP TIPE RESEND DARI FORM
+        $type = $request->input('type'); // isinya nanti 'reset' atau 'register'
+
+        $email = session('pending_user')['email'] ?? session('verify_email') ?? session('reset_email');
+
+        if (!$email) {
+            return back()->withErrors(['otp' => 'Sesi berakhir. Silakan ulangi proses dari awal.']);
+        }
+
+        // ==========================================
+        // CEK COOLDOWN 60 DETIK
+        // ==========================================
+        $lastSent = session('last_otp_sent_at'); 
+
+        if ($lastSent && is_numeric($lastSent)) {
+            $timePassed = time() - $lastSent; 
+            
+            if ($timePassed < 60) { 
+                $remaining = 60 - $timePassed;
+                return back()->withErrors(['otp' => 'Harap tunggu ' . $remaining . ' detik sebelum mengirim ulang.']);
+            }
+        }
+
+        // ==========================================
+        // BUAT OTP BARU
+        // ==========================================
+        $otp = random_int(100000, 999999);
+        $user = \App\Models\User::where('email', $email)->first();
+        
+        if ($user) {
+            $user->update([
+                'otp_code' => $otp,
+                'otp_expires_at' => now()->addMinutes(10)
+            ]);
+        } else if (session()->has('pending_user')) {
+            $pending = session('pending_user');
+            $pending['otp_code'] = $otp;
+            $pending['expires_at'] = now()->addMinutes(10);
+            session(['pending_user' => $pending]);
+        }
+
+        // ==========================================
+        // KIRIM EMAIL BERDASARKAN INPUT FORM (100% AKURAT)
+        // ==========================================
+        try {
+            if ($type === 'reset') {
+                // Pasti kirim Security Alert (Merah)
+                \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\ResetOtpMail($otp));
+            } else {
+                // Pasti kirim Registrasi (Biru)
+                \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\OtpMail($otp));
+            }
+            
+            session(['last_otp_sent_at' => time()]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Gagal resend OTP: " . $e->getMessage());
+            return back()->withErrors(['otp' => 'Gagal mengirim email. Pastikan koneksi internet stabil.']);
+        }
+
+        return back()->with('success', 'Kode akses baru telah dikirim ke terminal Anda.');
     }
 }

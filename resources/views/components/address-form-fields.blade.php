@@ -1,4 +1,3 @@
-{{-- resources/views/components/address-form-fields.blade.php --}}
 @props(['address' => null])
 
 {{-- Hidden Input untuk Koordinat & Nama Wilayah --}}
@@ -64,7 +63,7 @@
         <div class="custom-select" id="dd_province">
             <button type="button" class="dd-trigger w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-400 focus:border-blue-600 transition-all">
                 <span class="dd-label truncate">— Pilih Provinsi —</span>
-                <span class="material-symbols-outlined text-sm">expand_more</span>
+                <span class="material-symbols-outlined text-sm shrink-0">expand_more</span>
             </button>
             <div class="dd-menu hidden absolute z-50 mt-1 w-full bg-[#111] border border-white/10 rounded-lg shadow-2xl">
                 <div class="p-2 border-b border-white/10">
@@ -82,7 +81,7 @@
         <div class="custom-select disabled" id="dd_city">
             <button type="button" disabled class="dd-trigger w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-600 opacity-50 cursor-not-allowed transition-all">
                 <span class="dd-label truncate">— Pilih Kota —</span>
-                <span class="material-symbols-outlined text-sm">expand_more</span>
+                <span class="material-symbols-outlined text-sm shrink-0">expand_more</span>
             </button>
             <div class="dd-menu hidden absolute z-50 mt-1 w-full bg-[#111] border border-white/10 rounded-lg shadow-2xl">
                 <div class="p-2 border-b border-white/10">
@@ -100,7 +99,7 @@
         <div class="custom-select disabled" id="dd_district">
             <button type="button" disabled class="dd-trigger w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-600 opacity-50 cursor-not-allowed transition-all">
                 <span class="dd-label truncate">— Pilih Kecamatan —</span>
-                <span class="material-symbols-outlined text-sm">expand_more</span>
+                <span class="material-symbols-outlined text-sm shrink-0">expand_more</span>
             </button>
             <div class="dd-menu hidden absolute z-50 mt-1 w-full bg-[#111] border border-white/10 rounded-lg shadow-2xl">
                 <div class="p-2 border-b border-white/10">
@@ -118,7 +117,7 @@
         <div class="custom-select disabled" id="dd_village">
             <button type="button" disabled class="dd-trigger w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-600 opacity-50 cursor-not-allowed transition-all">
                 <span class="dd-label truncate">— Pilih Kelurahan —</span>
-                <span class="material-symbols-outlined text-sm">expand_more</span>
+                <span class="material-symbols-outlined text-sm shrink-0">expand_more</span>
             </button>
             <div class="dd-menu hidden absolute z-50 mt-1 w-full bg-[#111] border border-white/10 rounded-lg shadow-2xl">
                 <div class="p-2 border-b border-white/10">
@@ -162,18 +161,12 @@
     </div>
 </div>
 
-{{-- ========================================================== --}}
-{{-- STYLES & SCRIPTS KHUSUS KOMPONEN INI DENGAN @push          --}}
-{{-- ========================================================== --}}
-
 @push('styles')
 <style>
-    /* ── Custom Dropdown CSS ── */
     .custom-select { position: relative; }
     .custom-select .dd-trigger { text-align: left; }
     .custom-select.open .dd-trigger { border-color: rgb(59 130 246 / 0.6) !important; background: rgb(255 255 255 / 0.07) !important; opacity: 1 !important; }
     .custom-select.open .dd-trigger .material-symbols-outlined { transform: rotate(180deg); }
-    /* z-[999] agar menu tidak tertutup elemen lain di halaman checkout */
     .custom-select .dd-menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; }
     .custom-select .dd-list li { padding: 9px 14px; font-size: 13px; color: #d1d5db; cursor: pointer; transition: background 0.12s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .custom-select .dd-list li:hover { background: rgb(37 99 235 / 0.15); color: #fff; }
@@ -200,18 +193,35 @@
         const inpPostal = document.getElementById('postal_code');
         const loadingEl = document.getElementById('regionLoading');
 
-        // Elemen Geocoding & GPS
         const inpLat = document.getElementById('latitude');
         const inpLng = document.getElementById('longitude');
+        
+        // Elemen Indikator
         const geocodeStatus = document.getElementById('geocodeStatus');
         const geocodeSpinner = document.getElementById('geocodeSpinner');
         const geocodeDone = document.getElementById('geocodeDone');
         const geocodeFail = document.getElementById('geocodeFail');
         
-        const SELECTED = { province: '', city: '', district: '', village: '' };
-        let geocodeTimer = null;
+        const OLD = {
+            province: '{{ old('province_name', $address->province ?? '') }}',
+            city: '{{ old('city_name', $address->city ?? '') }}',
+            district: '{{ old('district_name', $address->district ?? '') }}',
+            village: '{{ old('village_name', $address->village ?? '') }}',
+        };
 
-        // ── 1. CUSTOM DROPDOWN ENGINE ──
+        const SELECTED = { province: '', city: '', district: '', village: '' };
+        
+        let geocodeTimer = null;
+        let abortController = null; 
+
+        function cleanRegionName(name) {
+            if(!name) return '';
+            return name.replace(/^KAB\.\s+/i, 'Kabupaten ')
+                       .replace(/^KOTA\s+/i, 'Kota ')
+                       .replace(/^PROV\.\s+/i, 'Provinsi ');
+        }
+
+        // ── DROPDOWN ENGINE ──
         function setupDropdown(wrapperId) {
             const wrapper = document.getElementById(wrapperId);
             if (!wrapper) return;
@@ -248,7 +258,7 @@
             });
         }
 
-        function fillDropdown(wrapperId, items, placeholder, hiddenInput, nameInput, onSelect) {
+        function fillDropdown(wrapperId, items, placeholder, hiddenInput, nameInput, oldVal, onSelect) {
             const wrapper = document.getElementById(wrapperId);
             const list = wrapper.querySelector('.dd-list');
             const label = wrapper.querySelector('.dd-label');
@@ -258,20 +268,28 @@
             items.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.name;
+
+                if (item.name === oldVal) {
+                    li.classList.add('active');
+                    label.textContent = item.name;
+                    label.classList.remove('text-gray-400', 'text-gray-600');
+                    label.classList.add('text-white', 'font-bold');
+                    hiddenInput.value = item.id;
+                    if(nameInput) nameInput.value = item.name;
+                }
+
                 li.addEventListener('click', () => {
                     list.querySelectorAll('li').forEach(l => l.classList.remove('active'));
                     li.classList.add('active');
                     label.textContent = item.name;
-                    
-                    label.classList.remove('text-gray-400');
+                    label.classList.remove('text-gray-400', 'text-gray-600');
                     label.classList.add('text-white', 'font-bold');
-                    
                     hiddenInput.value = item.id;
                     if(nameInput) nameInput.value = item.name;
-
                     wrapper.classList.remove('open');
                     wrapper.querySelector('.dd-menu').classList.add('hidden');
-                    if (onSelect) onSelect(item);
+                    
+                    if (onSelect) onSelect(item, true);
                 });
                 list.appendChild(li);
             });
@@ -279,6 +297,10 @@
             wrapper.classList.remove('disabled');
             trigger.disabled = false;
             trigger.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            if (oldVal && hiddenInput.value) {
+                onSelect && onSelect({ id: hiddenInput.value, name: oldVal }, false);
+            }
         }
 
         function resetDropdown(wrapperId, placeholder) {
@@ -290,84 +312,163 @@
             wrapper.querySelector('.dd-trigger').disabled = true;
             wrapper.querySelector('.dd-trigger').classList.add('opacity-50', 'cursor-not-allowed');
             wrapper.classList.add('disabled');
+            wrapper.classList.remove('open');
+            wrapper.querySelector('.dd-menu').classList.add('hidden');
         }
 
-        // ── 2. FETCH DENGAN SISTEM CACHE (AGAR LOADING INSTAN) ──
         async function fetchJSON(url) {
-            // Cek apakah data sudah ada di penyimpanan browser (cache)
             const cacheKey = 'nexrig_wilayah_' + url;
             const cachedData = sessionStorage.getItem(cacheKey);
-            if (cachedData) {
-                return JSON.parse(cachedData); // Langsung kembalikan data tanpa loading lama
-            }
+            if (cachedData) return JSON.parse(cachedData);
 
-            // Jika belum ada, baru tembak API Binderbyte
             const res = await fetch(url);
             const json = await res.json();
             if (json.code !== '200' && json.code !== 200) throw new Error(json.messages ?? 'API error');
-            
-            // Simpan hasil ke cache browser agar pemanggilan berikutnya instan
             sessionStorage.setItem(cacheKey, JSON.stringify(json.value));
             return json.value;
         }
 
-        // ── 3. GEOCODING: CARI GPS & KODE POS (NOMINATIM) ──
+        // 🔥 FUNGSI GEOCODE DENGAN PENGHANCUR SPINNER MUTLAK 🔥
         async function geocodeAddress(queryArray) {
             if(!geocodeStatus) return;
-            geocodeStatus.classList.remove('hidden');
-            geocodeSpinner.classList.remove('hidden');
-            geocodeDone.classList.add('hidden');
-            geocodeFail.classList.add('hidden');
+
+            // FUNGSI INI AKAN MEMAKSA SPINNER MATI TANPA PEDULI CSS CLASS APAPUN
+            function updateUI(state, message = '') {
+                // Pastikan container utama terlihat
+                geocodeStatus.classList.remove('hidden');
+                geocodeStatus.style.display = 'flex';
+
+                // MATIKAN SEMUA IKON SECARA PAKSA (Mencegah bentrok dengan font material)
+                if (geocodeSpinner) geocodeSpinner.style.display = 'none';
+                if (geocodeDone) geocodeDone.style.display = 'none';
+                if (geocodeFail) geocodeFail.style.display = 'none';
+
+                // NYALAKAN IKON SESUAI STATUS
+                if (state === 'loading') {
+                    if (geocodeSpinner) geocodeSpinner.style.display = 'inline-block';
+                } else if (state === 'success') {
+                    if (geocodeDone) {
+                        geocodeDone.style.display = 'inline-block';
+                        geocodeDone.title = message;
+                    }
+                } else if (state === 'error') {
+                    if (geocodeFail) {
+                        geocodeFail.style.display = 'inline-block';
+                        geocodeFail.title = message;
+                    }
+                }
+            }
+            
+            if (abortController) abortController.abort('NEW_SEARCH');
+            abortController = new AbortController();
+            const signal = abortController.signal;
+            let isTimeout = false;
+
+            // MULAI LOADING
+            updateUI('loading');
+
+            let finalLat = '';
+            let finalLng = '';
+            let finalPostcode = '';
+
+            const queriesToTry = [];
+            let currentQuery = [...queryArray];
+            
+            while (currentQuery.length >= 2) {
+                queriesToTry.push(currentQuery.filter(Boolean).join(', '));
+                currentQuery.shift();
+            }
+
+            // ATUR TIMEOUT 15 DETIK
+            const timeoutId = setTimeout(() => {
+                isTimeout = true;
+                if (abortController) abortController.abort('TIMEOUT');
+            }, 15000);
 
             try {
-                const query = queryArray.filter(Boolean).join(', ');
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`);
-                const data = await res.json();
+                for (let i = 0; i < queriesToTry.length; i++) {
+                    const query = queriesToTry[i];
 
-                if (data.length > 0) {
-                    const result = data[0];
-                    // Isi GPS otomatis
-                    if(inpLat) inpLat.value = parseFloat(result.lat).toFixed(7);
-                    if(inpLng) inpLng.value = parseFloat(result.lon).toFixed(7);
+                    // Beri jeda 1 detik antar pencarian agar tidak diblokir satpam server peta
+                    if (i > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
 
-                    // Isi Kode Pos otomatis
-                    const postcode = result.address?.postcode ?? '';
-                    if (postcode && inpPostal) inpPostal.value = postcode;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`, { signal });
+                        if (!res.ok) continue;
+                        const data = await res.json();
 
-                    geocodeSpinner.classList.add('hidden');
-                    geocodeDone.classList.remove('hidden');
-                } else {
-                    throw new Error('Not found');
+                        if (data && data.length > 0) {
+                            if (!finalLat && !finalLng) {
+                                finalLat = parseFloat(data[0].lat).toFixed(7);
+                                finalLng = parseFloat(data[0].lon).toFixed(7);
+                            }
+
+                            const withPostcode = data.find(r => r.address && r.address.postcode);
+                            if (withPostcode) {
+                                finalPostcode = withPostcode.address.postcode;
+                            } else if (data[0].address && data[0].address.postcode) {
+                                finalPostcode = data[0].address.postcode;
+                            }
+
+                            if (finalLat && finalLng && finalPostcode) break; 
+                        }
+                    } catch (error) {
+                        if (error.name === 'AbortError') throw error;
+                        console.warn('Geocode fail for:', query);
+                    }
                 }
-            } catch (error) {
-                // Jika tidak ketemu, kurangi detail wilayahnya (misal: buang nama kelurahan, cari kecamatannya saja)
-                if (queryArray.length > 2) {
-                    queryArray.shift(); 
-                    await geocodeAddress(queryArray);
+
+                clearTimeout(timeoutId);
+
+                // CEK HASIL AKHIR
+                if (finalLat && finalLng) {
+                    if(inpLat) inpLat.value = finalLat;
+                    if(inpLng) inpLng.value = finalLng;
+
+                    if (finalPostcode) {
+                        if(inpPostal) inpPostal.value = finalPostcode;
+                        updateUI('success', 'Kode pos ditemukan otomatis dari peta.');
+                    } else {
+                        updateUI('error', 'Koordinat ketemu, tapi kode pos kosong di database peta. Isi manual ya.');
+                    }
                 } else {
-                    // Jika tetap gagal
-                    if(inpLat) inpLat.value = '';
-                    if(inpLng) inpLng.value = '';
-                    geocodeSpinner.classList.add('hidden');
-                    geocodeFail.classList.remove('hidden');
+                    updateUI('error', 'Gagal melacak area di peta. Silakan isi manual.');
+                }
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    if (isTimeout) {
+                        updateUI('error', 'Pencarian terlalu lama (Timeout 15s). Silakan isi kode pos manual.');
+                    }
+                } else {
+                    updateUI('error', 'Terjadi kesalahan jaringan.');
                 }
             }
         }
 
         function triggerGeocode() {
             if (!SELECTED.city || !SELECTED.province) return;
-            const queryArray = [SELECTED.village, SELECTED.district, SELECTED.city, SELECTED.province, 'Indonesia'];
+            
+            const queryArray = [
+                SELECTED.village, 
+                SELECTED.district, 
+                cleanRegionName(SELECTED.city), 
+                cleanRegionName(SELECTED.province), 
+                'Indonesia'
+            ];
+            
             clearTimeout(geocodeTimer);
-            // Delay 800ms agar API Nominatim tidak ter-spam
             geocodeTimer = setTimeout(() => geocodeAddress(queryArray), 800);
         }
 
-        // ── 4. LOAD WILAYAH API ──
+        // ── PANGGIL DATA PERTAMA ──
         async function loadProvinces() {
             if(loadingEl) loadingEl.classList.remove('hidden');
             try {
                 const data = await fetchJSON(`${BB_URL}/provinsi?api_key=${BB_KEY}`);
-                fillDropdown('dd_province', data, '— Pilih Provinsi —', inpProvince, document.getElementById('province_name'), (item) => {
+                fillDropdown('dd_province', data, '— Pilih Provinsi —', inpProvince, document.getElementById('province_name'), OLD.province, (item) => {
                     SELECTED.province = item.name;
                     loadCities(item.id);
                 });
@@ -383,7 +484,7 @@
             if(loadingEl) loadingEl.classList.remove('hidden');
             try {
                 const data = await fetchJSON(`${BB_URL}/kabupaten?api_key=${BB_KEY}&id_provinsi=${provinceId}`);
-                fillDropdown('dd_city', data, '— Pilih Kota —', inpCity, document.getElementById('city_name'), (item) => {
+                fillDropdown('dd_city', data, '— Pilih Kota —', inpCity, document.getElementById('city_name'), OLD.city, (item) => {
                     SELECTED.city = item.name;
                     loadDistricts(item.id);
                 });
@@ -398,7 +499,7 @@
             if(loadingEl) loadingEl.classList.remove('hidden');
             try {
                 const data = await fetchJSON(`${BB_URL}/kecamatan?api_key=${BB_KEY}&id_kabupaten=${cityId}`);
-                fillDropdown('dd_district', data, '— Pilih Kecamatan —', inpDistrict, document.getElementById('district_name'), (item) => {
+                fillDropdown('dd_district', data, '— Pilih Kecamatan —', inpDistrict, document.getElementById('district_name'), OLD.district, (item) => {
                     SELECTED.district = item.name;
                     loadVillages(item.id);
                 });
@@ -412,10 +513,15 @@
             if(loadingEl) loadingEl.classList.remove('hidden');
             try {
                 const data = await fetchJSON(`${BB_URL}/kelurahan?api_key=${BB_KEY}&id_kecamatan=${districtId}`);
-                fillDropdown('dd_village', data, '— Pilih Kelurahan —', inpVillage, document.getElementById('village_name'), (item) => {
+                fillDropdown('dd_village', data, '— Pilih Kelurahan —', inpVillage, document.getElementById('village_name'), OLD.village, (item, isManual) => {
                     SELECTED.village = item.name;
-                    // JALANKAN PENCARIAN GPS & KODE POS DISINI
-                    triggerGeocode();
+                    
+                    if (isManual) {
+                        if(inpPostal) inpPostal.value = '';
+                        triggerGeocode();
+                    } else if (!inpPostal.value || !inpLat.value) {
+                        triggerGeocode();
+                    }
                 });
             } catch (e) {} finally { if(loadingEl) loadingEl.classList.add('hidden'); }
         }

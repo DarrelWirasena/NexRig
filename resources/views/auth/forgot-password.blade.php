@@ -94,8 +94,6 @@
             @else
             <form id="verify-form" method="POST" action="{{ route('password.verify') }}" class="space-y-4 relative z-30">
                 @csrf
-                {{-- Input hidden email SUDAH DIHAPUS karena kita pakai Session --}}
-
                 <div class="space-y-1.5 text-center">
                     <label class="block text-[10px] font-black text-green-400 uppercase tracking-[0.2em] mb-3">Code Sent to Terminal</label>
                     <input type="text" id="otp-auto-submit" name="otp" required autofocus maxlength="6" autocomplete="off"
@@ -107,12 +105,28 @@
                 <button type="submit" class="hidden">Verify</button>
             </form>
 
+            {{-- FITUR RESEND OTP BARU --}}
+            <div class="mt-6 text-center relative z-30 border-t border-white/5 pt-4">
+                <form action="{{ route('otp.resend') }}" method="POST" id="resend-form">
+                    @csrf
+                    {{-- PENANDA BAHWA INI RESEND UNTUK RESET --}}
+                    <input type="hidden" name="type" value="reset">
+                    
+                    <p class="text-[9px] text-slate-500 uppercase tracking-widest mb-2">Signal Lost?</p>
+                    <button type="submit" id="resend-btn" disabled
+                        class="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:text-white disabled:text-slate-700 transition-colors">
+                        Resend Code <span id="timer">(60s)</span>
+                    </button>
+                </form>
+            </div>
+
             {{-- Tombol Cancel jika OTP tidak masuk / ingin ganti email --}}
             <div class="mt-4 text-center relative z-30">
                 <a href="{{ route('login') }}" class="text-[9px] text-slate-500 hover:text-red-400 uppercase tracking-widest font-bold transition-colors">Abort & Return to Login</a>
             </div>
 
             <script>
+                // Script Auto Submit OTP
                 document.getElementById('otp-auto-submit').addEventListener('input', function(e) {
                     this.value = this.value.replace(/[^0-9]/g, '');
                     if (this.value.length === 6) {
@@ -120,6 +134,22 @@
                         document.getElementById('verify-form').submit();
                     }
                 });
+
+                // Script Cooldown Resend OTP
+                let timeLeft = 60; // Jeda 60 detik
+                const timerElem = document.getElementById('timer');
+                const resendBtn = document.getElementById('resend-btn');
+
+                const countdown = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(countdown);
+                        timerElem.textContent = "";
+                        resendBtn.disabled = false;
+                    } else {
+                        timerElem.textContent = `(${timeLeft}s)`;
+                    }
+                }, 1000);
             </script>
             @endif
         </div>
