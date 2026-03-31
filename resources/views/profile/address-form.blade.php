@@ -27,6 +27,7 @@
             top: calc(100% + 4px);
             left: 0;
             right: 0;
+            z-index: 999; /* Ditambahkan z-index agar menu tidak tertutup elemen lain */
         }
 
         .custom-select .dd-list li {
@@ -326,18 +327,12 @@
                                     placeholder="Otomatis terisi, atau ketik manual"
                                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm
                                           placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.07] transition-all">
+                                
                                 {{-- Status geocoding --}}
-                                <div id="geocodeStatus" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
-                                    <svg id="geocodeSpinner" class="animate-spin w-4 h-4 text-blue-400 hidden"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                                    </svg>
-                                    <span id="geocodeDone"
-                                        class="material-symbols-outlined text-green-400 text-sm hidden">check_circle</span>
-                                    <span id="geocodeFail"
-                                        class="material-symbols-outlined text-red-400 text-sm hidden">error</span>
+                                <div id="geocodeStatus" class="absolute right-4 top-1/2 -translate-y-1/2 hidden flex items-center">
+                                    <span id="geocodeSpinner" class="material-symbols-outlined animate-spin text-blue-400 text-sm hidden">autorenew</span>
+                                    <span id="geocodeDone" class="material-symbols-outlined text-green-400 text-sm hidden">check_circle</span>
+                                    <span id="geocodeFail" class="material-symbols-outlined text-red-400 text-sm hidden">error</span>
                                 </div>
                             </div>
                             <p class="text-[11px] text-gray-600 mt-1.5 flex items-center gap-1">
@@ -448,6 +443,17 @@
                 village: ''
             };
 
+            let geocodeTimer = null;
+            let abortController = null;
+
+            // FUNGSI PEMBERSIH NAMA WILAYAH
+            function cleanRegionName(name) {
+                if(!name) return '';
+                return name.replace(/^KAB\.\s+/i, 'Kabupaten ')
+                           .replace(/^KOTA\s+/i, 'Kota ')
+                           .replace(/^PROV\.\s+/i, 'Provinsi ');
+            }
+
             // ── Custom Dropdown Engine ───────────────────────────────────
             function setupDropdown(wrapperId) {
                 const wrapper = document.getElementById(wrapperId);
@@ -527,7 +533,8 @@
                         wrapper.classList.remove('open');
                         wrapper.querySelector('.dd-menu').classList.add('hidden');
 
-                        if (onSelect) onSelect(item);
+                        // Kirim true sebagai penanda user klik manual
+                        if (onSelect) onSelect(item, true);
                     });
 
                     list.appendChild(li);
@@ -539,11 +546,10 @@
                 trigger.classList.remove('cursor-not-allowed');
                 trigger.classList.add('hover:border-blue-500/50');
 
-                // Auto-select jika ada oldVal
-                if (oldVal && hiddenInput.value) onSelect && onSelect({
-                    id: hiddenInput.value,
-                    name: oldVal
-                });
+                // Auto-select jika ada oldVal (kirim false sebagai penanda auto-load)
+                if (oldVal && hiddenInput.value) {
+                    onSelect && onSelect({ id: hiddenInput.value, name: oldVal }, false);
+                }
             }
 
             // Reset dropdown ke disabled
@@ -559,29 +565,58 @@
                 wrapper.querySelector('.dd-menu').classList.add('hidden');
             }
 
-            // ── Fetch JSON Binderbyte ────────────────────────────────────
+            // ── Fetch JSON Binderbyte dengan Caching ────────────────────────────────────
             async function fetchJSON(url) {
+                const cacheKey = 'nexrig_wilayah_' + url;
+                const cachedData = sessionStorage.getItem(cacheKey);
+                if (cachedData) return JSON.parse(cachedData);
+
                 const res = await fetch(url);
                 const json = await res.json();
                 if (json.code !== '200' && json.code !== 200) throw new Error(json.messages ?? 'API error');
+                sessionStorage.setItem(cacheKey, JSON.stringify(json.value));
                 return json.value;
             }
 
-            // ── Geocoding Nominatim (koordinat + kode pos) yang Diperkuat ──────────────
-            let geocodeTimer = null;
-
+            // ── Geocoding Nominatim (koordinat + kode pos) yang Diperkuat & Anti Spinner ──────────────
             async function geocodeAddress(queryArray) {
-                // 1. Tampilkan indikator loading di awal
-                geocodeStatus.classList.remove('hidden');
-                geocodeSpinner.classList.remove('hidden');
-                geocodeDone.classList.add('hidden');
-                geocodeFail.classList.add('hidden');
+                if(!geocodeStatus) return;
+
+                // FUNGSI PENGENDALI UI (Membunuh Spinner Paksa)
+                function updateUI(state, message = '') {
+                    geocodeStatus.classList.remove('hidden');
+                    geocodeStatus.style.display = 'flex';
+
+                    if (geocodeSpinner) geocodeSpinner.style.display = 'none';
+                    if (geocodeDone) geocodeDone.style.display = 'none';
+                    if (geocodeFail) geocodeFail.style.display = 'none';
+
+                    if (state === 'loading') {
+                        if (geocodeSpinner) geocodeSpinner.style.display = 'inline-block';
+                    } else if (state === 'success') {
+                        if (geocodeDone) {
+                            geocodeDone.style.display = 'inline-block';
+                            geocodeDone.title = message;
+                        }
+                    } else if (state === 'error') {
+                        if (geocodeFail) {
+                            geocodeFail.style.display = 'inline-block';
+                            geocodeFail.title = message;
+                        }
+                    }
+                }
+                
+                if (abortController) abortController.abort('NEW_SEARCH');
+                abortController = new AbortController();
+                const signal = abortController.signal;
+                let isTimeout = false;
+
+                updateUI('loading');
 
                 let finalLat = '';
                 let finalLng = '';
                 let finalPostcode = '';
 
-                // 2. Siapkan urutan pencarian dari spesifik ke umum (Desa -> Kec -> Kota)
                 const queriesToTry = [];
                 let currentQuery = [...queryArray];
                 while (currentQuery.length >= 2) {
@@ -589,86 +624,96 @@
                     currentQuery.shift();
                 }
 
-                // 3. Cari satu per satu secara iteratif
-                for (const query of queriesToTry) {
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`);
-                        
-                        if (!res.ok) continue;
+                // ATUR TIMEOUT 15 DETIK
+                const timeoutId = setTimeout(() => {
+                    isTimeout = true;
+                    if (abortController) abortController.abort('TIMEOUT');
+                }, 15000);
 
-                        const data = await res.json();
+                try {
+                    for (let i = 0; i < queriesToTry.length; i++) {
+                        const query = queriesToTry[i];
 
-                        if (data && data.length > 0) {
-                            // a. Kunci koordinat dari wilayah yang PALING SPESIFIK (hanya diisi sekali)
-                            if (!finalLat && !finalLng) {
-                                finalLat = parseFloat(data[0].lat).toFixed(7);
-                                finalLng = parseFloat(data[0].lon).toFixed(7);
-                            }
-
-                            // b. Coba cari kode pos di hasil pencarian saat ini
-                            const withPostcode = data.find(r => r.address && r.address.postcode);
-                            if (withPostcode) {
-                                finalPostcode = withPostcode.address.postcode;
-                            } else if (data[0].address && data[0].address.postcode) {
-                                finalPostcode = data[0].address.postcode;
-                            }
-
-                            // c. Jika KOORDINAT dan KODE POS sudah dapat semua, baru BERHENTI mencari
-                            if (finalLat && finalLng && finalPostcode) {
-                                break; 
-                            }
-                            // Jika koordinat dapat TAPI kode pos kosong, loop akan otomatis LANJUT 
-                            // ke wilayah yang lebih luas (misal dari Desa ke Kecamatan) untuk numpang cari kode pos.
+                        if (i > 0) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                         }
-                    } catch (error) {
-                        console.warn('Geocode fail for:', query);
+
+                        try {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`, { signal });
+                            
+                            if (!res.ok) continue;
+
+                            const data = await res.json();
+
+                            if (data && data.length > 0) {
+                                if (!finalLat && !finalLng) {
+                                    finalLat = parseFloat(data[0].lat).toFixed(7);
+                                    finalLng = parseFloat(data[0].lon).toFixed(7);
+                                }
+
+                                const withPostcode = data.find(r => r.address && r.address.postcode);
+                                if (withPostcode) {
+                                    finalPostcode = withPostcode.address.postcode;
+                                } else if (data[0].address && data[0].address.postcode) {
+                                    finalPostcode = data[0].address.postcode;
+                                }
+
+                                if (finalLat && finalLng && finalPostcode) {
+                                    break; 
+                                }
+                            }
+                        } catch (error) {
+                            if (error.name === 'AbortError') throw error;
+                            console.warn('Geocode fail for:', query);
+                        }
                     }
-                }
 
-                // 4. HASIL AKHIR: HENTIKAN SPINNER MUTAR & UPDATE UI
-                geocodeSpinner.classList.add('hidden');
+                    clearTimeout(timeoutId);
 
-                if (finalLat && finalLng) {
-                    // Selalu update koordinat
-                    inpLat.value = finalLat;
-                    inpLng.value = finalLng;
+                    if (finalLat && finalLng) {
+                        if(inpLat) inpLat.value = finalLat;
+                        if(inpLng) inpLng.value = finalLng;
 
-                    if (finalPostcode) {
-                        // Jika berhasil dapat kode pos (entah dari level desa, kecamatan, atau kota)
-                        inpPostal.value = finalPostcode;
-                        geocodeDone.classList.remove('hidden'); // Centang hijau
+                        if (finalPostcode) {
+                            if(inpPostal) inpPostal.value = finalPostcode;
+                            updateUI('success', 'Kode pos ditemukan otomatis dari peta.');
+                        } else {
+                            updateUI('error', 'Koordinat ketemu, tapi kode pos kosong di database peta. Isi manual ya.');
+                        }
                     } else {
-                        // Jika sudah dicari sampai level provinsi tapi API Nominatim tetap tidak punya data kode pos
-                        inpPostal.value = '';
-                        geocodeFail.classList.remove('hidden'); // Tanda seru merah
-                        geocodeFail.title = "Koordinat ditemukan, tapi kode pos tidak tersedia di database peta. Silakan isi manual.";
+                        updateUI('error', 'Gagal melacak area di peta. Silakan isi manual.');
                     }
-                } else {
-                    // Gagal total (Bahkan tidak ketemu koordinatnya)
-                    inpLat.value = '';
-                    inpLng.value = '';
-                    inpPostal.value = '';
-                    geocodeFail.classList.remove('hidden');
-                    geocodeFail.title = "Alamat tidak ditemukan di peta. Silakan isi manual.";
+
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        if (isTimeout) {
+                            updateUI('error', 'Pencarian terlalu lama (Timeout 15s). Silakan isi kode pos manual.');
+                        }
+                    } else {
+                        updateUI('error', 'Terjadi kesalahan jaringan.');
+                    }
+                } finally {
+                    if (geocodeSpinner && isTimeout) {
+                        geocodeSpinner.style.display = 'none';
+                    }
                 }
             }
 
             function triggerGeocode() {
                 if (!SELECTED.city || !SELECTED.province) return;
 
-                // Buat array urutan pencarian, dari yang paling spesifik ke umum
                 const queryArray = [
                     SELECTED.village,
                     SELECTED.district,
-                    SELECTED.city,
-                    SELECTED.province,
+                    cleanRegionName(SELECTED.city),
+                    cleanRegionName(SELECTED.province),
                     'Indonesia'
                 ];
 
                 clearTimeout(geocodeTimer);
-                // Delay sedikit agar tidak spam API saat user klik-klik cepat
                 geocodeTimer = setTimeout(() => geocodeAddress(queryArray), 800);
             }
+
             // ── Load functions ───────────────────────────────────────────
             async function loadProvinces() {
                 loadingEl.classList.remove('hidden');
@@ -749,10 +794,16 @@
                     `${BB_URL}/kelurahan?api_key=${BB_KEY}&id_kecamatan=${districtId}`);
                     fillDropdown('dd_village', data, '— Pilih Kelurahan —', inpVillage,
                         document.getElementById('village_name'), OLD.village,
-                        (item) => {
+                        (item, isManual) => {
                             SELECTED.village = item.name;
-                            inpPostal.value = ''; // reset dulu, biar Nominatim yang isi
-                            triggerGeocode();
+                            
+                            // Gunakan parameter isManual untuk memastikan geocode berjalan benar
+                            if (isManual) {
+                                if(inpPostal) inpPostal.value = '';
+                                triggerGeocode();
+                            } else if (!inpPostal.value || !inpLat.value) {
+                                triggerGeocode();
+                            }
                         }
                     );
                 } catch (e) {
