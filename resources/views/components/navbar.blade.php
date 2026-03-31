@@ -3,7 +3,7 @@
     class="fixed top-0 left-0 right-0 z-[100] border-b border-white/10 bg-[#050505]/40 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-300">
 
     {{-- HEADER UTAMA --}}
-    <div class="px-4 lg:px-10 py-3">
+    <div class="px-4 lg:px-10 h-[80px] flex items-center">
         <header class="flex items-center justify-between max-w-[1440px] mx-auto w-full relative">
 
             {{-- BAGIAN KIRI: LOGO + NAV berdampingan --}}
@@ -25,7 +25,7 @@
                 @foreach ($navbarCategories as $category)
                     <div class="relative group h-full flex items-center">
                         <button
-                            class="flex items-center px-4 py-6 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors border-b-2 border-transparent group-hover:border-blue-500 whitespace-nowrap">
+                            class="flex items-center px-4 py-5 text-gray-400 group-hover:text-white text-sm font-bold uppercase tracking-wide transition-colors border-b-2 border-transparent group-hover:border-blue-500 whitespace-nowrap">
                             {{ $category->name }}
                         </button>
 

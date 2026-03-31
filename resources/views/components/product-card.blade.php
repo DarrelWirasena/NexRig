@@ -55,7 +55,7 @@
         </button>
         @else
         {{-- Belum login: arahkan ke login --}}
-        <a href="{{ route('login') }}"
+        <button
            onclick="event.preventDefault(); event.stopPropagation(); window.location='{{ route('login') }}';"
            class="absolute top-2 right-2 md:top-3 md:right-3 z-20
                   w-7 h-7 md:w-8 md:h-8 rounded-full
@@ -68,7 +68,7 @@
                   style="font-variation-settings: 'FILL' 0">
                 favorite
             </span>
-        </a>
+        </button>
         @endauth
         @endif
 
