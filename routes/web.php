@@ -86,6 +86,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/verify-otp', [AuthController::class, 'showOtpForm'])->name('otp.verify');
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('otp.process');
+    Route::post('/otp/resend', [AuthController::class, 'resendOtp'])->name('otp.resend');
 
     // Login Route
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); // Menampilkan form
