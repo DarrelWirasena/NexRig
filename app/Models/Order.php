@@ -16,6 +16,7 @@ class Order extends Model
         'total_price',
         'status',
         'midtrans_order_id',
+        'snap_token',
         'shipping_name',
         'shipping_phone',
         'shipping_address',

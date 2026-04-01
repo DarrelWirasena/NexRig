@@ -146,6 +146,8 @@ class CheckoutController extends Controller
             // ── Kurangi stok setelah order items tersimpan ────────────────────
             $this->cartService->decrementStockForCart();
 
+            $this->cartService->clearCart();
+
             DB::commit();
 
             // ── Integrasi Midtrans ─────────────────────────────────────────────
@@ -173,8 +175,12 @@ class CheckoutController extends Controller
                 'enabled_payments' => $enabled_payments,
             ];
 
-            $snapToken = Snap::getSnapToken($params);
-            $order->update(['midtrans_order_id' => $midtransOrderId]);
+           $snapToken = Snap::getSnapToken($params);
+
+            $order->update([
+                'midtrans_order_id' => $midtransOrderId,
+                'snap_token'        => $snapToken
+            ]);
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));

@@ -51,6 +51,26 @@ class OrderController extends Controller
 
         abort_if($order->user_id !== Auth::id(), 403);
 
+        // 🔥 TAMBAHAN LOGIKA UX: Auto-cancel jika lewat 15 menit
+        if ($order->status === 'pending') {
+            // Hitung sisa waktu dari created_at
+            $expiresAt = $order->created_at->addMinutes(15);
+            
+            if (now()->greaterThanOrEqualTo($expiresAt)) {
+                // Waktu habis -> Batalkan dan kembalikan stok
+                $order->update(['status' => 'cancelled']);
+                
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+                
+                // Refresh status di object $order agar tampilan blade menyesuaikan
+                $order->status = 'cancelled';
+            }
+        }
+
         // ✅ Gunakan fungsi simulasi, bukan mock data hardcode
         $trackingEvents = $this->generateTrackingTimeline($order);
 
@@ -73,22 +93,32 @@ class OrderController extends Controller
     }
 
     // Batalkan Pesanan
+    // Batalkan Pesanan
     public function cancel(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
             abort(403);
         }
 
-        // ✅ UBAH DISINI: Izinkan pembatalan jika status 'pending' atau 'processing'
+        // Izinkan pembatalan jika status 'pending' atau 'processing'
         if (!in_array($order->status, ['pending', 'processing'])) {
             return redirect()->route('orders.show', $order->id)
                 ->with('error', 'Pesanan hanya dapat dibatalkan saat status masih Menunggu Pembayaran atau Dikemas.');
         }
 
+        // Ubah status jadi batal
         $order->update(['status' => 'cancelled']);
 
+        // 🔥 KEMBALIKAN STOK BARANG KE GUDANG 🔥
+        // Kita load items-nya, lalu kembalikan stoknya sejumlah quantity yang dibeli
+        foreach ($order->items as $item) {
+            if ($item->product) {
+                $item->product->increment('stock', $item->quantity);
+            }
+        }
+
         return redirect()->route('orders.show', $order->id)
-            ->with('success', 'Pesanan berhasil dibatalkan.');
+            ->with('success', 'Pesanan berhasil dibatalkan dan stok barang telah dikembalikan.');
     }
 
     // ═══════════════════════════════════════════════════════════

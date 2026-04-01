@@ -5,53 +5,44 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         /* Map dark filter */
-        .leaflet-tile {
-            filter: brightness(0.45) saturate(0.6) hue-rotate(200deg);
-        }
-
-        .leaflet-container {
-            background: #0a0a0a;
-        }
+        .leaflet-tile { filter: brightness(0.45) saturate(0.6) hue-rotate(200deg); }
+        .leaflet-container { background: #0a0a0a; }
 
         /* Timeline Animation */
         @keyframes timeline-in {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .timeline-item {
-            animation: timeline-in 0.4s ease both;
-        }
+        .timeline-item { animation: timeline-in 0.4s ease both; }
 
         /* Truck Map Pulse */
         .truck-pulse {
             box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
             animation: pulse-blue 2s infinite;
         }
-
         @keyframes pulse-blue {
-            0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
     </style>
 
     <div class="max-w-6xl mx-auto pb-20">
+
+        {{-- 🔥 BANNER UX: JIKA STATUS PENDING (BELUM BAYAR) 🔥 --}}
+        @if ($order->status === 'pending')
+            <div class="mb-8 p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-amber-500">schedule</span>
+                    </div>
+                    <div>
+                        <h4 class="text-amber-500 font-bold text-sm">Menunggu Pembayaran</h4>
+                        <p class="text-xs text-amber-500/80 mt-0.5">Selesaikan pembayaran sebelum <span class="font-bold text-white">{{ $order->created_at->addMinutes(15)->format('H:i') }} WIB</span> agar pesanan dapat diproses.</p>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- HEADER --}}
         <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
@@ -109,8 +100,7 @@
                                     class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                             </span>
-                            <span class="text-[10px] font-bold text-white uppercase tracking-widest">Live Route
-                                Tracking</span>
+                            <span class="text-[10px] font-bold text-white uppercase tracking-widest">Live Route Tracking</span>
                         </div>
 
                         {{-- Gradient fade --}}
@@ -138,20 +128,14 @@
                         @php
                             $status = $order->status;
                             $history = [];
-
-                            // Membangun timeline mundur (dari kejadian terbaru ke terlama) sesuai status
-                           
-                            // $trackingEvents sudah dikirim dari OrderController::show()
-                            // Tidak perlu logika tambahan di sini
                         @endphp
 
                         @if ($order->status === 'cancelled')
                             <div class="bg-red-500/5 border border-red-500/20 rounded-xl p-6 flex items-center gap-4">
                                 <span class="material-symbols-outlined text-red-400 text-3xl">cancel</span>
                                 <div>
-                                    <p class="text-sm font-bold text-red-400">Pesanan Dibatalkan</p>
-                                    <p class="text-xs text-gray-500 mt-1">Pesanan ini telah dibatalkan dan tidak diproses.
-                                    </p>
+                                    <p class="text-sm font-bold text-red-400">Pesanan Dibatalkan / Waktu Habis</p>
+                                    <p class="text-xs text-gray-500 mt-1">Pesanan ini telah dibatalkan (atau waktu pembayaran habis) dan tidak diproses.</p>
                                 </div>
                             </div>
                         @else
@@ -163,30 +147,10 @@
                                     @foreach ($trackingEvents as $event)
                                         @php
                                             $colorMap = [
-                                                'blue' => [
-                                                    'bg' => 'bg-blue-600',
-                                                    'ring' => 'ring-blue-500/30',
-                                                    'text' => 'text-blue-400',
-                                                    'badge' => 'bg-blue-600/10 text-blue-400 border-blue-500/20',
-                                                ],
-                                                'green' => [
-                                                    'bg' => 'bg-green-600',
-                                                    'ring' => 'ring-green-500/30',
-                                                    'text' => 'text-green-400',
-                                                    'badge' => 'bg-green-600/10 text-green-400 border-green-500/20',
-                                                ],
-                                                'yellow' => [
-                                                    'bg' => 'bg-yellow-500',
-                                                    'ring' => 'ring-yellow-400/30',
-                                                    'text' => 'text-yellow-400',
-                                                    'badge' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-                                                ],
-                                                'gray' => [
-                                                    'bg' => 'bg-white/10',
-                                                    'ring' => 'ring-white/5',
-                                                    'text' => 'text-gray-500',
-                                                    'badge' => 'bg-white/5 text-gray-500 border-white/10',
-                                                ],
+                                                'blue' => ['bg' => 'bg-blue-600', 'ring' => 'ring-blue-500/30', 'text' => 'text-blue-400', 'badge' => 'bg-blue-600/10 text-blue-400 border-blue-500/20'],
+                                                'green' => ['bg' => 'bg-green-600', 'ring' => 'ring-green-500/30', 'text' => 'text-green-400', 'badge' => 'bg-green-600/10 text-green-400 border-green-500/20'],
+                                                'yellow' => ['bg' => 'bg-yellow-500', 'ring' => 'ring-yellow-400/30', 'text' => 'text-yellow-400', 'badge' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'],
+                                                'gray' => ['bg' => 'bg-white/10', 'ring' => 'ring-white/5', 'text' => 'text-gray-500', 'badge' => 'bg-white/5 text-gray-500 border-white/10'],
                                             ];
                                             $c = $colorMap[$event['color']] ?? $colorMap['gray'];
                                             $isPending = $event['status'] === 'pending';
@@ -196,44 +160,27 @@
                                         <div class="relative flex gap-5 pb-8 last:pb-0 group">
                                             {{-- Dot icon --}}
                                             <div class="relative z-10 shrink-0">
-                                                <div
-                                                    class="w-10 h-10 rounded-full {{ $c['bg'] }} ring-4 {{ $c['ring'] }}
-                                flex items-center justify-center transition-transform duration-300
-                                group-hover:scale-110
-                                {{ $isPending ? 'opacity-25' : '' }}">
-                                                    <span
-                                                        class="material-symbols-outlined text-white text-[17px]">{{ $event['icon'] }}</span>
+                                                <div class="w-10 h-10 rounded-full {{ $c['bg'] }} ring-4 {{ $c['ring'] }}
+                                                    flex items-center justify-center transition-transform duration-300
+                                                    group-hover:scale-110 {{ $isPending ? 'opacity-25' : '' }}">
+                                                    <span class="material-symbols-outlined text-white text-[17px]">{{ $event['icon'] }}</span>
                                                 </div>
-                                                {{-- Pulse animasi untuk status aktif/current --}}
                                                 @if ($isCurrent)
-                                                    <div
-                                                        class="absolute inset-0 rounded-full {{ $c['bg'] }} opacity-40 animate-ping">
-                                                    </div>
+                                                    <div class="absolute inset-0 rounded-full {{ $c['bg'] }} opacity-40 animate-ping"></div>
                                                 @endif
                                             </div>
 
                                             {{-- Content --}}
                                             <div class="flex-1 pt-1.5 pb-2">
                                                 <div class="flex flex-wrap items-center gap-2 mb-1">
-                                                    <span
-                                                        class="text-sm font-bold {{ $isPending ? 'text-gray-600' : 'text-white' }}">
-                                                        {{ $event['title'] }}
-                                                    </span>
+                                                    <span class="text-sm font-bold {{ $isPending ? 'text-gray-600' : 'text-white' }}">{{ $event['title'] }}</span>
                                                     @if ($isCurrent)
-                                                        <span
-                                                            class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border {{ $c['badge'] }}">
-                                                            Sekarang
-                                                        </span>
+                                                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border {{ $c['badge'] }}">Sekarang</span>
                                                     @endif
                                                 </div>
-                                                <p
-                                                    class="text-xs {{ $isPending ? 'text-gray-700' : 'text-gray-400' }} mb-1.5 leading-relaxed">
-                                                    {{ $event['description'] }}
-                                                </p>
-                                                <span
-                                                    class="text-[11px] {{ $c['text'] }} font-medium flex items-center gap-1">
-                                                    <span class="material-symbols-outlined text-[12px]">schedule</span>
-                                                    {{ $event['time'] }}
+                                                <p class="text-xs {{ $isPending ? 'text-gray-700' : 'text-gray-400' }} mb-1.5 leading-relaxed">{{ $event['description'] }}</p>
+                                                <span class="text-[11px] {{ $c['text'] }} font-medium flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[12px]">schedule</span>{{ $event['time'] }}
                                                 </span>
                                             </div>
                                         </div>
@@ -242,41 +189,7 @@
                             </div>
                         @endif
 
-                        <div class="relative">
-                            {{-- Garis penghubung vertikal --}}
-                            <div class="absolute left-[19px] top-2 bottom-2 w-px bg-white/10"></div>
-                            <div class="space-y-0">
-                                @foreach ($history as $i => $item)
-                                    @php $isFirst = ($i === 0); @endphp
-                                    <div class="relative flex gap-5 pb-8 last:pb-0 timeline-item"
-                                        style="animation-delay: {{ $i * 0.1 }}s">
-
-                                        {{-- Ikon --}}
-                                        <div class="relative z-10 shrink-0">
-                                            <div
-                                                class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all {{ $isFirst ? $item['bg'] : 'bg-[#111] border-white/10' }}">
-                                                <span
-                                                    class="material-symbols-outlined text-sm {{ $isFirst ? 'text-white' : $item['color'] }}">
-                                                    {{ $item['icon'] }}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {{-- Teks --}}
-                                        <div class="flex-1 pt-1.5 min-w-0">
-                                            <h4
-                                                class="text-sm font-bold {{ $isFirst ? 'text-white' : 'text-gray-400' }} mb-1">
-                                                {{ $item['title'] }}
-                                            </h4>
-                                            <p
-                                                class="text-xs {{ $isFirst ? 'text-gray-400' : 'text-gray-600' }} leading-relaxed">
-                                                {{ $item['desc'] }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
+                        {{-- Bagian empty loop history dinamis dihapus sementara agar tidak double render --}}
                     </div>
                 </div>
 
@@ -289,25 +202,20 @@
                     <div class="divide-y divide-white/5">
                         @foreach ($order->items as $item)
                             <div class="p-6 flex gap-6 items-center group hover:bg-white/[0.02] transition-colors">
-                                <div
-                                    class="w-20 h-20 bg-[#050014] rounded-lg border border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                <div class="w-20 h-20 bg-[#050014] rounded-lg border border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                     @if ($item->product->images->first())
-                                        <img src="{{ $item->product->images->where('is_primary', true)->first()->src }}"
-                                            class="w-full h-full object-cover">
+                                        <img src="{{ $item->product->images->where('is_primary', true)->first()->src }}" class="w-full h-full object-cover">
                                     @else
                                         <span class="material-symbols-outlined text-gray-700">image</span>
                                     @endif
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="text-white font-bold mb-1 group-hover:text-blue-500 transition-colors">
-                                        <a
-                                            href="{{ route('products.show', $item->product->slug) }}">{{ $item->product->name }}</a>
+                                        <a href="{{ route('products.show', $item->product->slug) }}">{{ $item->product->name }}</a>
                                     </h4>
-                                    <div class="text-xs text-gray-500 mb-2">
-                                        {{ $item->product->series->name ?? 'Component' }}</div>
+                                    <div class="text-xs text-gray-500 mb-2">{{ $item->product->series->name ?? 'Component' }}</div>
                                     <div class="flex items-center gap-4 text-sm">
-                                        <span class="text-gray-400">Rp
-                                            {{ number_format($item->price, 0, ',', '.') }}</span>
+                                        <span class="text-gray-400">Rp {{ number_format($item->price, 0, ',', '.') }}</span>
                                         <span class="text-gray-600">x</span>
                                         <span class="text-white font-bold">{{ $item->quantity }}</span>
                                     </div>
@@ -316,8 +224,6 @@
                                     <span class="block text-white font-bold">
                                         Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}
                                     </span>
-                                    
-                                    {{-- TOMBOL ULASAN MUNCUL JIKA STATUS SELESAI --}}
                                     @if($order->status === 'completed')
                                         <a href="{{ route('products.show', $item->product->slug) }}#review" 
                                            class="text-[10px] px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30 rounded flex items-center gap-1 transition-colors whitespace-nowrap font-bold uppercase tracking-wider">
@@ -371,8 +277,7 @@
                         Metode Pembayaran
                     </h3>
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-8 bg-blue-500/10 border border-blue-500/20 rounded flex items-center justify-center">
+                        <div class="w-10 h-8 bg-blue-500/10 border border-blue-500/20 rounded flex items-center justify-center">
                             <span class="material-symbols-outlined text-sm text-blue-400">
                                 {{ $order->payment_type == 'qris' ? 'qr_code_scanner' : 'account_balance' }}
                             </span>
@@ -405,11 +310,26 @@
                     </div>
                 </div>
 
-                {{-- 4. ORDER ACTION (Di dalam kolom kanan) --}}
+                {{-- 4. ORDER ACTION --}}
                 <div class="bg-[#0a0a0a] border border-white/10 rounded-xl p-6">
                     <h3 class="font-bold text-white mb-4">Aksi</h3>
 
-                    @if (in_array($order->status, ['pending', 'processing']))
+                    {{-- 🔥 TAMBAHAN UX: JIKA BELUM BAYAR MUNCULKAN TOMBOL BAYAR SEKARANG 🔥 --}}
+                    @if ($order->status === 'pending')
+                        <div class="space-y-3">
+                            {{-- Jika status belum bayar dan punya snap token dari midtrans, munculkan tombol lanjutkan bayar --}}
+                            @if($order->snap_token)
+                            <button type="button" id="pay-button" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                                <span class="material-symbols-outlined text-sm">payment</span> Lanjutkan Pembayaran
+                            </button>
+                            @endif
+
+                            <button type="button" onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                                class="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">cancel</span> Batalkan Pesanan
+                            </button>
+                        </div>
+                    @elseif($order->status === 'processing')
                         <button type="button" onclick="document.getElementById('cancelModal').classList.remove('hidden')"
                             class="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-sm">cancel</span> Batalkan Pesanan
@@ -741,4 +661,31 @@
             border-bottom-color: #374151 !important;
         }
     </style>
+
+    {{-- 🔥 TAMBAHAN SCRIPT MIDTRANS PEMBAYARAN ULANG 🔥 --}}
+    @if ($order->status === 'pending' && $order->snap_token)
+        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+        <script>
+            // Tombol bayar sekarang
+            const btnPay = document.getElementById('pay-button');
+            if(btnPay) {
+                btnPay.onclick = function() {
+                    snap.pay('{{ $order->snap_token }}', {
+                        onSuccess: function(result) {
+                            window.location.href = "{{ route('checkout.success', $order->id) }}";
+                        },
+                        onPending: function(result) {
+                            console.log('Menunggu konfirmasi');
+                        },
+                        onError: function(result) {
+                            alert("Gagal memproses pembayaran");
+                        },
+                        onClose: function() {
+                            console.log('Pop up midtrans ditutup');
+                        }
+                    });
+                };
+            }
+        </script>
+    @endif
 @endsection

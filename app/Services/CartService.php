@@ -107,4 +107,18 @@ class CartService
             $product?->decrementStock($item->quantity);
         }
     }
+
+     /**
+     * Kosongkan keranjang setelah checkout berhasil.
+     */
+    public function clearCart(): void
+    {
+        if (Auth::check()) {
+            // Hapus semua isi keranjang di database untuk user yang login
+            CartItem::where('user_id', Auth::id())->delete();
+        } else {
+            // Hapus session keranjang untuk guest (tamu)
+            session()->forget('cart');
+        }
+    }
 }
