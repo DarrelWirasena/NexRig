@@ -44,7 +44,10 @@ class AuthController extends Controller
         Mail::to($user->email)->send(new OtpMail($otp));
 
         // Simpan email ke session agar halaman verify tahu email siapa
-        session(['verify_email' => $user->email]);
+        session([
+            'verify_email' => $user->email,
+            'redirect_url' => $request->input('redirect') ?: session()->pull('url.intended')
+        ]);
 
         return redirect()->route('otp.verify')->with('success', 'Kode OTP dikirim ke email.');
     }
@@ -67,9 +70,9 @@ class AuthController extends Controller
             
             // Login & Bersihkan Session
             Auth::login($user);
-            session()->forget('verify_email');
-
-            return redirect()->route('home')->with('success', 'Akses Diberikan!');
+            $redirect = session('redirect_url');
+            session()->forget(['verify_email', 'redirect_url']);
+            return redirect($redirect ?: route('home'))->with('success', 'Akses Diberikan!');
         }
 
         return back()->withErrors(['otp' => 'Kode OTP Salah atau Kedaluwarsa.']);
