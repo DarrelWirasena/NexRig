@@ -298,11 +298,24 @@
                         <div class="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-primary">
-                                    @if($component->type == 'CPU') <span class="material-symbols-outlined">memory</span>
-                                    @elseif($component->type == 'GPU') <span class="material-symbols-outlined">videogame_asset</span>
-                                    @elseif($component->type == 'RAM') <span class="material-symbols-outlined">developer_board</span>
-                                    @elseif($component->type == 'Storage') <span class="material-symbols-outlined">hard_drive</span>
-                                    @else <span class="material-symbols-outlined">settings_input_component</span>
+                                    @if(strtoupper($component->type) == 'CPU') 
+                                        <span class="material-symbols-outlined">memory</span>
+                                    @elseif(strtoupper($component->type) == 'GPU') 
+                                        <span class="material-symbols-outlined">videogame_asset</span>
+                                    @elseif(strtoupper($component->type) == 'RAM') 
+                                        <span class="material-symbols-outlined">developer_board</span>
+                                    @elseif(in_array(strtoupper($component->type), ['STORAGE', 'SSD', 'HDD'])) 
+                                        <span class="material-symbols-outlined">hard_drive</span>
+                                    @elseif(in_array(strtoupper($component->type), ['MOTHERBOARD', 'MOBO'])) 
+                                        <span class="material-symbols-outlined">dns</span>
+                                    @elseif(in_array(strtoupper($component->type), ['POWER SUPPLY', 'PSU'])) 
+                                        <span class="material-symbols-outlined">power</span>
+                                    @elseif(in_array(strtoupper($component->type), ['CASE', 'CASING', 'PC CASE'])) 
+                                        <span class="material-symbols-outlined">computer</span>
+                                    @elseif(in_array(strtoupper($component->type), ['OS', 'OPERATING SYSTEM', 'OP SYSTEM'])) 
+                                        <span class="material-symbols-outlined">terminal</span>
+                                    @else 
+                                        <span class="material-symbols-outlined">settings_input_component</span>
                                     @endif
                                 </div>
                                 <div>
@@ -319,15 +332,16 @@
                 </div>
 
                 {{-- TABEL BENCHMARK --}}
-                <div>
+                <div class="benchmark-container">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <h3 class="text-2xl font-bold text-white uppercase flex items-center gap-2">
                             <span class="w-1 h-8 bg-primary block"></span> Performance
                         </h3>
                         <div class="flex bg-white/5 p-1 rounded-lg border border-white/10">
                             @foreach(['1080p', '1440p', '4k'] as $res)
-                            <button onclick="switchBenchmark('{{ $res }}')"
-                                id="btn-{{ $res }}"
+                            {{-- 🔥 PERBAIKAN: Kirim ID unik ke fungsi JS 🔥 --}}
+                            <button onclick="switchBenchmark('{{ $res }}', '{{ $product->id }}')"
+                                id="btn-{{ $res }}-{{ $product->id }}"
                                 class="px-4 py-1.5 rounded text-xs font-bold uppercase transition-all
                                        {{ $res === '1080p' ? 'bg-primary text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'text-gray-400 hover:text-white' }}">
                                 {{ $res }}
@@ -342,37 +356,42 @@
                         });
                     @endphp
 
-                    @foreach(['1080p', '1440p', '4k'] as $res)
-                    <div id="content-{{ $res }}" class="{{ $res === '1080p' ? 'block' : 'hidden' }} transition-opacity duration-300">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            @if(isset($groupedBenchmarks[$res]) && $groupedBenchmarks[$res]->count() > 0)
-                            @foreach($groupedBenchmarks[$res] as $benchmark)
-                            <div class="relative h-40 rounded-xl overflow-hidden border border-white/10 group hover:border-primary/50 transition-all">
-                                <img src="{{ $benchmark->game->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}"
-                                    alt="{{ $benchmark->game->name ?? 'Game' }}"
-                                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent"></div>
-                                <div class="absolute inset-0 p-5 flex flex-col justify-between">
-                                    <div class="relative z-10">
-                                        <h4 class="text-white font-bold text-lg leading-tight">{{ $benchmark->game->name ?? 'Unknown Game' }}</h4>
-                                        <span class="text-[10px] text-gray-300 uppercase tracking-widest">{{ $res }} Ultra</span>
+                    {{-- Container Benchmark --}}
+                    <div class="relative overflow-hidden min-h-[200px] benchmark-content-wrapper" data-product-id="{{ $product->id }}">
+                        @foreach(['1080p', '1440p', '4k'] as $res)
+                        {{-- 🔥 PERBAIKAN: Gunakan ID Unik 🔥 --}}
+                        <div id="content-{{ $res }}-{{ $product->id }}" 
+                             class="benchmark-pane {{ $res === '1080p' ? 'block opacity-100 translate-y-0' : 'hidden opacity-0 translate-y-4' }} transition-all duration-300 ease-out">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                @if(isset($groupedBenchmarks[$res]) && $groupedBenchmarks[$res]->count() > 0)
+                                    @foreach($groupedBenchmarks[$res] as $benchmark)
+                                    <div class="relative h-40 rounded-xl overflow-hidden border border-white/10 group hover:border-primary/50 transition-all">
+                                        <img src="{{ $benchmark->game->image_url ?? 'https://via.placeholder.com/400x200?text=Game' }}"
+                                            alt="{{ $benchmark->game->name ?? 'Game' }}"
+                                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent"></div>
+                                        <div class="absolute inset-0 p-5 flex flex-col justify-between">
+                                            <div class="relative z-10">
+                                                <h4 class="text-white font-bold text-lg leading-tight">{{ $benchmark->game->name ?? 'Unknown Game' }}</h4>
+                                                <span class="text-[10px] text-gray-300 uppercase tracking-widest">{{ $res }} Ultra</span>
+                                            </div>
+                                            <div class="relative z-10 flex items-end gap-2">
+                                                <span class="text-5xl font-black text-white text-glow shadow-black drop-shadow-md">{{ $benchmark->avg_fps }}</span>
+                                                <span class="mb-2 px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold uppercase tracking-wider">FPS</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="relative z-10 flex items-end gap-2">
-                                        <span class="text-5xl font-black text-white text-glow shadow-black drop-shadow-md">{{ $benchmark->avg_fps }}</span>
-                                        <span class="mb-2 px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold uppercase tracking-wider">FPS</span>
+                                    @endforeach
+                                @else
+                                    <div class="col-span-2 py-12 text-center border border-dashed border-white/10 rounded-xl bg-white/5">
+                                        <span class="material-symbols-outlined text-4xl text-gray-600 mb-2">speed</span>
+                                        <p class="text-gray-500 italic text-sm">No benchmark data available for {{ $res }}.</p>
                                     </div>
-                                </div>
+                                @endif
                             </div>
-                            @endforeach
-                            @else
-                            <div class="col-span-2 py-12 text-center border border-dashed border-white/10 rounded-xl bg-white/5">
-                                <span class="material-symbols-outlined text-4xl text-gray-600 mb-2">speed</span>
-                                <p class="text-gray-500 italic text-sm">No benchmark data available for {{ $res }}.</p>
-                            </div>
-                            @endif
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
 
                     <p class="text-gray-600 text-[10px] mt-6 text-center border-t border-white/5 pt-4">
                         *Performance metrics based on average FPS. Actual results may vary depending on driver version.
@@ -486,6 +505,72 @@
             console.error('Wishlist error:', err);
         } finally {
             btn.disabled = false;
+        }
+    }
+    // Menyimpan state resolusi yang aktif berdasarkan Product ID
+    // Ini mencegah error jika ada beberapa komponen produk di satu halaman
+    window.activeBenchmarks = window.activeBenchmarks || {};
+    window.isAnimatingBenchmarks = window.isAnimatingBenchmarks || {};
+
+    function switchBenchmark(targetRes, productId) {
+        // Inisialisasi state awal jika belum ada
+        if (!window.activeBenchmarks[productId]) {
+            window.activeBenchmarks[productId] = '1080p';
+            window.isAnimatingBenchmarks[productId] = false;
+        }
+
+        const currentRes = window.activeBenchmarks[productId];
+        const isAnimating = window.isAnimatingBenchmarks[productId];
+
+        // Cegah klik beruntun
+        if (targetRes === currentRes || isAnimating) return;
+        
+        window.isAnimatingBenchmarks[productId] = true;
+
+        const resolutions = ['1080p', '1440p', '4k'];
+
+        // 1. Update style tombol secara spesifik berdasarkan Product ID
+        resolutions.forEach(res => {
+            const btn = document.getElementById(`btn-${res}-${productId}`);
+            if (btn) {
+                if (res === targetRes) {
+                    btn.className = "px-4 py-1.5 rounded text-xs font-bold uppercase transition-all bg-primary text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]";
+                } else {
+                    btn.className = "px-4 py-1.5 rounded text-xs font-bold uppercase transition-all text-gray-400 hover:text-white";
+                }
+            }
+        });
+
+        // 2. Ambil elemen DOM untuk konten lama dan baru berdasarkan Product ID
+        const oldContent = document.getElementById(`content-${currentRes}-${productId}`);
+        const newContent = document.getElementById(`content-${targetRes}-${productId}`);
+
+        if (oldContent && newContent) {
+            // 3. Animasi keluar konten lama
+            oldContent.classList.remove('opacity-100', 'translate-y-0');
+            oldContent.classList.add('opacity-0', 'translate-y-4');
+
+            // 4. Tunggu animasi keluar selesai, lalu tampilkan yang baru
+            setTimeout(() => {
+                oldContent.classList.remove('block');
+                oldContent.classList.add('hidden');
+
+                newContent.classList.remove('hidden');
+                newContent.classList.add('block');
+
+                // Jeda agar browser memproses perubahan display
+                setTimeout(() => {
+                    newContent.classList.remove('opacity-0', 'translate-y-4');
+                    newContent.classList.add('opacity-100', 'translate-y-0');
+                    
+                    // Update state
+                    window.activeBenchmarks[productId] = targetRes;
+                    window.isAnimatingBenchmarks[productId] = false;
+                }, 50);
+            }, 300);
+        } else {
+            // Failsafe jika elemen tidak ditemukan
+            window.isAnimatingBenchmarks[productId] = false;
         }
     }
 </script>

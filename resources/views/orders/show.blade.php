@@ -29,16 +29,21 @@
 
     <div class="max-w-6xl mx-auto pb-20">
 
-        {{-- 🔥 BANNER UX: JIKA STATUS PENDING (BELUM BAYAR) 🔥 --}}
+        {{-- 🔥 BANNER UX DENGAN LIVE COUNTDOWN TIMER 🔥 --}}
         @if ($order->status === 'pending')
             <div class="mb-8 p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-amber-500">schedule</span>
+                        <span class="material-symbols-outlined text-amber-500">timer</span>
                     </div>
                     <div>
                         <h4 class="text-amber-500 font-bold text-sm">Menunggu Pembayaran</h4>
-                        <p class="text-xs text-amber-500/80 mt-0.5">Selesaikan pembayaran sebelum <span class="font-bold text-white">{{ $order->created_at->addMinutes(15)->format('H:i') }} WIB</span> agar pesanan dapat diproses.</p>
+                        <div class="text-xs text-amber-500/80 mt-1 flex items-center gap-2">
+                            Sisa waktu pembayaran: <p class="text-xs text-amber-500/80
+                            <span id="countdown-timer" class="font-mono font-bold text-white text-sm bg-amber-500/20 px-2 py-0.5 rounded tracking-widest border border-amber-500/30">
+                                --:--
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,7 +194,6 @@
                             </div>
                         @endif
 
-                        {{-- Bagian empty loop history dinamis dihapus sementara agar tidak double render --}}
                     </div>
                 </div>
 
@@ -320,7 +324,8 @@
                             {{-- Jika status belum bayar dan punya snap token dari midtrans, munculkan tombol lanjutkan bayar --}}
                             @if($order->snap_token)
                             <button type="button" id="pay-button" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
-                                <span class="material-symbols-outlined text-sm">payment</span> Lanjutkan Pembayaran
+                                <span class="material-symbols-outlined text-sm" id="pay-icon">payment</span> 
+                                <span id="pay-text">Lanjutkan Pembayaran</span>
                             </button>
                             @endif
 
@@ -398,294 +403,190 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
-
             let destLat = {{ $order->shipping_latitude ?? 'null' }};
             let destLng = {{ $order->shipping_longitude ?? 'null' }};
-
-            // Ambil nama kota sebagai cadangan pencarian jika koordinat kosong
             const fallbackCity = "{{ $order->shipping_city ?? 'Jakarta' }}";
             const status = '{{ $order->status }}';
 
-            // Fungsi utama untuk inisiasi peta
             async function initMap() {
-
-                // Jika koordinat kosong (null), cari koordinat kotanya secara live via API
                 if (destLat === null || destLng === null) {
                     try {
-                        const searchRes = await fetch(
-                            `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(fallbackCity + ', Indonesia')}`
-                        );
+                        const searchRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(fallbackCity + ', Indonesia')}`);
                         const searchData = await searchRes.json();
-
                         if (searchData.length > 0) {
                             destLat = parseFloat(searchData[0].lat);
                             destLng = parseFloat(searchData[0].lon);
                         } else {
-                            // Jika kota tidak ketemu, pakai titik default Jakarta
-                            destLat = -6.2088;
-                            destLng = 106.8456;
+                            destLat = -6.2088; destLng = 106.8456;
                         }
                     } catch (e) {
-                        destLat = -6.2088;
-                        destLng = 106.8456;
+                        destLat = -6.2088; destLng = 106.8456;
                     }
                 } else {
-                    // Pastikan tipe datanya angka Float
-                    destLat = parseFloat(destLat);
-                    destLng = parseFloat(destLng);
+                    destLat = parseFloat(destLat); destLng = parseFloat(destLng);
                 }
 
-                // Titik awal Gudang NexRig (Semarang)
-                const origin = {
-                    lat: -6.9932,
-                    lng: 110.4229
-                };
-                const dest = {
-                    lat: destLat,
-                    lng: destLng
-                };
+                const origin = { lat: -6.9932, lng: 110.4229 };
+                const dest = { lat: destLat, lng: destLng };
 
-                const map = L.map('deliveryMap', {
-                    zoomControl: true,
-                    attributionControl: false,
-                    scrollWheelZoom: true,
-                    dragging: true,
-                });
-
-                // Memindahkan posisi tombol zoom ke kanan bawah
+                const map = L.map('deliveryMap', { zoomControl: true, attributionControl: false, scrollWheelZoom: true, dragging: true, });
                 map.zoomControl.setPosition('bottomright');
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    maxZoom: 19
-                }).addTo(map);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-                // Fungsi pembuat icon HTML marker
                 function makeIcon(type) {
                     const configs = {
-                        warehouse: {
-                            color: '#1a6fff',
-                            border: '#0a3a8a',
-                            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18">
-                    <path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14zM6 13h5v4H6zm6-6h3v3h-3zM6 7h5v5H6zm6 4h3v6h-3z"/>
-                  </svg>`
-                        },
-                        home: {
-                            color: '#16a34a',
-                            border: '#14532d',
-                            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18">
-                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                  </svg>`
-                        },
-                        truck: {
-                            color: '#dc2626',
-                            border: '#7f1d1d',
-                            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18">
-                    <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                  </svg>`
-                        },
+                        warehouse: { color: '#1a6fff', border: '#0a3a8a', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14zM6 13h5v4H6zm6-6h3v3h-3zM6 7h5v5H6zm6 4h3v6h-3z"/></svg>` },
+                        home: { color: '#16a34a', border: '#14532d', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>` },
+                        truck: { color: '#dc2626', border: '#7f1d1d', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>` },
                     };
-
                     const c = configs[type];
                     const isTruck = type === 'truck';
-
-                    const html = isTruck ?
-                        `<div style="
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            ">
-                <div style="
-                    background: ${c.color};
-                    border: 2.5px solid ${c.border};
-                    border-radius: 10px;
-                    width: 40px; height: 40px;
-                    display: flex; align-items: center; justify-content: center;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                ">${c.svg}</div>
-           </div>` :
-                        `<div style="
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            ">
-                <div style="
-                    background: ${c.color};
-                    border: 2.5px solid ${c.border};
-                    border-radius: 50%;
-                    width: 40px; height: 40px;
-                    display: flex; align-items: center; justify-content: center;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-                ">${c.svg}</div>
-                <div style="
-                    width: 0; height: 0;
-                    border-left: 6px solid transparent;
-                    border-right: 6px solid transparent;
-                    border-top: 10px solid ${c.border};
-                    margin-top: -1px;
-                "></div>
-           </div>`;
-
-                    return L.divIcon({
-                        className: '',
-                        html,
-                        iconSize: [40, isTruck ? 40 : 52],
-                        iconAnchor: [20, isTruck ? 20 : 52],
-                        popupAnchor: [0, -52],
-                    });
+                    const html = isTruck ? `<div style="position: relative; display: flex; flex-direction: column; align-items: center;"><div style="background: ${c.color}; border: 2.5px solid ${c.border}; border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">${c.svg}</div></div>` : `<div style="position: relative; display: flex; flex-direction: column; align-items: center;"><div style="background: ${c.color}; border: 2.5px solid ${c.border}; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">${c.svg}</div><div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid ${c.border}; margin-top: -1px;"></div></div>`;
+                    return L.divIcon({ className: '', html, iconSize: [40, isTruck ? 40 : 52], iconAnchor: [20, isTruck ? 20 : 52], popupAnchor: [0, -52], });
                 }
-                // Ambil rute asli via jalan raya (OSRM public API - GeoJSON)
-                async function drawRoute() {
-                    const url =
-                        `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson`;
 
+                async function drawRoute() {
+                    const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson`;
                     try {
                         const res = await fetch(url);
                         const data = await res.json();
-
                         let coords = [];
                         if (data.code === 'Ok' && data.routes.length > 0) {
-                            // OSRM mengirim format [lng, lat], kita balik menjadi [lat, lng] untuk Leaflet
                             coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
                         } else {
-                            // Jika gagal ditarik garis lurus saja
-                            coords = [
-                                [origin.lat, origin.lng],
-                                [dest.lat, dest.lng]
-                            ];
+                            coords = [ [origin.lat, origin.lng], [dest.lat, dest.lng] ];
                         }
 
-                        let activePath = [];
-                        let pendingPath = [];
-                        let truckPos = origin;
-
-                        // Logika Posisi Truk & Warna Garis
+                        let activePath = []; let pendingPath = []; let truckPos = origin;
                         if (status === 'pending' || status === 'processing' || status === 'cancelled') {
-                            truckPos = origin;
-                            pendingPath = coords; // Semua jalan abu-abu
+                            truckPos = origin; pendingPath = coords;
                         } else if (status === 'shipped') {
                             const midPoint = Math.floor(coords.length / 2);
-                            truckPos = {
-                                lat: coords[midPoint][0],
-                                lng: coords[midPoint][1]
-                            };
-                            activePath = coords.slice(0, midPoint +
-                                1); // Jalan yang sudah dilalui warna Biru
-                            pendingPath = coords.slice(midPoint); // Sisa jalan warna Abu-abu
+                            truckPos = { lat: coords[midPoint][0], lng: coords[midPoint][1] };
+                            activePath = coords.slice(0, midPoint + 1);
+                            pendingPath = coords.slice(midPoint);
                         } else if (status === 'completed') {
-                            truckPos = dest;
-                            activePath = coords; // Semua jalan diwarnai Biru
+                            truckPos = dest; activePath = coords;
                         }
 
-                        // Menggambar Garis Rute di Peta
                         if (activePath.length > 0) {
-                            L.polyline(activePath, {
-                                color: '#2563eb',
-                                weight: 5,
-                                opacity: 0.9
-                            }).addTo(map);
+                            L.polyline(activePath, { color: '#2563eb', weight: 5, opacity: 0.9 }).addTo(map);
                         }
                         if (pendingPath.length > 0) {
-                            L.polyline(pendingPath, {
-                                color: '#6b7280',
-                                weight: 4,
-                                opacity: 0.6,
-                                dashArray: '8 8'
-                            }).addTo(map);
+                            L.polyline(pendingPath, { color: '#6b7280', weight: 4, opacity: 0.6, dashArray: '8 8' }).addTo(map);
                         }
 
-                        // Memasang Marker
-                        // Penggunaan:
-                        L.marker([origin.lat, origin.lng], {
-                            icon: makeIcon('warehouse')
-                        }).addTo(map); // Gudang
-                        L.marker([dest.lat, dest.lng], {
-                            icon: makeIcon('home')
-                        }).addTo(map); // Rumah
-
+                        L.marker([origin.lat, origin.lng], { icon: makeIcon('warehouse') }).addTo(map);
+                        L.marker([dest.lat, dest.lng], { icon: makeIcon('home') }).addTo(map);
                         if (status !== 'cancelled' && status !== 'completed') {
-                            L.marker([truckPos.lat, truckPos.lng], {
-                                icon: makeIcon('truck'),
-                                zIndexOffset: 1000
-                            }).addTo(map);
+                            L.marker([truckPos.lat, truckPos.lng], { icon: makeIcon('truck'), zIndexOffset: 1000 }).addTo(map);
                         }
-
-                        // Sesuaikan kamera peta agar mencakup seluruh rute
-                        map.fitBounds(coords, {
-                            padding: [50, 50]
-                        });
-
+                        map.fitBounds(coords, { padding: [50, 50] });
                     } catch (error) {
                         console.error('Gagal mengambil rute:', error);
                     }
                 }
-
                 drawRoute();
             }
-
-            // PANGGIL FUNGSI MAP
             initMap();
         });
     </script>
 
     {{-- Dark popup overrides --}}
     <style>
-        .leaflet-popup-content-wrapper,
-        .leaflet-popup-tip {
-            background: transparent !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-        }
-
-        .leaflet-popup-content {
-            margin: 0 !important;
-        }
-
-        .leaflet-dark-popup .leaflet-popup-content-wrapper {
-            background: transparent;
-        }
-
-        .leaflet-tooltip {
-            background: #111 !important;
-            border: 1px solid #374151 !important;
-            color: #e5e7eb !important;
-            font-size: 11px !important;
-            font-weight: bold !important;
-            border-radius: 6px !important;
-            padding: 4px 10px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        .leaflet-tooltip-bottom::before {
-            border-bottom-color: #374151 !important;
-        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: transparent !important; box-shadow: none !important; padding: 0 !important; }
+        .leaflet-popup-content { margin: 0 !important; }
+        .leaflet-dark-popup .leaflet-popup-content-wrapper { background: transparent; }
+        .leaflet-tooltip { background: #111 !important; border: 1px solid #374151 !important; color: #e5e7eb !important; font-size: 11px !important; font-weight: bold !important; border-radius: 6px !important; padding: 4px 10px !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important; }
+        .leaflet-tooltip-bottom::before { border-bottom-color: #374151 !important; }
     </style>
 
-    {{-- 🔥 TAMBAHAN SCRIPT MIDTRANS PEMBAYARAN ULANG 🔥 --}}
-    @if ($order->status === 'pending' && $order->snap_token)
+    {{-- 🔥 TAMBAHAN SCRIPT MIDTRANS PEMBAYARAN ULANG & LIVE COUNTDOWN 🔥 --}}
+    @if ($order->status === 'pending')
         <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
         <script>
-            // Tombol bayar sekarang
-            const btnPay = document.getElementById('pay-button');
-            if(btnPay) {
-                btnPay.onclick = function() {
-                    snap.pay('{{ $order->snap_token }}', {
-                        onSuccess: function(result) {
-                            window.location.href = "{{ route('checkout.success', $order->id) }}";
-                        },
-                        onPending: function(result) {
-                            console.log('Menunggu konfirmasi');
-                        },
-                        onError: function(result) {
-                            alert("Gagal memproses pembayaran");
-                        },
-                        onClose: function() {
-                            console.log('Pop up midtrans ditutup');
-                        }
-                    });
-                };
-            }
+            // 1. LOGIKA COUNTDOWN TIMER BERDASARKAN DATABASE
+            const createdAtStr = "{{ $order->created_at->format('Y-m-d H:i:s') }}";
+            const createdAt = new Date(createdAtStr.replace(' ', 'T') + 'Z'); 
+            const expiryTime = new Date(createdAt.getTime() + 15 * 60000); // 15 menit
+
+            const timerDisplay = document.getElementById('countdown-timer');
+            const payBtn = document.getElementById('pay-button');
+            const payText = document.getElementById('pay-text');
+            const payIcon = document.getElementById('pay-icon');
+
+            const timerInterval = setInterval(function() {
+                const now = new Date();
+                const distance = expiryTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    
+                    if(timerDisplay) {
+                        timerDisplay.innerHTML = "EXPIRED";
+                        timerDisplay.classList.replace('text-white', 'text-red-500');
+                        timerDisplay.classList.replace('bg-amber-500/20', 'bg-red-500/20');
+                        timerDisplay.classList.replace('border-amber-500/30', 'border-red-500/30');
+                    }
+                    
+                    if(payBtn) {
+                        payBtn.disabled = true;
+                        payBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+                        payBtn.classList.add('bg-white/5', 'text-gray-500', 'cursor-not-allowed', 'border', 'border-white/10');
+                        payText.innerText = "Waktu Habis";
+                        payIcon.innerText = "block";
+                    }
+
+                    // Reload halaman agar backend (OrderController) resmi mengeksekusi pembatalan
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000); // reload dalam 2 detik
+                    return;
+                }
+
+                // Format MM:SS
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                const m = minutes < 10 ? "0" + minutes : minutes;
+                const s = seconds < 10 ? "0" + seconds : seconds;
+
+                if(timerDisplay) {
+                    timerDisplay.innerHTML = m + ":" + s;
+
+                    // Berkedip merah jika di bawah 3 menit
+                    if (distance < 180000) {
+                        timerDisplay.classList.add('text-red-400');
+                        timerDisplay.classList.replace('bg-amber-500/20', 'bg-red-500/20');
+                        timerDisplay.classList.replace('border-amber-500/30', 'border-red-500/30');
+                    }
+                }
+            }, 1000);
+
+            // 2. LOGIKA TOMBOL MIDTRANS
+            @if($order->snap_token)
+                if(payBtn) {
+                    payBtn.onclick = function() {
+                        // Jangan izinkan klik jika waktu sudah habis
+                        if (new Date() >= expiryTime) return;
+
+                        snap.pay('{{ $order->snap_token }}', {
+                            onSuccess: function(result) {
+                                window.location.href = "{{ route('checkout.success', $order->id) }}";
+                            },
+                            onPending: function(result) {
+                                console.log('Menunggu konfirmasi');
+                            },
+                            onError: function(result) {
+                                alert("Gagal memproses pembayaran");
+                            },
+                            onClose: function() {
+                                console.log('Pop up midtrans ditutup');
+                            }
+                        });
+                    };
+                }
+            @endif
         </script>
     @endif
 @endsection

@@ -162,6 +162,12 @@ class CheckoutController extends Controller
 
             $midtransOrderId = 'NX-' . $order->id . '-' . time();
 
+           // Deteksi cerdas untuk semua jenis Virtual Account & Transfer Bank
+            $pType = strtolower($request->payment_type ?? '');
+            $isBankTransfer = \Illuminate\Support\Str::contains($pType, ['transfer', 'va', 'virtual', 'echannel']);
+            
+            $expiryDuration = $isBankTransfer ? (24 * 60) : 15;
+
             $params = [
                 'transaction_details' => [
                     'order_id'     => $midtransOrderId,
@@ -173,9 +179,14 @@ class CheckoutController extends Controller
                     'phone'      => $address->phone,
                 ],
                 'enabled_payments' => $enabled_payments,
+                'expiry' => [
+                    'start_time' => $order->created_at->format('Y-m-d H:i:s O'),
+                    'unit'       => 'minute',
+                    'duration'   => $expiryDuration
+                ],
             ];
 
-           $snapToken = Snap::getSnapToken($params);
+            $snapToken = Snap::getSnapToken($params);
 
             $order->update([
                 'midtrans_order_id' => $midtransOrderId,
@@ -184,12 +195,10 @@ class CheckoutController extends Controller
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
-
         } catch (\RuntimeException $e) {
             // RuntimeException dari decrementStock = stok habis di detik terakhir (race condition)
             DB::rollBack();
             return back()->with('error', $e->getMessage());
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gateway Error: ' . $e->getMessage());

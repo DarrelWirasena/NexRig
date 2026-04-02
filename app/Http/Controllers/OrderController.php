@@ -51,22 +51,20 @@ class OrderController extends Controller
 
         abort_if($order->user_id !== Auth::id(), 403);
 
-        // 🔥 TAMBAHAN LOGIKA UX: Auto-cancel jika lewat 15 menit
         if ($order->status === 'pending') {
-            // Hitung sisa waktu dari created_at
-            $expiresAt = $order->created_at->addMinutes(15);
+            $pType = strtolower($order->payment_type ?? '');
+            $isBankTransfer = \Illuminate\Support\Str::contains($pType, ['transfer', 'va', 'virtual', 'echannel']);
+            
+            $durationInMinutes = $isBankTransfer ? (24 * 60) : 15;
+            $expiresAt = $order->created_at->addMinutes($durationInMinutes);
             
             if (now()->greaterThanOrEqualTo($expiresAt)) {
-                // Waktu habis -> Batalkan dan kembalikan stok
                 $order->update(['status' => 'cancelled']);
-                
                 foreach ($order->items as $item) {
                     if ($item->product) {
                         $item->product->increment('stock', $item->quantity);
                     }
                 }
-                
-                // Refresh status di object $order agar tampilan blade menyesuaikan
                 $order->status = 'cancelled';
             }
         }
@@ -118,7 +116,7 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.show', $order->id)
-            ->with('success', 'Pesanan berhasil dibatalkan dan stok barang telah dikembalikan.');
+            ->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
     // ═══════════════════════════════════════════════════════════
