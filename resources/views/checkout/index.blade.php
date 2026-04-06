@@ -196,12 +196,64 @@
                         @endforeach
                     </div>
 
+                    {{-- Coupon Input --}}
+                    <div class="mb-6" id="coupon-section">
+                        @php $couponSession = session('coupon'); @endphp
+
+                        @if($couponSession)
+                            {{-- Coupon Applied State --}}
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-green-400 text-lg">confirmation_number</span>
+                                    <div>
+                                        <p class="text-green-400 font-black text-xs uppercase tracking-widest">{{ $couponSession['code'] }}</p>
+                                        <p class="text-green-500/70 text-[10px]">Discount applied</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeCoupon()"
+                                    class="text-gray-500 hover:text-red-400 transition-colors">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            </div>
+                        @else
+                            {{-- Coupon Input State --}}
+                            <button type="button" onclick="toggleCoupon()"
+                                class="text-[10px] font-bold text-slate-500 hover:text-primary uppercase tracking-widest transition-colors flex items-center gap-1"
+                                id="coupon-toggle">
+                                <span class="material-symbols-outlined text-sm">confirmation_number</span>
+                                Have a coupon code?
+                            </button>
+
+                            <div id="coupon-input-area" class="hidden mt-3">
+                                <div class="flex gap-2">
+                                    <input type="text" id="coupon-code"
+                                        placeholder="Enter code..."
+                                        class="flex-1 bg-white/5 border border-white/10 focus:border-primary text-white text-xs rounded-lg px-3 py-2.5 outline-none transition-colors uppercase font-mono tracking-widest placeholder:normal-case placeholder:tracking-normal placeholder:font-sans">
+                                    <button type="button" onclick="applyCoupon()"
+                                        id="coupon-apply-btn"
+                                        class="px-4 py-2.5 bg-primary hover:bg-blue-600 text-white text-xs font-black uppercase tracking-wider rounded-lg transition-colors">
+                                        Apply
+                                    </button>
+                                </div>
+                                <p id="coupon-message" class="text-[10px] mt-1.5 hidden"></p>
+                            </div>
+                        @endif
+                    </div>
+
                     {{-- Calculation --}}
                     <div class="space-y-3 pt-6 border-t border-slate-100 dark:border-white/10 mb-8 font-mono text-xs">
                         <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
                             <span class="uppercase tracking-widest font-bold">Subtotal</span>
                             <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
+
+                        @if($couponSession)
+                        <div class="flex justify-between text-green-400">
+                            <span class="uppercase tracking-widest font-bold">Discount</span>
+                            <span>- Rp {{ number_format($couponSession['discount'], 0, ',', '.') }}</span>
+                        </div>
+                        @endif
+
                         <div class="flex justify-between text-slate-500 dark:text-[#929bc9]">
                             <span class="uppercase tracking-widest font-bold">Tax (11%)</span>
                             <span>Rp {{ number_format($tax, 0, ',', '.') }}</span>
@@ -233,7 +285,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
@@ -421,5 +473,63 @@
         
         loadProvinces();
     });
+
+    // ── COUPON SYSTEM ──
+    function toggleCoupon() {
+        const area = document.getElementById('coupon-input-area');
+        area.classList.toggle('hidden');
+    }
+
+    function applyCoupon() {
+        const code = document.getElementById('coupon-code').value.trim();
+        const btn = document.getElementById('coupon-apply-btn');
+        const msg = document.getElementById('coupon-message');
+
+        if (!code) return;
+
+        btn.disabled = true;
+        btn.textContent = '...';
+        msg.classList.add('hidden');
+
+        fetch('{{ route("coupon.apply") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to reflect new totals
+                window.location.reload();
+            } else {
+                msg.textContent = data.message;
+                msg.className = 'text-[10px] mt-1.5 text-red-400';
+                msg.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            msg.textContent = 'Failed to apply coupon. Try again.';
+            msg.className = 'text-[10px] mt-1.5 text-red-400';
+            msg.classList.remove('hidden');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.textContent = 'Apply';
+        });
+    }
+
+    function removeCoupon() {
+        fetch('{{ route("coupon.remove") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(() => window.location.reload());
+    }
 </script>
-@endsection
+@endpush

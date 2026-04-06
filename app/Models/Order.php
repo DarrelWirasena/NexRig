@@ -25,6 +25,8 @@ class Order extends Model
         'shipping_latitude',
         'shipping_longitude',
         'payment_type',
+        'coupon_id',
+        'discount_amount',
     ];
 
     protected $casts = [
@@ -49,7 +51,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
     // ── Helper: apakah koordinat tujuan tersedia? ────────────────
     public function hasShippingCoordinates(): bool
     {

@@ -42,15 +42,28 @@ class CheckoutController extends Controller
         }
 
         $subtotal = array_reduce($cartItems, fn($c, $i) => $c + $i->price * $i->quantity, 0);
-        $tax      = $subtotal * config('shop.tax_rate', 0.11);
-        $grandTotal = $subtotal + $tax;
+
+        $discount = 0;
+        $couponSession = session('coupon');
+        if ($couponSession) {
+            $coupon = \App\Models\Coupon::find($couponSession['id']);
+            if ($coupon && $coupon->isValid()) {
+                $discount = $coupon->calculateDiscount($subtotal);
+            } else {
+                session()->forget('coupon');
+            }
+        }
+
+        $discountedSubtotal = $subtotal - $discount;
+        $tax        = $discountedSubtotal * config('shop.tax_rate', 0.11);
+        $grandTotal = $discountedSubtotal + $tax;
 
         /** @var \App\Models\User $user */
         $user    = Auth::user();
         $address = $user->addresses()->where('is_default', true)->first()
             ?? $user->addresses()->first();
 
-        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title'));
+        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title', 'discount'));
     }
 
     public function store(Request $request)
@@ -114,7 +127,22 @@ class CheckoutController extends Controller
         }
 
         $subtotal   = array_reduce($cartItems, fn($c, $i) => $c + $i->price * $i->quantity, 0);
-        $grandTotal = $subtotal + ($subtotal * config('shop.tax_rate', 0.11));
+        // Apply coupon discount
+        $discount = 0;
+        $couponId = null;
+        $couponSession = session('coupon');
+
+        if ($couponSession) {
+            $coupon = \App\Models\Coupon::find($couponSession['id']);
+            if ($coupon && $coupon->isValid()) {
+                $discount = $coupon->calculateDiscount($subtotal);
+                $couponId = $coupon->id;
+            } else {
+                session()->forget('coupon');
+            }
+        }
+
+        $grandTotal = ($subtotal - $discount) + (($subtotal - $discount) * config('shop.tax_rate', 0.11));
 
         // ── Transaksi DB ──────────────────────────────────────────────────────
         DB::beginTransaction();
@@ -132,6 +160,8 @@ class CheckoutController extends Controller
                 'shipping_postal_code' => $address->postal_code,
                 'shipping_latitude'    => $address->latitude,
                 'shipping_longitude'   => $address->longitude,
+                'coupon_id'       => $couponId,
+                'discount_amount' => $discount,
             ]);
 
             foreach ($cartItems as $item) {
@@ -150,6 +180,10 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            if ($couponId) {
+                \App\Models\Coupon::where('id', $couponId)->increment('used_count');
+                session()->forget('coupon');
+            }
             // ── Integrasi Midtrans ─────────────────────────────────────────────
             Config::$serverKey    = config('midtrans.server_key');
             Config::$isProduction = config('midtrans.is_production');
