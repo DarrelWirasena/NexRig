@@ -81,18 +81,19 @@ $subtotal += $details['price'] * $details['quantity'];
         </p>
 
         <div class="grid grid-cols-2 gap-4">
+            {{-- Tombol 1: Hanya melihat keranjang --}}
             <a href="{{ route('cart.index') }}" class="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase">
                 View Cart
             </a>
 
-            {{-- Kita buat satu anchor tunggal, statusnya kita kontrol via JS --}}
-            <a href="{{ route('checkout.index') }}"
+            {{-- Tombol 2: ARAHKAN KE CART INDEX JUGA, TAPI UBAH TEKSNYA --}}
+            <a href="{{ route('cart.index') }}"
                 id="miniCartCheckoutBtn"
                 class="px-4 py-3 font-bold rounded-lg text-center transition-all text-[11px] tracking-widest uppercase flex items-center justify-center gap-2 
-                {{ count($cartItems) > 0 ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-white/10 text-gray-600 cursor-not-allowed pointer-events-none' }}">
-                <span id="checkoutBtnText">{{ count($cartItems) > 0 ? 'Checkout' : 'Empty' }}</span>
+                {{ count($cartItems) > 0 ? 'bg-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:bg-blue-600 hover:translate-y-[-2px]' : 'bg-white/10 text-gray-600 cursor-not-allowed pointer-events-none' }}">
+                <span id="checkoutBtnText">{{ count($cartItems) > 0 ? 'Pilih & Bayar' : 'Empty' }}</span>
                 <span id="checkoutBtnIcon" class="material-symbols-outlined text-sm">
-                    {{ count($cartItems) > 0 ? 'arrow_forward' : 'lock' }}
+                    {{ count($cartItems) > 0 ? 'checklist' : 'lock' }}
                 </span>
             </a>
         </div>

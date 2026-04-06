@@ -38,6 +38,13 @@
     <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
         @csrf
 
+        {{-- 🔥 TAMBAHAN WAJIB: Bawa ID item yang dipilih ke Controller saat form disubmit 🔥 --}}
+        @if(isset($selectedIds))
+            @foreach($selectedIds as $id)
+                <input type="hidden" name="selected_items[]" value="{{ $id }}">
+            @endforeach
+        @endif
+
         {{-- STEPPER --}}
         <div class="flex items-center justify-center gap-4 mb-12 select-none">
             <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 opacity-50">
