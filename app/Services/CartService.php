@@ -64,16 +64,28 @@ class CartService
         return $cartItems;
     }
 
+    // 🔥 TAMBAHAN 1: Ambil data keranjang khusus yang di-ceklis saja
+    public function getCartDataByIds(array $selectedIds): array
+    {
+        $allCart = $this->getCartData();
+        return array_filter($allCart, function ($item) use ($selectedIds) {
+            // Cocokkan row_id dengan array ID yang dikirim dari checkbox
+            return in_array((string) $item->row_id, $selectedIds);
+        });
+    }
+
     /**
      * Validasi stok semua item di cart.
      * Return array of error messages, kosong jika semua aman.
      */
-    public function validateStock(): array
+    // 🔥 UBAH: Tambahkan parameter opsional $cartItems
+    public function validateStock(array $cartItems = null): array
     {
         $errors    = [];
-        $cartItems = $this->getCartData();
+        // Jika tidak ada parameter yang dikirim, cek semua keranjang
+        $itemsToCheck = $cartItems ?? $this->getCartData();
 
-        foreach ($cartItems as $item) {
+        foreach ($itemsToCheck as $item) {
             if (!$item->track_stock) continue;
 
             $product = Product::find($item->product_id);
@@ -98,13 +110,28 @@ class CartService
      * Kurangi stok semua item setelah order berhasil dibuat.
      * Dipanggil di dalam DB::transaction di CheckoutController.
      */
-    public function decrementStockForCart(): void
+    // 🔥 UBAH: Fungsi ini sekarang butuh data item mana yang dikurangi
+    public function decrementStockForItems(array $cartItems): void
     {
-        $cartItems = $this->getCartData();
-
         foreach ($cartItems as $item) {
             $product = Product::find($item->product_id);
             $product?->decrementStock($item->quantity);
+        }
+    }
+
+    // 🔥 TAMBAHAN 2: Fungsi hapus khusus item yang dicheckout saja
+    public function clearSelectedCart(array $selectedIds): void
+    {
+        if (Auth::check()) {
+            CartItem::where('user_id', Auth::id())
+                ->whereIn('product_id', $selectedIds)
+                ->delete();
+        } else {
+            $cart = session()->get('cart', []);
+            foreach ($selectedIds as $id) {
+                unset($cart[$id]);
+            }
+            session()->put('cart', $cart);
         }
     }
 

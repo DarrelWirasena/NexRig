@@ -21,26 +21,35 @@ class CheckoutController extends Controller
         $this->cartService = $cartService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $title     = 'Checkout';
-        $cartItems = $this->cartService->getCartData();
+        $title = 'Checkout';
+        
+        // 1. TANGKAP ID BARANG YANG DI-CEKLIS DARI HALAMAN CART
+        $selectedIds = $request->query('selected_items', []);
 
-        if (count($cartItems) == 0) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        if (empty($selectedIds)) {
+            return redirect()->route('cart.index')->with('error', 'Pilih minimal 1 barang untuk dicheckout.');
         }
 
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to checkout.');
         }
 
-        // ── Validasi stok di halaman checkout (tampilkan warning awal) ────────
-        $stockErrors = $this->cartService->validateStock();
-        if (!empty($stockErrors)) {
-            return redirect()->route('cart.index')
-                ->with('error', implode(' ', $stockErrors));
+        // 2. Ambil HANYA item yang dipilih
+        $cartItems = $this->cartService->getCartDataByIds($selectedIds);
+
+        if (empty($cartItems)) {
+            return redirect()->route('cart.index')->with('error', 'Item yang dipilih tidak valid.');
         }
 
+        // 3. Validasi stok HANYA untuk item yang dipilih (tampilkan warning awal)
+        $stockErrors = $this->cartService->validateStock($cartItems);
+        if (!empty($stockErrors)) {
+            return redirect()->route('cart.index')->with('error', implode(' ', $stockErrors));
+        }
+
+        // 4. Hitung Total dari item yang dipilih saja
         $subtotal = array_reduce($cartItems, fn($c, $i) => $c + $i->price * $i->quantity, 0);
 
         $discount = 0;
@@ -63,7 +72,8 @@ class CheckoutController extends Controller
         $address = $user->addresses()->where('is_default', true)->first()
             ?? $user->addresses()->first();
 
-        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title', 'discount'));
+        // 5. Lempar $selectedIds ke halaman view checkout agar bisa dikirim lagi saat bayar
+        return view('checkout.index', compact('cartItems', 'subtotal', 'tax', 'grandTotal', 'address', 'title', 'selectedIds', 'discount'));
     }
 
     public function store(Request $request)
@@ -75,9 +85,19 @@ class CheckoutController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $request->validate(['payment_type' => 'required|string']);
+        $request->validate([
+            'payment_type' => 'required|string',
+            'selected_items' => 'required|array' // Pastikan array item yang dipilih dikirim
+        ]);
 
-        // ── Simpan / ambil alamat ─────────────────────────────────────────────
+        // 1. TANGKAP LAGI ID BARANG SAAT TOMBOL PAY DITEKAN
+        $selectedIds = $request->input('selected_items', []);
+        
+        if (empty($selectedIds)) {
+            return back()->with('error', 'Tidak ada item yang di-checkout.');
+        }
+
+        // 2. Simpan / ambil alamat
         if ($request->has('is_default') && $request->is_default == 1) {
             $request->validate([
                 'recipient_name' => 'required|string',
@@ -113,15 +133,14 @@ class CheckoutController extends Controller
             return back()->with('error', 'Valid shipping address is required.');
         }
 
-        // ── Kalkulasi cart ────────────────────────────────────────────────────
-        $cartItems = $this->cartService->getCartData();
-
-        if (count($cartItems) == 0) {
-            return redirect()->route('cart.index')->with('error', 'Cart is empty');
+        // 3. Ambil & Validasi HANYA item yang dipilih (FINAL CHECK sebelum transaksi)
+        $cartItems = $this->cartService->getCartDataByIds($selectedIds);
+        
+        if (empty($cartItems)) {
+            return back()->with('error', 'Item keranjang tidak valid atau kosong.');
         }
 
-        // ── Validasi stok FINAL (double-check sebelum transaksi) ──────────────
-        $stockErrors = $this->cartService->validateStock();
+        $stockErrors = $this->cartService->validateStock($cartItems);
         if (!empty($stockErrors)) {
             return back()->with('error', implode(' ', $stockErrors));
         }
@@ -144,9 +163,10 @@ class CheckoutController extends Controller
 
         $grandTotal = ($subtotal - $discount) + (($subtotal - $discount) * config('shop.tax_rate', 0.11));
 
-        // ── Transaksi DB ──────────────────────────────────────────────────────
+        // 4. Transaksi Database
         DB::beginTransaction();
         try {
+            // Buat Order Induk
             $order = Order::create([
                 'user_id'              => $user->id,
                 'order_date'           => now(),
@@ -164,6 +184,7 @@ class CheckoutController extends Controller
                 'discount_amount' => $discount,
             ]);
 
+            // Masukkan Item ke OrderItem
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id'   => $order->id,
@@ -173,10 +194,18 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // ── Kurangi stok setelah order items tersimpan ────────────────────
-            $this->cartService->decrementStockForCart();
+            // Kurangi stok HANYA untuk item yang dibeli, lalu hapus dari keranjang
+            $this->cartService->decrementStockForItems($cartItems);
+            $this->cartService->clearSelectedCart($selectedIds);
 
-            $this->cartService->clearCart();
+            $productIdsBought = array_map(function($item) {
+                return $item->product_id;
+            }, $cartItems);
+
+            DB::table('wishlists')
+                ->where('user_id', $user->id)
+                ->whereIn('product_id', $productIdsBought)
+                ->delete();
 
             DB::commit();
 
@@ -196,12 +225,7 @@ class CheckoutController extends Controller
 
             $midtransOrderId = 'NX-' . $order->id . '-' . time();
 
-           // Deteksi cerdas untuk semua jenis Virtual Account & Transfer Bank
-            $pType = strtolower($request->payment_type ?? '');
-            $isBankTransfer = \Illuminate\Support\Str::contains($pType, ['transfer', 'va', 'virtual', 'echannel']);
-            
-            $expiryDuration = $isBankTransfer ? (24 * 60) : 15;
-
+            // Mengirim Data ke Midtrans TANPA parameter expiry custom (biarkan Midtrans yang atur otomatis)
             $params = [
                 'transaction_details' => [
                     'order_id'     => $midtransOrderId,
@@ -213,15 +237,11 @@ class CheckoutController extends Controller
                     'phone'      => $address->phone,
                 ],
                 'enabled_payments' => $enabled_payments,
-                'expiry' => [
-                    'start_time' => $order->created_at->format('Y-m-d H:i:s O'),
-                    'unit'       => 'minute',
-                    'duration'   => $expiryDuration
-                ],
             ];
 
             $snapToken = Snap::getSnapToken($params);
 
+            // Simpan midtrans ID, tapi untuk payment_type biarkan Webhook yang mengisi nanti
             $order->update([
                 'midtrans_order_id' => $midtransOrderId,
                 'snap_token'        => $snapToken
@@ -229,8 +249,8 @@ class CheckoutController extends Controller
 
             $title = 'Awaiting Payment';
             return view('checkout.pay', compact('title', 'snapToken', 'order'));
+
         } catch (\RuntimeException $e) {
-            // RuntimeException dari decrementStock = stok habis di detik terakhir (race condition)
             DB::rollBack();
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
@@ -243,10 +263,8 @@ class CheckoutController extends Controller
     {
         $order = Order::findOrFail($id);
 
-        // Pastikan order milik user yang sedang login
         abort_if($order->user_id !== Auth::id(), 403);
 
-        // Jika statusnya masih pending, ubah menjadi processing (Dikemas)
         if ($order->status === 'pending') {
             $order->update([
                 'status' => 'processing'
