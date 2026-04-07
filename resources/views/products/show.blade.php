@@ -243,9 +243,9 @@
                                     @endif
                                 </div>
                             @else
-                               <form action="{{ route('cart.add', $product->id) }}" method="POST"
-                                onsubmit="addToCartAjax(event, this)"
-                                class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-4 no-global-loader">
+                                <form action="{{ route('cart.add', $product->id) }}" method="POST"
+                                    onsubmit="addToCartAjax(event, this)"
+                                    class="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 clip-box mb-4">
                                     @csrf
                                     @if ($isLowStock)
                                         <div class="flex items-center gap-2 mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
