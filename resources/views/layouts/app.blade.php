@@ -22,11 +22,37 @@
 
     {{-- 1. FONTS & ICONS --}}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
+    <style>
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none; 
+        }
+    </style>
     @stack('styles')
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen flex flex-col
     {{ Route::is('login') || Route::is('register') ? '' : 'pt-20' }}">
+
+    {{-- 🔥 GLOBAL PAGE LOADER 🔥 --}}
+    <div id="global-loader" class="fixed inset-0 z-[999999] bg-[#050014] flex flex-col items-center justify-center transition-opacity duration-500">
+        {{-- Efek Glow di Background --}}
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/20 blur-[80px] rounded-full pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col items-center">
+            <span class="material-symbols-outlined text-5xl text-blue-500 animate-spin mb-4">
+                settings
+            </span>
+            <div class="flex items-center gap-1">
+                <span class="text-sm font-bold uppercase tracking-[0.3em] text-white">Initializing</span>
+                <span class="flex gap-0.5">
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
+                </span>
+            </div>
+        </div>
+    </div>
 
     {{-- NAVIGATION --}}
     @if(!Route::is('login') && !Route::is('register'))
@@ -434,35 +460,68 @@
         </div>
     </div>
 </div>
-    <script>
-    // 🔥 GLOBAL FORM SUBMIT PROTECTOR 🔥
-    document.addEventListener('submit', function(event) {
-        // 1. Tangkap form yang sedang di-submit
-        const form = event.target;
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
         
-        // 2. Cari tombol submit di dalam form tersebut
-        const submitBtn = form.querySelector('button[type="submit"]');
+        const loader = document.getElementById('global-loader');
 
-        // 3. Jika tombolnya ada, kita eksekusi loading state-nya
-        if (submitBtn) {
-            // Cegah tombol diklik untuk kedua kalinya
-            submitBtn.disabled = true;
+        // 1. Sembunyikan Global Loader LEBIH CEPAT (150ms)
+        // Agar Skeleton UI di dalam halaman (Alpine.js) bisa langsung mengambil alih
+        window.addEventListener('load', function () {
+            setTimeout(() => {
+                if (loader) {
+                    loader.classList.add('loader-hidden');
+                }
+            }, 150); // Jeda dipersingkat dari 300ms menjadi 150ms
+        });
 
-            // Simpan lebar tombol agar tidak menyusut/berubah ukuran saat teksnya diganti
-            const currentWidth = submitBtn.offsetWidth;
-            submitBtn.style.width = currentWidth + 'px';
+        // 2. Logika memunculkan loader saat klik link (TETAP SAMA)
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                const target = this.getAttribute('target');
 
-            // Ubah tampilan tombol menjadi Loading Spinner khas NexRig
-            submitBtn.innerHTML = `
-                <div class="flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                    <span>Processing...</span>
-                </div>
-            `;
+                if (!href || href.startsWith('#') || target === '_blank' || href.startsWith('javascript:')) {
+                    return;
+                }
+                
+                if (e.ctrlKey || e.metaKey) return;
 
-            // Tambahkan efek transparan dan kursor dilarang (Tailwind classes)
-            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-        }
+                if (loader) {
+                    loader.classList.remove('loader-hidden');
+                }
+            });
+        });
+
+        // 3. Fallback Safari/Bfcache (TETAP SAMA)
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted && loader) {
+                loader.classList.add('loader-hidden');
+            }
+        });
+
+        // --- GLOBAL FORM SUBMIT PROTECTOR (TETAP SAMA) ---
+        document.addEventListener('submit', function(event) {
+            const form = event.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const currentWidth = submitBtn.offsetWidth;
+                submitBtn.style.width = currentWidth + 'px';
+                submitBtn.innerHTML = `
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Processing...</span>
+                    </div>
+                `;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                
+                if(loader) {
+                    loader.classList.remove('loader-hidden');
+                }
+            }
+        });
     });
 </script>
 </body>

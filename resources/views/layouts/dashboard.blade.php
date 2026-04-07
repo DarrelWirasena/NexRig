@@ -83,10 +83,36 @@
                 bottom: 24px !important;
             }
         }
+
+        /* 🔥 Class untuk Global Loader 🔥 */
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none; 
+        }
     </style>
 </head>
 
 <body class="font-sans antialiased bg-[#050014] text-white">
+
+    {{-- 🔥 GLOBAL PAGE LOADER 🔥 --}}
+    <div id="global-loader" class="fixed inset-0 z-[999999] bg-[#050014] flex flex-col items-center justify-center transition-opacity duration-500">
+        {{-- Efek Glow di Background --}}
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/20 blur-[80px] rounded-full pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col items-center">
+            <span class="material-symbols-outlined text-5xl text-blue-500 animate-spin mb-4">
+                settings
+            </span>
+            <div class="flex items-center gap-1">
+                <span class="text-sm font-bold uppercase tracking-[0.3em] text-white">Initializing</span>
+                <span class="flex gap-0.5">
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
+                    <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
+                </span>
+            </div>
+        </div>
+    </div>
 
     <div class="h-screen flex overflow-hidden relative no-bounce">
         {{-- Background Glow --}}
@@ -161,7 +187,7 @@
             })
         }
 
-// --- 🔥 KONFIGURASI TOAST SWEETALERT2 🔥 ---
+        // --- 🔥 KONFIGURASI TOAST SWEETALERT2 🔥 ---
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -196,6 +222,71 @@
         if (msgError) {
             window.showToast(msgError, 'error');
         }
+
+        // ========================================================
+        // 🔥 GLOBAL SCRIPTS: LOADER & FORM PROTECTOR 🔥
+        // ========================================================
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const loader = document.getElementById('global-loader');
+
+            // 1. Sembunyikan Global Loader LEBIH CEPAT (150ms)
+            window.addEventListener('load', function () {
+                setTimeout(() => {
+                    if (loader) {
+                        loader.classList.add('loader-hidden');
+                    }
+                }, 150); 
+            });
+
+            // 2. Logika memunculkan loader saat klik link
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    const target = this.getAttribute('target');
+
+                    if (!href || href.startsWith('#') || target === '_blank' || href.startsWith('javascript:')) {
+                        return;
+                    }
+                    
+                    if (e.ctrlKey || e.metaKey) return;
+
+                    if (loader) {
+                        loader.classList.remove('loader-hidden');
+                    }
+                });
+            });
+
+            // 3. Fallback Safari/Bfcache
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted && loader) {
+                    loader.classList.add('loader-hidden');
+                }
+            });
+
+            // 4. GLOBAL FORM SUBMIT PROTECTOR
+            document.addEventListener('submit', function(event) {
+                const form = event.target;
+                const submitBtn = form.querySelector('button[type="submit"]');
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    const currentWidth = submitBtn.offsetWidth;
+                    submitBtn.style.width = currentWidth + 'px';
+                    submitBtn.innerHTML = `
+                        <div class="flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                            <span>Processing...</span>
+                        </div>
+                    `;
+                    submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    
+                    if(loader) {
+                        loader.classList.remove('loader-hidden');
+                    }
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>
