@@ -8,16 +8,47 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    // Halaman Daftar Riwayat Belanja
+   // Halaman Daftar Riwayat Belanja
     public function index(Request $request)
     {
+        // 1. 🔥 PENYAPU RANJAU (AUTO-CANCEL) SEBELUM DATA DITAMPILKAN 🔥
+        // Cari semua order milik user ini yang masih 'pending'
+        $pendingOrders = \App\Models\Order::with('items.product')
+            ->where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->where('status', 'pending')
+            ->get();
+
+        foreach ($pendingOrders as $pendingOrder) {
+            $paymentType = strtolower($pendingOrder->payment_type ?? '');
+            
+            // Logika deteksi 15 Menit (QRIS/E-Wallet) vs 24 Jam (VA/Kosong)
+            $isFastPayment = \Illuminate\Support\Str::contains($paymentType, ['qris', 'gopay', 'shopeepay']);
+            $durationInMinutes = $isFastPayment ? 15 : (24 * 60); 
+            
+            $expiresAt = $pendingOrder->created_at->addMinutes($durationInMinutes);
+
+            // Jika waktu saat ini sudah melewati batas waktu kedaluwarsa
+            if (now()->greaterThanOrEqualTo($expiresAt)) {
+                // Batalkan pesanan
+                $pendingOrder->update(['status' => 'cancelled']);
+                
+                // Kembalikan stok produk ke semula
+                foreach ($pendingOrder->items as $item) {
+                    if ($item->product && $item->product->track_stock) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+            }
+        }
+
+        // 2. KODE ASLI KAMU UNTUK MENAMPILKAN DATA 
         $search = $request->input('search');
         $title  = 'My Orders';
         
         // Default tab sekarang adalah 'all' (Semua Pesanan)
         $tab    = $request->query('tab', 'all');
 
-        $query = Order::where('user_id', Auth::id())
+        $query = \App\Models\Order::where('user_id', \Illuminate\Support\Facades\Auth::id())
             ->with(['items.product.images', 'items.product.series']);
 
         // LOGIKA FILTER STATUS BARU
@@ -27,11 +58,11 @@ class OrderController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('id', 'like', '%' . $request->search . '%')
-                    ->orWhereHas('items.product', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
-                    });
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhereHas('items.product', function ($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
+                  });
             });
         }
 

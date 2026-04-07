@@ -234,13 +234,34 @@ async function addToCartFromWishlist(btn, actionUrl) {
         const data = await res.json();
 
         if (res.ok && data.success) {
-            // Beri centang sukses
             btn.innerHTML = `<span class="material-symbols-outlined text-[20px] text-green-400">check</span>`;
             
-            // Perbarui Mini Cart UI (jika fungsinya ada di file js kamu)
-            if (typeof window.updateMiniCartUI === 'function') {
-                window.updateMiniCartUI(data.data);
-            }
+            // 🔥 PERBAIKAN: Daripada memakai fungsi update dari JS yang merusak tampilan, 
+            // kita minta browser mengambil ulang HTML Mini Cart terbaru di background 🔥
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Ganti isi (item) Mini Cart
+                    const newItems = doc.getElementById('miniCartItems');
+                    if (newItems && document.getElementById('miniCartItems')) {
+                        document.getElementById('miniCartItems').innerHTML = newItems.innerHTML;
+                    }
+                    
+                    // Ganti Total Harga
+                    const newSubtotal = doc.getElementById('miniCartSubtotal');
+                    if (newSubtotal && document.getElementById('miniCartSubtotal')) {
+                        document.getElementById('miniCartSubtotal').innerHTML = newSubtotal.innerHTML;
+                    }
+
+                    // Ganti Tombol Checkout
+                    const newBtn = doc.getElementById('miniCartCheckoutBtn');
+                    if (newBtn && document.getElementById('miniCartCheckoutBtn')) {
+                        document.getElementById('miniCartCheckoutBtn').outerHTML = newBtn.outerHTML;
+                    }
+                });
 
             // BUKA MINI CART SECARA PAKSA
             const miniCartOverlay = document.getElementById('miniCartOverlay');
@@ -252,11 +273,8 @@ async function addToCartFromWishlist(btn, actionUrl) {
                     miniCartOverlay.classList.remove('opacity-0');
                     miniCart.classList.remove('translate-x-full');
                 }, 10);
-            } else if (typeof window.toggleMiniCart === 'function') {
-                window.toggleMiniCart();
             }
 
-            // Kembalikan tombol normal setelah 2 detik
             setTimeout(() => {
                 btn.innerHTML = originalIcon;
                 btn.disabled = false;

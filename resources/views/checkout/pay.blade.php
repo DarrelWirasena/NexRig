@@ -76,15 +76,23 @@
 
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
-    // 🔥 LOGIKA COUNTDOWN TIMER BERDASARKAN DATABASE 🔥
+    // 🔥 LOGIKA COUNTDOWN DINAMIS BERDASARKAN PAYMENT TYPE 🔥
     
-    // 1. Ambil waktu pembuatan order dari server (Ubah format tanggal jadi format yang dipahami Javascript)
     const createdAtStr = "{{ $order->created_at->format('Y-m-d H:i:s') }}";
-    // Konversi dengan mengganti spasi menjadi 'T' agar aman di browser Safari/iOS
     const createdAt = new Date(createdAtStr.replace(' ', 'T') + 'Z'); 
     
-    // 2. Tambahkan 15 menit (900000 milidetik) ke waktu pembuatan
-    const expiryTime = new Date(createdAt.getTime() + 15 * 60000);
+    // 1. Deteksi Jenis Pembayaran dari Database
+    // (Jika baru pertama kali load dan belum bayar, payment_type mungkin masih kosong, kita beri default 24 Jam)
+    const paymentType = "{{ strtolower($order->payment_type ?? '') }}";
+    
+    // Anggap metode cepat (15 menit) hanya untuk QRIS dan E-Wallet
+    const isFastPayment = paymentType.includes('qris') || paymentType.includes('gopay') || paymentType.includes('shopeepay');
+    
+    // Jika QRIS/E-Wallet = 15 Menit. Jika VA/Transfer/Kosong = 24 Jam (1440 menit)
+    const durationInMinutes = isFastPayment ? 15 : (24 * 60); 
+    
+    // 2. Hitung Waktu Kedaluwarsa
+    const expiryTime = new Date(createdAt.getTime() + durationInMinutes * 60000);
 
     const timerDisplay = document.getElementById('countdown-timer');
     const payBtn = document.getElementById('pay-button');
@@ -93,8 +101,6 @@
 
     // 3. Fungsi yang dijalankan setiap 1 detik
     const timerInterval = setInterval(function() {
-        // Cari selisih waktu antara expiry dengan waktu saat ini di komputer user
-        // (Bisa juga disesuaikan dengan waktu server jika ingin lebih akurat)
         const now = new Date();
         const distance = expiryTime - now;
 
@@ -111,24 +117,30 @@
             payBtnText.innerText = "Order Cancelled";
             payBtnIcon.innerText = "block";
             
-            // Opsional: Redirect user atau reload halaman agar backend (OrderController) 
-            // otomatis mengeksekusi pembatalan dan pengembalian stok.
+            // Reload setelah 3 detik agar sistem backend membatalkan pesanan
             setTimeout(() => {
                 window.location.reload();
-            }, 3000); // Reload setelah 3 detik
+            }, 3000); 
             
             return;
         }
 
-        // Jika waktu masih ada, hitung Menit dan Detik
+        // 🔥 PERBAIKAN: Hitung Jam, Menit, dan Detik 🔥
+        const hours = Math.floor(distance / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
         // Format angka (tambahkan 0 di depan jika di bawah 10)
+        const h = hours < 10 ? "0" + hours : hours;
         const m = minutes < 10 ? "0" + minutes : minutes;
         const s = seconds < 10 ? "0" + seconds : seconds;
 
-        timerDisplay.innerHTML = m + ":" + s;
+        // Jika waktu lebih dari 1 jam (VA), tampilkan HH:MM:SS. Jika kurang (QRIS), tampilkan MM:SS.
+        if (hours > 0) {
+            timerDisplay.innerHTML = h + ":" + m + ":" + s;
+        } else {
+            timerDisplay.innerHTML = m + ":" + s;
+        }
 
         // Jika sisa waktu kurang dari 3 menit (180.000 ms), ubah warna jadi merah kedip-kedip
         if (distance < 180000) {
@@ -139,7 +151,6 @@
 
     // ── Logika Midtrans Snap ──
     function triggerSnap() {
-        // Jangan buka snap jika waktu sudah habis
         if (new Date() >= expiryTime) return;
 
         snap.pay('{{ $snapToken }}', {
@@ -147,13 +158,17 @@
                 window.location.href = "{{ route('checkout.success', $order->id) }}";
             },
             onPending: function(result) {
-                window.location.href = "{{ route('orders.index') }}";
+                // Biarkan user stay di halaman ini jika mereka menutup pop-up tapi order masih pending
+                // Atau bisa di-reload agar timer update dengan payment_type yang baru dipilih
+                window.location.reload(); 
             },
             onError: function(result) {
                 alert("Payment failed!");
             },
             onClose: function() {
-                console.log('User closed the popup');
+                // Sangat Penting: Reload halaman saat popup ditutup!
+                // Ini berguna agar jika user memilih QRIS, saat popup ditutup timer langsung berubah jadi 15 menit.
+                window.location.reload();
             }
         });
     }
@@ -165,7 +180,6 @@
         }
     };
 
-    // Tetap sediakan fungsi tombol jika user tidak sengaja menutup popup
     payBtn.onclick = function() {
         triggerSnap();
     };

@@ -56,6 +56,33 @@
         main::-webkit-scrollbar-track { background: #050014; }
         main::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 4px; }
         .no-bounce { overscroll-behavior: none; }
+
+
+       /* 🔥 STYLE KHUSUS TOAST NEXRIG (SEPERTI DI GAMBAR) 🔥 */
+        .nexrig-toast {
+            background: #0a0a0a !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-left: 4px solid #2563eb !important; /* Aksen biru di kiri */
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 1rem !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* Memaksa Toast berada paling depan */
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+
+        /* 🚀 MENGGESER TOAST KE KIRI SAAT MINI CART BISA TERBUKA (DESKTOP) 🚀 */
+        @media (min-width: 768px) {
+            .swal2-container.swal2-bottom-end,
+            .swal2-container.swal2-bottom-right {
+                /* 450px (Lebar Mini Cart) + 24px (Jarak Spasi) */
+                right: 474px !important; 
+                bottom: 24px !important;
+            }
+        }
     </style>
 </head>
 
@@ -134,24 +161,40 @@
             })
         }
 
-        // --- FLASH MESSAGES (Gaya Penulisan agar VS Code tidak merah) ---
+// --- 🔥 KONFIGURASI TOAST SWEETALERT2 🔥 ---
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'nexrig-toast'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // Membuat fungsi global window.showToast agar bisa dipanggil dari AJAX manapun
+        window.showToast = function(message, type = 'success') {
+            Toast.fire({
+                icon: type,
+                title: message
+            });
+        }
+
+        // --- FLASH MESSAGES DARI CONTROLLER (JIKA ADA) ---
         const msgSuccess = "{{ session('success') }}";
         const msgError = "{{ session('error') }}";
 
         if (msgSuccess) {
-            Swal.fire({
-                icon: 'success', title: 'BERHASIL', text: msgSuccess,
-                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
-                customClass: { popup: 'nexrig-swal-popup' }
-            });
+            window.showToast(msgSuccess, 'success');
         }
 
         if (msgError) {
-            Swal.fire({
-                icon: 'error', title: 'GAGAL', text: msgError,
-                background: '#0a0a0a', color: '#fff', confirmButtonColor: '#2563eb',
-                customClass: { popup: 'nexrig-swal-popup' }
-            });
+            window.showToast(msgError, 'error');
         }
     </script>
     @stack('scripts')
