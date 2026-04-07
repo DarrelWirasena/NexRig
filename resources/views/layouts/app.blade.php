@@ -434,6 +434,37 @@
         </div>
     </div>
 </div>
+    <script>
+    // 🔥 GLOBAL FORM SUBMIT PROTECTOR 🔥
+    document.addEventListener('submit', function(event) {
+        // 1. Tangkap form yang sedang di-submit
+        const form = event.target;
+        
+        // 2. Cari tombol submit di dalam form tersebut
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        // 3. Jika tombolnya ada, kita eksekusi loading state-nya
+        if (submitBtn) {
+            // Cegah tombol diklik untuk kedua kalinya
+            submitBtn.disabled = true;
+
+            // Simpan lebar tombol agar tidak menyusut/berubah ukuran saat teksnya diganti
+            const currentWidth = submitBtn.offsetWidth;
+            submitBtn.style.width = currentWidth + 'px';
+
+            // Ubah tampilan tombol menjadi Loading Spinner khas NexRig
+            submitBtn.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    <span>Processing...</span>
+                </div>
+            `;
+
+            // Tambahkan efek transparan dan kursor dilarang (Tailwind classes)
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        }
+    });
+</script>
 </body>
 
 </html>
