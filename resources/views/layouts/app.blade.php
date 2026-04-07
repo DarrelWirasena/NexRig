@@ -501,8 +501,17 @@
         });
 
         // --- GLOBAL FORM SUBMIT PROTECTOR (TETAP SAMA) ---
+        // --- GLOBAL FORM SUBMIT PROTECTOR ---
         document.addEventListener('submit', function(event) {
             const form = event.target;
+            
+            // 🔥 FITUR PENGECUALIAN BARU 🔥
+            // Jika form memiliki class 'no-global-loader', hentikan script ini sepenuhnya.
+            // Biarkan form tersebut menangani animasinya sendiri (seperti halaman checkout/cart).
+            if (form.classList.contains('no-global-loader')) {
+                return; // Berhenti di sini, jangan lakukan apa-apa
+            }
+
             const submitBtn = form.querySelector('button[type="submit"]');
 
             if (submitBtn) {

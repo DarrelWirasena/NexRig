@@ -57,7 +57,7 @@
             </div>
             @else
             {{-- Active — bisa add to cart --}}
-            <form action="{{ route('cart.add', $product->id) }}" method="POST" onsubmit="addToCartAjax(event, this)" class="w-full max-w-[200px]">
+            <form action="{{ route('cart.add', $product->id) }}" method="POST" onsubmit="addToCartAjax(event, this)" class="w-full max-w-[200px] no-global-loader">
                 @csrf
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit"

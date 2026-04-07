@@ -35,7 +35,8 @@
 </div>
 
 <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6">
-    <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
+    {{-- 🔥 Tambahkan class no-global-loader di sini 🔥 --}}
+    <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form" class="no-global-loader">
         @csrf
 
         {{-- 🔥 TAMBAHAN WAJIB: Bawa ID item yang dipilih ke Controller saat form disubmit 🔥 --}}
