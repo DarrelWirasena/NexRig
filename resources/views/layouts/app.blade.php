@@ -28,6 +28,9 @@
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-clip min-h-screen flex flex-col
     {{ Route::is('login') || Route::is('register') ? '' : 'pt-20' }}">
 
+    {{-- 🔥 TOP LOADING BAR (NEXRIG STYLE) 🔥 --}}
+    <div id="top-loading-bar" class="fixed top-0 left-0 h-[3px] bg-primary z-[999999] transition-all ease-out w-0 shadow-[0_0_15px_rgba(37,99,235,1)] opacity-0 pointer-events-none"></div>
+
     {{-- NAVIGATION --}}
     @if(!Route::is('login') && !Route::is('register'))
     @include('components.navbar')
@@ -434,6 +437,105 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        const topBar = document.getElementById('top-loading-bar');
+        let loaderInterval;
+
+        // 1. Fungsi untuk Memulai Animasi Garis
+        function startTopBar() {
+            if (!topBar) return;
+            clearInterval(loaderInterval);
+            
+            // Tampilkan bar dan mulai dari 15%
+            topBar.classList.remove('opacity-0', 'duration-500');
+            topBar.classList.add('opacity-100', 'duration-300');
+            topBar.style.width = '15%';
+
+            // Simulasi pemuatan (berjalan pelan mentok sampai 85%)
+            let progress = 15;
+            loaderInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 85) progress = 85; 
+                topBar.style.width = progress + '%';
+            }, 300);
+        }
+
+        // 2. Fungsi untuk Mengakhiri Animasi
+        function finishTopBar() {
+            if (!topBar) return;
+            clearInterval(loaderInterval);
+            
+            // Melesat ke 100%
+            topBar.style.width = '100%';
+            
+            // Tunggu sebentar, lalu pudarkan (fade out)
+            setTimeout(() => {
+                topBar.classList.remove('duration-300');
+                topBar.classList.add('duration-500', 'opacity-0');
+                
+                // Kembalikan lebar ke 0% setelah tak terlihat
+                setTimeout(() => {
+                    topBar.style.width = '0%';
+                }, 500); 
+            }, 200);
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // A. Sembunyikan bar saat halaman selesai dimuat penuh
+        window.addEventListener('load', finishTopBar);
+
+        // B. Munculkan bar saat link diklik
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                const target = this.getAttribute('target');
+
+                // Filter bypass (termasuk tag <a> yang punya class no-global-loader)
+                if (!href || href.startsWith('#') || target === '_blank' || href.startsWith('javascript:')) return;
+                if (this.classList.contains('no-global-loader')) return;
+                if (e.ctrlKey || e.metaKey) return;
+
+                startTopBar();
+            });
+        });
+
+        // C. Fallback Safari/Bfcache (jika user klik tombol Back di browser)
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) finishTopBar();
+        });
+
+        // D. Form Submit Protector (Tetap mempertahankan fitur pengunci tombol)
+        document.addEventListener('submit', function(event) {
+            const form = event.target;
+            
+            // 🔥 FITUR PENGECUALIAN 🔥
+            // Bypass form dengan class no-global-loader (seperti form Add to Cart & Checkout)
+            if (form.classList.contains('no-global-loader')) return;
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const currentWidth = submitBtn.offsetWidth;
+                submitBtn.style.width = currentWidth + 'px';
+                submitBtn.innerHTML = `
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Processing...</span>
+                    </div>
+                `;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                
+                // Jalankan animasi garis atas saat form standar di-submit
+                startTopBar();
+            }
+        });
+    });
+</script>
 </body>
 
 </html>
