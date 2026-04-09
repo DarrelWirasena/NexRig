@@ -95,6 +95,16 @@
                         <input type="password" name="password" required autofocus
                             class="w-full pl-12 pr-4 py-3 input-tech text-xs rounded-none tracking-widest" placeholder="••••••••">
                     </div>
+
+                    {{-- 🔥 TAMBAHAN KOTAK INFO (RESET) 🔥 --}}
+                    <div class="mt-2 p-2.5 bg-amber-900/10 border border-amber-500/20 flex gap-2 items-start">
+                        <span class="material-symbols-outlined text-amber-400 text-[14px]">shield_locked</span>
+                        <div class="text-[9px] text-slate-400 uppercase tracking-widest leading-relaxed">
+                            <span class="text-amber-400 font-black mb-0.5 block">Security Requirements:</span>
+                            Min 8 characters • 1 Uppercase (A-Z) • 1 Lowercase (a-z) • 1 Numeric (0-9)
+                        </div>
+                    </div>
+
                     @error('password') <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider mt-1">{{ $message }}</p> @enderror
                 </div>
 

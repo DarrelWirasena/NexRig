@@ -25,54 +25,76 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)
+                ->letters()   // Harus mengandung setidaknya satu huruf
+                ->mixedCase() // Harus mengandung huruf besar dan kecil
+                ->numbers()   // Harus mengandung setidaknya satu angka
+                ->symbols()   // Opsional: Hapus baris ini jika tidak ingin mewajibkan simbol unik
+                // ->uncompromised() // Opsional (Lanjutan): Mengecek ke database global apakah password ini pernah bocor di internet
+            ],
         ]);
 
         $otp = random_int(100000, 999999);
 
-        // Buat User (tapi belum bisa login karena belum verify OTP)
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
-            'otp_code' => $otp,
-            'otp_expires_at' => now()->addMinutes(10),
-        ]);
-
-        // Kirim Email
-        Mail::to($user->email)->send(new OtpMail($otp));
-
-        // Simpan email ke session agar halaman verify tahu email siapa
+        // 🔥 PERUBAHAN: JANGAN BIKIN USER DI DATABASE DULU 🔥
+        // Simpan semua data pendaftaran ke dalam Session sementara
         session([
-            'verify_email' => $user->email,
+            'pending_user' => [
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password), // Hash passwordnya sekarang
+                'otp_code' => $otp,
+                'expires_at' => now()->addMinutes(10),
+            ],
             'redirect_url' => $request->input('redirect') ?: session()->pull('url.intended')
         ]);
+
+        // Kirim Email OTP
+        Mail::to($request->email)->send(new OtpMail($otp));
 
         return redirect()->route('otp.verify')->with('success', 'Kode OTP dikirim ke email.');
     }
 
     public function showOtpForm() {
-        if (!session('verify_email')) return redirect()->route('register');
+        // PERBAIKAN: Cek 'pending_user', bukan 'verify_email'
+        if (!session()->has('pending_user')) {
+            return redirect()->route('register');
+        }
         return view('auth.verify-otp', ['title' => 'Verify OTP']);
     }
 
     public function verifyOtp(Request $request) {
         $request->validate(['otp' => 'required|numeric']);
-        $email = session('verify_email');
+        
+        // Ambil data user yang sedang "menggantung" di session
+        $pendingUser = session('pending_user');
 
-        $user = User::where('email', $email)->where('otp_code', $request->otp)
-                    ->where('otp_expires_at', '>', now())->first();
+        // Jika tidak ada data di session, tendang kembali ke halaman register
+        if (!$pendingUser) {
+            return redirect()->route('register')->withErrors(['otp' => 'Sesi pendaftaran berakhir. Silakan daftar ulang.']);
+        }
 
-        if ($user) {
-            // Bersihkan OTP & Verifikasi Email
-            $user->update(['email_verified_at' => now(), 'otp_code' => null, 'otp_expires_at' => null]);
+        // 🔥 PERUBAHAN: CEK OTP DARI SESSION, BUKAN DARI DATABASE 🔥
+        // Cek kecocokan OTP dan apakah belum kedaluwarsa
+        if ($pendingUser['otp_code'] == $request->otp && now()->lessThan($pendingUser['expires_at'])) {
+            
+            // OTP BENAR! Sekarang baru kita buat User-nya di Database secara resmi
+            $user = User::create([
+                'name' => $pendingUser['name'],
+                'email' => $pendingUser['email'],
+                'password' => $pendingUser['password'],
+                'role' => 'user',
+                'email_verified_at' => now(), // Langsung tandai terverifikasi
+                'otp_code' => null,
+                'otp_expires_at' => null,
+            ]);
             
             // Login & Bersihkan Session
             Auth::login($user);
             $redirect = session('redirect_url');
-            session()->forget(['verify_email', 'redirect_url']);
-            return redirect($redirect ?: route('home'))->with('success', 'Akses Diberikan!');
+            session()->forget(['pending_user', 'redirect_url']); // Hapus session karena sudah masuk database
+            
+            return redirect($redirect ?: route('home'))->with('success', 'Registrasi Berhasil! Akses Diberikan.');
         }
 
         return back()->withErrors(['otp' => 'Kode OTP Salah atau Kedaluwarsa.']);
@@ -152,17 +174,54 @@ class AuthController extends Controller
     }
 
     public function updatePassword(Request $request) {
-        $request->validate(['password' => 'required|string|min:8|confirmed']);
+        // 1. Pastikan pengguna punya izin (session 'allow_reset_for' harus ada)
         $email = session('allow_reset_for');
+        
+        if (!$email) {
+            return redirect()->route('login')->withErrors(['email' => 'Sesi pemulihan tidak valid atau telah kedaluwarsa.']);
+        }
+
+        // 2. Validasi Password Baru (Sama ketatnya dengan saat registrasi)
+        $request->validate([
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+            ],
+        ], [
+            'password.min' => 'Password minimal harus 8 karakter.',
+            'password.letters' => 'Password harus mengandung huruf.',
+            'password.mixed' => 'Password harus memiliki kombinasi huruf besar dan kecil.',
+            'password.numbers' => 'Password harus mengandung minimal satu angka.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        // 3. Cari User dan Update Password
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            $user->update(['password' => Hash::make($request->password)]);
+            // Hash password baru dan simpan
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+            
+            // 4. Bersihkan izin reset agar link tidak bisa dipakai dua kali
             session()->forget('allow_reset_for');
-            return redirect()->route('login')->with('success', 'Password berhasil diubah, silakan login.');
+            
+            // 5. (Opsional tapi Direkomendasikan) Kirim Email Pemberitahuan
+            // Bahwa password akun mereka baru saja diubah.
+            try {
+                // Jika kamu belum punya Mailable ini, bisa diabaikan atau dibuat nanti
+                // Mail::to($user->email)->send(new PasswordChangedAlertMail());
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Gagal mengirim alert perubahan password: " . $e->getMessage());
+            }
+
+            return redirect()->route('login')->with('success', 'Override Protocol sukses. Password berhasil diperbarui, silakan login dengan kredensial baru Anda.');
         }
 
-        return redirect()->route('login')->withErrors(['email' => 'Sistem Error.']);
+        // Failsafe jika user tiba-tiba tidak ditemukan di database
+        return redirect()->route('login')->withErrors(['email' => 'Terjadi kesalahan sistem. Pengguna tidak ditemukan.']);
     }
 
     public function resendOtp(Request $request) {

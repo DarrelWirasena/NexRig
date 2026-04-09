@@ -122,28 +122,102 @@
                 </div>
 
                 {{-- Password Input --}}
-                <div class="space-y-1">
-                    <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Access Code</label>
-                    <div class="relative flex items-center group">
-                        <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">terminal</span>
-                        <input type="password" name="password"
-                            class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest {{ $errors->has('password') ? '!border-red-500' : '' }}"
-                            placeholder="••••••••">
-                    </div>
-                    @error('password')
-                    <p class="text-red-500 text-[9px] font-bold uppercase tracking-wider ml-1 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                {{-- 🔥 INLINE SMART PASSWORD SYSTEM (Alpine.js) 🔥 --}}
+                <div x-data="{ 
+                    password: '',
+                    confirmPassword: '',
+                    showPass: false,
+                    showConfirm: false,
+                    
+                    get hasMinLength() { return this.password.length >= 8; },
+                    get hasUpperCase() { return /[A-Z]/.test(this.password); },
+                    get hasLowerCase() { return /[a-z]/.test(this.password); },
+                    get hasNumber() { return /[0-9]/.test(this.password); },
+                    get isAllValid() { return this.hasMinLength && this.hasUpperCase && this.hasLowerCase && this.hasNumber; },
+                    get isTyping() { return this.password.length > 0; },
+                    
+                    get isConfirmTyping() { return this.confirmPassword.length > 0; },
+                    get passwordsMatch() { return this.isConfirmTyping && this.password === this.confirmPassword; }
+                }" class="space-y-4">
 
-                {{-- Confirm Password --}}
-                <div class="space-y-1">
-                    <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Confirm Code</label>
-                    <div class="relative flex items-center group">
-                        <span class="absolute left-4 z-30 text-slate-600 material-symbols-outlined text-[18px] group-focus-within:text-purple-500 transition-colors pointer-events-none">lock_reset</span>
-                        <input type="password" name="password_confirmation"
-                            class="w-full pl-12 pr-4 py-2.5 input-tech text-xs rounded-none tracking-widest"
-                            placeholder="••••••••">
+                    {{-- 1. INPUT: MAIN PASSWORD --}}
+                    <div class="space-y-1">
+                        <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Access Code</label>
+                        <div class="relative flex items-center group">
+                            {{-- Ikon Kiri --}}
+                            <span class="absolute left-4 z-30 material-symbols-outlined text-[18px] transition-colors pointer-events-none"
+                                  :class="isAllValid ? 'text-green-500' : (isTyping ? 'text-red-500' : 'text-slate-600')">
+                                  terminal
+                            </span>
+                            
+                            {{-- Input Field --}}
+                            <input :type="showPass ? 'text' : 'password'" name="password" x-model="password"
+                                class="w-full pl-12 pr-10 py-2.5 input-tech text-xs rounded-none tracking-widest transition-all duration-300"
+                                :class="isAllValid ? 'border-green-500/50 focus:border-green-500 focus:shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (isTyping ? 'border-red-500/50 focus:border-red-500' : '')"
+                                placeholder="••••••••">
+                                
+                            {{-- Tombol Mata --}}
+                            <button type="button" @click="showPass = !showPass" tabindex="-1"
+                                    class="absolute right-3 z-30 text-slate-600 hover:text-white focus:outline-none transition-colors duration-300">
+                                <span class="material-symbols-outlined text-[13px]" x-text="showPass ? 'visibility_off' : 'visibility'"></span>
+                            </button>
+                        </div>
+                        
+                        {{-- 🔥 INDIKATOR PASSWORD INLINE (MINIMALIS) 🔥 --}}
+                        <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 px-1">
+                            {{-- Syarat 1 --}}
+                            <span class="flex items-center gap-0.5 text-[7px] font-black uppercase tracking-[0.1em] transition-colors" 
+                                  :class="hasMinLength ? 'text-green-500' : (isTyping ? 'text-red-500' : 'text-slate-600')">
+                                <span class="material-symbols-outlined text-[10px]" x-text="hasMinLength ? 'check' : (isTyping ? 'close' : 'remove')"></span> 8+ Chars
+                            </span>
+                            {{-- Syarat 2 --}}
+                            <span class="flex items-center gap-0.5 text-[7px] font-black uppercase tracking-[0.1em] transition-colors" 
+                                  :class="hasUpperCase ? 'text-green-500' : (isTyping ? 'text-red-500' : 'text-slate-600')">
+                                <span class="material-symbols-outlined text-[10px]" x-text="hasUpperCase ? 'check' : (isTyping ? 'close' : 'remove')"></span> 1 Upper
+                            </span>
+                            {{-- Syarat 3 --}}
+                            <span class="flex items-center gap-0.5 text-[7px] font-black uppercase tracking-[0.1em] transition-colors" 
+                                  :class="hasLowerCase ? 'text-green-500' : (isTyping ? 'text-red-500' : 'text-slate-600')">
+                                <span class="material-symbols-outlined text-[10px]" x-text="hasLowerCase ? 'check' : (isTyping ? 'close' : 'remove')"></span> 1 Lower
+                            </span>
+                            {{-- Syarat 4 --}}
+                            <span class="flex items-center gap-0.5 text-[7px] font-black uppercase tracking-[0.1em] transition-colors" 
+                                  :class="hasNumber ? 'text-green-500' : (isTyping ? 'text-red-500' : 'text-slate-600')">
+                                <span class="material-symbols-outlined text-[10px]" x-text="hasNumber ? 'check' : (isTyping ? 'close' : 'remove')"></span> 1 Number
+                            </span>
+                        </div>
                     </div>
+
+                    {{-- 2. INPUT: CONFIRM PASSWORD --}}
+                    <div class="space-y-1">
+                        <label class="block text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Confirm Code</label>
+                        <div class="relative flex items-center group">
+                            {{-- Ikon Kiri --}}
+                            <span class="absolute left-4 z-30 material-symbols-outlined text-[18px] transition-colors pointer-events-none"
+                                  :class="passwordsMatch ? 'text-green-500' : (isConfirmTyping ? 'text-red-500' : 'text-slate-600')">
+                                lock_reset
+                            </span>
+                            
+                            {{-- Input Field --}}
+                            <input :type="showConfirm ? 'text' : 'password'" name="password_confirmation" x-model="confirmPassword"
+                                class="w-full pl-12 pr-10 py-2.5 input-tech text-xs rounded-none tracking-widest transition-all duration-300"
+                                :class="passwordsMatch ? 'border-green-500/50 focus:border-green-500 focus:shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (isConfirmTyping ? 'border-red-500/50 focus:border-red-500' : '')"
+                                placeholder="••••••••">
+                                
+                            {{-- Tombol Mata --}}
+                            <button type="button" @click="showConfirm = !showConfirm" tabindex="-1"
+                                    class="absolute right-3 z-30 text-slate-600 hover:text-white focus:outline-none transition-colors duration-300">
+                                <span class="material-symbols-outlined text-[13px]" x-text="showConfirm ? 'visibility_off' : 'visibility'"></span>
+                            </button>
+                        </div>
+                        
+                        {{-- Peringatan Mismatch --}}
+                        <div x-show="isConfirmTyping && !passwordsMatch" style="display: none;"
+                             class="text-red-500 text-[7px] font-black uppercase tracking-[0.1em] ml-1 mt-1 flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[10px]">close</span> Codes do not match
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="pt-3">
