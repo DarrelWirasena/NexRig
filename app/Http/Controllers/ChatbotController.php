@@ -242,6 +242,8 @@ class ChatbotController extends Controller
 
         
         return response()->stream(function () use ($userMessage, $systemPrompt) {
+            $model = config('services.openrouter.model');
+
             try{
                     $client = new Client();
 
@@ -251,7 +253,7 @@ class ChatbotController extends Controller
                             'Content-Type'  => 'application/json',
                         ],
                         'json' => [
-                            'model'    => 'stepfun/step-3.5-flash:free',
+                            'model'    => $model,
                             'stream'   => true,
                             'messages' => [
                                 ['role' => 'system', 'content' => $systemPrompt],
@@ -282,11 +284,28 @@ class ChatbotController extends Controller
                     }
                 } catch (\GuzzleHttp\Exception\ClientException $e) {
                 $status = $e->getResponse()->getStatusCode();
+                 \Log::error('OpenRouter ClientException caught', [
+                        'status' => $status,
+                        'body' => (string) $e->getResponse()->getBody(),
+                        'model' => $model,
+                    ]);
                 if ($status === 429) {
-                    echo "data: " . json_encode(['token' => 'Maaf, asisten sedang sibuk. Silakan coba lagi dalam beberapa saat.']) . "\n\n";
+                    echo "data: " . json_encode(['token' => 'Layanan sedang sibuk. Silakan coba lagi beberapa saat lagi.']) . "\n\n";
                 } else {
-                    echo "data: " . json_encode(['token' => 'Terjadi kesalahan. Silakan coba lagi.']) . "\n\n";
+                    echo "data: " . json_encode(['token' => 'Layanan AI sedang bermasalah. Silakan coba lagi beberapa saat lagi.']) . "\n\n";
                 }
+                echo "data: [DONE]\n\n";
+                ob_flush();
+                flush();
+            } catch (\Throwable $e) {
+                \Log::error('OpenRouter unexpected error', [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'model' => $model,
+                ]);
+
+                echo "data: " . json_encode(['token' => 'Layanan AI sedang bermasalah. Silakan coba lagi beberapa saat lagi.']) . "\n\n";
                 echo "data: [DONE]\n\n";
                 ob_flush();
                 flush();

@@ -513,7 +513,6 @@ window.sendMessage = async function() {
 
     const bubble = botBubble.querySelector('.bot-bubble');
     let fullText = '';
-    let streamDone = false;
 
     try {
         const res = await fetch('/chatbot', {
@@ -545,26 +544,21 @@ window.sendMessage = async function() {
                         const json = JSON.parse(data);
                         if (json.token) {
                             fullText += json.token;
-                            if (!streamDone) {
-                                const displayText = fullText.replace(/\s*\[PRODUCTS\][\s\S]*?(\[\/PRODUCTS\])?\s*/g, '').trim();
-                                bubble.innerHTML = window.marked 
-                                    ? marked.parse(displayText) 
-                                    : displayText;
-                                messages.scrollTop = messages.scrollHeight;
-                            }
+                            const displayText = stripProductBlock(fullText);
+                            renderChatStreamText(bubble, displayText);
+                            messages.scrollTop = messages.scrollHeight;
                         }
                     } catch {}
                 }
             }
         }
 
-        streamDone = true;
         // After stream ends, extract product cards if any
 
         const productMatch = fullText.match(/\[PRODUCTS\]\s*([\s\S]*?)\s*\[\/PRODUCTS\]/);
         if (productMatch) {
-            const cleanText = fullText.replace(/\s*\[PRODUCTS\][\s\S]*?\[\/PRODUCTS\]\s*/g, '').trim();
-            bubble.innerHTML = window.marked ? marked.parse(cleanText) : cleanText;
+            const cleanText = stripProductBlock(fullText);
+            renderChatMarkdown(bubble, cleanText);
 
             const slugs = JSON.parse(productMatch[1]) ?? [];
             if (slugs.length > 0) {
@@ -586,11 +580,15 @@ window.sendMessage = async function() {
             }
         }
 
+        if (!productMatch) {
+            renderChatMarkdown(bubble, stripProductBlock(fullText));
+        }
+
         // Only save history here if no products were found
         saveChatHistory('bot', fullText);
 
     } catch (error) {
-        bubble.innerHTML = 'Maaf, terjadi kesalahan. Silakan coba lagi.';
+        renderChatStreamText(bubble, 'Maaf, terjadi kesalahan. Silakan coba lagi.');
     }
 
     messages.scrollTop = messages.scrollHeight;
@@ -606,14 +604,33 @@ function appendChatMessage(type, content) {
     const bubble  = document.createElement("div");
     bubble.className = isUser
         ? "bg-primary text-white text-sm px-3 py-2 rounded-2xl rounded-tr-sm max-w-[85%]"
-        : "bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%] prose prose-invert prose-sm";
-    bubble.innerHTML = isUser
-        ? escapeHtml(content)
-        : window.marked ? marked.parse(content) : content;
+        : "bg-white/10 text-white text-sm px-3 py-2 rounded-2xl rounded-tl-sm max-w-[85%] prose prose-invert prose-sm overflow-x-auto";
+
+    if (isUser) {
+        bubble.innerHTML = escapeHtml(content);
+    } else {
+        renderChatMarkdown(bubble, stripProductBlock(content));
+    }
 
     wrapper.appendChild(bubble);
     messages.appendChild(wrapper);
     messages.scrollTop = messages.scrollHeight;
+}
+
+function stripProductBlock(content) {
+    return content.replace(/\s*\[PRODUCTS\][\s\S]*?(\[\/PRODUCTS\])?\s*/g, '').trim();
+}
+
+function renderChatStreamText(element, content) {
+    element.classList.remove('prose', 'prose-invert', 'prose-sm');
+    element.classList.add('whitespace-pre-wrap');
+    element.textContent = content;
+}
+
+function renderChatMarkdown(element, content) {
+    element.classList.remove('whitespace-pre-wrap');
+    element.classList.add('prose', 'prose-invert', 'prose-sm', 'overflow-x-auto');
+    element.innerHTML = window.marked ? marked.parse(content) : escapeHtml(content);
 }
 
 function appendChatProductCards(products) {

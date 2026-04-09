@@ -35,6 +35,7 @@ return [
     ],
     "openrouter" => [
         "key" => env("OPENROUTER_API_KEY"),
+        "model" => env("OPENROUTER_MODEL", "openai/gpt-oss-120b:free"),
     ],
 
     "brevo" => [
